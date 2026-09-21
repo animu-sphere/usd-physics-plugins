@@ -1,8 +1,9 @@
 # Rigid-body runtime contract
 
-> **Status: proposed, 2026-09-21.** This document describes the intended
-> extraction target. Nothing here is implemented in this repository yet; see
-> the [capability matrix](../reference/CAPABILITY_MATRIX.md).
+> **Status: proposed, revised 2026-09-22.** This document describes the
+> intended extraction target. Neutral values and handles are implemented; see
+> the [capability matrix](../reference/CAPABILITY_MATRIX.md) for the exact
+> current boundary.
 
 ## 1. Purpose
 
@@ -37,6 +38,11 @@ depend on `usd-stage-runner::runtime::RuntimeTransform` or
 All numeric inputs must be finite. Units and basis are explicit at the bridge:
 core rigid-body distances are meters, time is seconds, and world-space
 directions are expressed in the world's declared basis.
+
+The initial public values are `Vector3`, `Quaternion`, and `Transform`.
+`Quaternion` uses `(w, x, y, z)` storage and defaults to identity;
+`Transform` contains translation and rotation only because scale is not part
+of a rigid-body pose.
 
 ## 4. Handles
 
@@ -134,8 +140,26 @@ dimensions, or impossible descriptors are rejected consistently before
 backend calls. Resource exhaustion and unsupported backend capabilities are
 distinguishable from invalid input.
 
-The exact error transport—exceptions, result values, or a mixed policy—is
-`RB-O1` and must be settled before Phase 1 public headers are accepted.
+`RB-O1` has the following proposed mixed policy for Phase 1:
+
+- value and descriptor validation throws `std::invalid_argument` before a
+  backend call;
+- creation rejects unknown, stale, or cross-world dependency handles with
+  `std::invalid_argument`;
+- state retrieval for an unknown, stale, or cross-world handle throws
+  `std::out_of_range`;
+- destruction and command operations return `false` when the target is
+  unknown, stale, cross-world, already destroyed, or incompatible with the
+  operation; repeated destruction is therefore a safe reported no-op, not a
+  successful idempotent operation;
+- unsupported optional behavior is represented by absence of the capability,
+  rather than by calling a mandatory method that fails; and
+- backend unavailability, resource exhaustion, and solver failures throw a
+  typed `PhysicsError` carrying a solver-neutral `PhysicsErrorCode`.
+
+This retains the proven Stage Runner call patterns while making backend
+failures distinguishable. Phase 1 descriptor and world slices must test the
+relevant branch before this proposal becomes accepted.
 
 ## 10. Threading and ownership
 
@@ -151,8 +175,8 @@ contract. Broad additions require a consumer scenario and tests.
 
 ## 12. Open questions
 
-- **RB-O1:** error transport for validation, unsupported capabilities, and
-  backend failures.
+- **RB-O1 (proposed resolution):** use the mixed policy in §9; accept it only
+  with the descriptor and world contract tests.
 - **RB-O2 (resolved for Phase 1):** minimal vector, rotation, and transform
   values live in `physicsCore`; a separate package requires an independent
   consumer and an architecture revision.

@@ -5,7 +5,7 @@ This document is the proposed binding contract for the planned
 directions, build modes, and structural invariants. Once accepted, a change
 that contradicts it updates this document first, in a focused change.
 
-> **Status (2026-09-21): accepted for the Phase 0 scaffold.**
+> **Status (2026-09-22): accepted for the Phase 1 core extraction.**
 > Creation status is recorded in
 > the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
@@ -15,13 +15,13 @@ that contradicts it updates this document first, in a focused change.
 
 | Identity | Kind | Directory | Planned manifest | Role | Created in | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Solver-neutral value types, handles, descriptors, world lifecycle, state, validation, and optional query contracts. No OpenUSD or backend SDK. | Phase 0 scaffold; Phase 1 runtime | scaffolded |
+| `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Solver-neutral value types, handles, descriptors, world lifecycle, state, validation, and optional query contracts. No OpenUSD or backend SDK. | Phase 0 scaffold; Phase 1 runtime | values and handles implemented; remaining runtime planned |
 | `physicsJolt` | plain static CMake library | `backends/physicsJolt/` | `openstrata.library.yaml` | Jolt implementation of `physicsCore`; owns Jolt initialization, filters, jobs, resources, stepping, and queries. | Phase 0 scaffold; Phase 2 backend | scaffolded; backend unavailable |
 | `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard `UsdPhysics` to core descriptors, transform conversion, transient scene/resource mapping, and synchronization records. | Phase 4 | reserved |
 
-The Phase 0 `physicsCore` and `physicsJolt` targets establish package and
-dependency boundaries only. They are reported as partial and do not count as
-supported runtime capabilities.
+The Phase 0 targets established package and dependency boundaries.
+`physicsCore` now has supported value and handle slices, while its package as
+a whole remains partial. `physicsJolt` remains a partial unavailable scaffold.
 
 ### 1.2 Later, only when the responsibility is real
 
