@@ -9,7 +9,7 @@ status and ordering.
 
 | Phase | Status | Current outcome |
 | --- | --- | --- |
-| 1 — extract `physicsCore` | in progress | Neutral values and typed handles are implemented; descriptors and validation are next. |
+| 1 — extract `physicsCore` | in progress | Neutral values, typed handles, validated descriptors, and semantic collision filters are implemented; world lifecycle is next. |
 | 2 — extract `physicsJolt` | not started | Waits for Phase 1 and an accepted Jolt dependency. |
 | 3 — Stage Runner migration | not started | Waits for installable Phase 1–2 packages. |
 | 4 — `physicsUsd` foundation | not started | Waits for the neutral rigid-body contract. |

@@ -36,6 +36,7 @@ set(_configure_args
   -S "${CONSUMER_SOURCE_DIR}"
   -B "${_build}"
   -G "${TEST_GENERATOR}"
+  "-DCMAKE_BUILD_TYPE=${TEST_CONFIG}"
   "-DCMAKE_PREFIX_PATH=${_prefix}")
 if(TEST_GENERATOR_PLATFORM)
   list(APPEND _configure_args -A "${TEST_GENERATOR_PLATFORM}")

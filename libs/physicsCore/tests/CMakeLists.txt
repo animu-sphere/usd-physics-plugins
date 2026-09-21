@@ -5,3 +5,7 @@ add_test(NAME physicsCore.scaffold COMMAND physics_core_scaffold_test)
 add_executable(physics_core_values_handles_test physics_core_values_handles_test.cpp)
 target_link_libraries(physics_core_values_handles_test PRIVATE physicsCore::physicsCore)
 add_test(NAME physicsCore.values_handles COMMAND physics_core_values_handles_test)
+
+add_executable(physics_core_descriptors_test physics_core_descriptors_test.cpp)
+target_link_libraries(physics_core_descriptors_test PRIVATE physicsCore::physicsCore)
+add_test(NAME physicsCore.descriptors COMMAND physics_core_descriptors_test)

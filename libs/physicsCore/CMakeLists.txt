@@ -23,12 +23,16 @@ if(NOT DEFINED PHYSICSCORE_BUILD_TESTS)
     ${_physics_core_tests_default})
 endif()
 
-add_library(physicsCore STATIC src/version.cpp)
+add_library(physicsCore STATIC
+  src/descriptors.cpp
+  src/version.cpp)
 add_library(physicsCore::physicsCore ALIAS physicsCore)
 set_target_properties(physicsCore PROPERTIES
   EXPORT_NAME physicsCore
   POSITION_INDEPENDENT_CODE ON)
 target_compile_features(physicsCore PUBLIC cxx_std_17)
+target_compile_options(physicsCore PUBLIC
+  "$<$<CXX_COMPILER_ID:MSVC>:/EHsc>")
 target_compile_definitions(physicsCore PRIVATE
   USDPHYSICS_CORE_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
   USDPHYSICS_CORE_VERSION_MINOR=${PROJECT_VERSION_MINOR}
