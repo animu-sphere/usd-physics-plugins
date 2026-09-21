@@ -1,0 +1,17 @@
+[project]
+name = "usd-physics-plugins"
+version = "0.1.0"
+
+[requires]
+platform = "cy2026"
+profile = "usd"
+
+[workspace]
+members = [
+  "libs/physicsCore",
+  "backends/physicsJolt",
+]
+release_members = [
+  "physicsCore",
+  "physicsJolt",
+]

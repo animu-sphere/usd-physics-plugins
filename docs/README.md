@@ -4,9 +4,9 @@ Documentation is organized by responsibility. The taxonomy follows
 `usd-mmd-plugins`: design says what is intended, architecture fixes structure,
 reference reports what exists, and the roadmap contains incomplete work.
 
-**Current tree (2026-09-21): design bootstrap only.** There are no runtime
-libraries, OpenUSD bridge, backend implementations, packages, build commands,
-or releases in this repository yet. The
+**Current tree (2026-09-21): Phase 0 workspace scaffold.** The root build,
+package scaffolds, boundary checks, and installed-consumer test exist. There
+is no rigid-body API, solver implementation, OpenUSD bridge, or release. The
 [capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
 claim implementation status.
 
@@ -14,13 +14,13 @@ claim implementation status.
 | --- | --- | --- |
 | [architecture/](architecture/) | How the workspace is structured: identities, dependency directions, external dependencies, and installed packages. | [WORKSPACE.md](architecture/WORKSPACE.md) · [DEPENDENCIES.md](architecture/DEPENDENCIES.md) · [PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md) |
 | [design/](design/) | What the runtime contracts mean and why the boundaries exist. | [DESIGN_POLICY.md](design/DESIGN_POLICY.md) · [RIGID_BODY_CONTRACT.md](design/RIGID_BODY_CONTRACT.md) · [USD_BRIDGE_CONTRACT.md](design/USD_BRIDGE_CONTRACT.md) · [SECONDARY_MOTION_CONTRACT.md](design/SECONDARY_MOTION_CONTRACT.md) |
-| [reference/](reference/) | Facts about the current tree and implemented capabilities. | [CAPABILITY_MATRIX.md](reference/CAPABILITY_MATRIX.md) |
+| [reference/](reference/) | Facts about the current tree, extraction input, and implemented capabilities. | [CAPABILITY_MATRIX.md](reference/CAPABILITY_MATRIX.md) · [EXTRACTION_BASELINE.md](reference/EXTRACTION_BASELINE.md) |
 | [roadmap/](roadmap/) | What is planned next, what is incomplete, and which phase owns it. | [README.md](roadmap/README.md) · [current.md](roadmap/current.md) |
+| [reports/](reports/) | Dated evidence from real verification runs. | [README.md](reports/README.md) |
 | [contributing/](contributing/) | How to maintain these documents. | [documentation.md](contributing/documentation.md) |
 
-`guides/`, `releases/`, and `reports/` are intentionally absent. They are
-created when there are verified commands, an actual release, or dated evidence
-from a real run respectively.
+`guides/` and `releases/` remain absent until verified user workflows or an
+actual release exist. `reports/` begins with the Phase 0 scaffold verification.
 
 ## Canonical documents
 

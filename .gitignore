@@ -1,0 +1,10 @@
+/build/
+/out/
+/.vs/
+/.ost/
+/.strata/
+**/build/
+**/.strata/
+**/dist/
+CMakeUserPresets.json
+strata.lock

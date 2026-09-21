@@ -2,9 +2,9 @@
 
 Backend-neutral physics runtime components for OpenUSD-based applications.
 
-> **Status: design bootstrap.** This repository currently contains the
-> documentation contract only. No runtime library, OpenUSD bridge, backend, or
-> installable package is implemented yet. The
+> **Status: Phase 0 workspace scaffold.** The repository builds and installs
+> `physicsCore` and `physicsJolt` package scaffolds, but no rigid-body runtime,
+> OpenUSD bridge, or solver backend is implemented yet. The
 > [capability matrix](docs/reference/CAPABILITY_MATRIX.md) is the only page
 > that states what exists, and the [current roadmap](docs/roadmap/current.md)
 > states what comes next.
@@ -54,8 +54,8 @@ their backend.
 
 | Component | Kind | Role | State |
 | --- | --- | --- | --- |
-| `physicsCore` | plain C++ library | Handles, descriptors, world lifecycle, state, and optional query contracts; no OpenUSD and no backend SDK | planned |
-| `physicsJolt` | plain C++ library | First rigid-body backend implementing `physicsCore` | planned |
+| `physicsCore` | plain C++ library | Handles, descriptors, world lifecycle, state, and optional query contracts; no OpenUSD and no backend SDK | package scaffold present; runtime API planned |
+| `physicsJolt` | plain C++ library | First rigid-body backend implementing `physicsCore` | package scaffold present; backend unavailable |
 | `physicsUsd` | OpenUSD-facing C++ library | Translate standard `UsdPhysics` declarations to runtime descriptors and maintain transient prim/resource mappings | planned |
 | `secondaryMotion` | plain C++ library | Solver-neutral spring-chain and collider contracts | deferred until the rigid-body boundary is extracted |
 | `secondaryMotionVerlet` | plain C++ library | First deterministic CPU secondary-motion solver | deferred until a real VRM integration slice requires it |
