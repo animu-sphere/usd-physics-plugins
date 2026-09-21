@@ -1,7 +1,7 @@
 # usd-physics-plugins design policy
 
-> **Status: proposed, 2026-09-21.** This policy defines intended behavior for a
-> repository whose Phase 0 package scaffolds contain no runtime physics. The
+> **Status: proposed, revised 2026-09-22.** This policy defines intended
+> behavior while Phase 1 extracts the neutral runtime contract. The
 > [capability matrix](../reference/CAPABILITY_MATRIX.md) is the only source for
 > implementation claims.
 >

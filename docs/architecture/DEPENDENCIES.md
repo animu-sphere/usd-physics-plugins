@@ -3,9 +3,9 @@
 This page is the single source of truth for dependency versions and support
 claims.
 
-> **Status (2026-09-21): the dependency-free scaffold is validated with plain
-> CMake on Linux and OpenStrata on Windows.** The hosted matrix has not run in
-> this repository.
+> **Status (2026-09-22): the dependency-free core is validated with plain
+> CMake, OpenStrata, and the hosted Windows/Linux matrix.** The hosted evidence
+> is recorded in the [Phase 0 CI report](../reports/2026-09-22-phase0-hosted-ci.md).
 
 ## 1. Baseline
 

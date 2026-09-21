@@ -1,50 +1,58 @@
-# Current roadmap — Phase 0 and the extraction hand-off
+# Current roadmap — Phase 1 `physicsCore` extraction
 
-> **Status: Phase 0 in progress, 2026-09-21.** The plain-CMake workspace and
-> OpenStrata package scaffolds are verified locally. Hosted CI evidence remains
-> before the phase closes.
+> **Status: Phase 1 in progress, 2026-09-22.** Phase 0 closed with successful
+> hosted graph, Linux, and Windows cells. Neutral values and typed handles are
+> the first implemented extraction slice.
 
 ## 1. Outcome
 
-Phase 0 leaves an empty-but-real workspace that can build, test, install, and
-be consumed through plain CMake and OpenStrata. Both modes and clean-prefix
-consumption now pass; the remaining outcome is hosted delivery evidence.
+Phase 1 produces an installed, solver-neutral `physicsCore` package that
+preserves the Stage Runner behavior without depending on Stage Runner,
+OpenUSD, or Jolt.
 
 ```text
-documentation contract
-        -> verified workspace skeleton
-        -> installable target scaffolds
-        -> Phase 1 extraction
+values and handles
+        -> descriptors and validation
+        -> world lifecycle and state
+        -> optional segment and ground queries
+        -> Phase 2 Jolt extraction
 ```
 
-## 2. Remaining Phase 0 delivery work
+## 2. Current evidence
 
-- Run the generated hosted Windows and Linux CI cells and record their URLs or
-  append-only reports.
-- Propose the handle/lifecycle error policy `RB-O1` before accepting Phase 1
-  public headers.
+- `Vector3`, `Quaternion`, and rigid `Transform` values are available from the
+  installed `usd_physics/core/` include root.
+- Typed 64-bit `ShapeHandle`, `BodyHandle`, and `ConstraintHandle` values
+  preserve invalid zero, comparison, and hashing behavior.
+- `physicsCore.values_handles` and the clean-prefix installed consumer cover
+  this public slice.
+- `RB-O1` has a proposed mixed error policy in the
+  [rigid-body contract](../design/RIGID_BODY_CONTRACT.md#9-errors-and-validation).
 
-The completed namespace, math ownership, dependency selection, package
-scaffolds, boundary tests, clean-prefix tests, OpenStrata build/test/package
-verification, reproducible CI generation, and extraction audit are recorded
-in architecture/reference pages rather than retained as roadmap work.
+## 3. Remaining Phase 1 work
 
-## 3. Phase 1 ready condition
+- Extract box shape, static/dynamic body, and fixed-constraint descriptors
+  against the neutral values and handles.
+- Implement and test descriptor, vector, transform, and fixed-step validation;
+  use those tests to accept or revise `RB-O1`.
+- Extract the single-owner world lifecycle, force/velocity commands, direct
+  state, fixed stepping, and changed-state draining contract.
+- Settle `RB-O3` collision category/mask vocabulary before collision data is
+  frozen in the public body descriptor.
+- Settle `RB-O4` changed-state ordering across create, sleep, wake, teleport,
+  and destroy before the world contract is accepted.
+- Extract optional segment and ground query capabilities with ignored-body and
+  support-contact behavior.
+- Keep `PhysicsRuntime`, prim identity, dirty synchronization, and Stage
+  traversal in Stage Runner.
 
-Phase 1 starts when:
+## 4. Phase 1 completion criteria
 
-- the hosted and OpenStrata Phase 0 evidence is green;
-- the handle/lifecycle error policy `RB-O1` has a proposed resolution.
-
-The namespace, include root, package names, math ownership, extraction-source
-revision, and runnable package/boundary tests are already fixed.
-
-Phase 1 then moves behavior in small tested slices: values and handles,
-descriptors and validation, world lifecycle and state, then optional queries.
-
-## 4. Work deliberately deferred
-
-Do not add `physicsUsd`, MMD joints, VRM secondary motion, vehicle types,
-custom schemas, or broad query APIs during the bootstrap. Their phases exist to
-ensure each addition arrives with its consumer fixture and correct dependency
-boundary.
+- The full neutral extraction baseline is implemented under
+  `usd_physics::core` and covered by deterministic tests.
+- `physicsCore` public headers and link interfaces contain no OpenUSD, Jolt,
+  Stage Runner, MMD, or VRM dependency.
+- A clean-prefix consumer includes and exercises the runtime contract.
+- `RB-O1`, `RB-O3`, and the Phase 1 portion of `RB-O4` are accepted or narrowed
+  to explicitly deferred behavior.
+- The capability matrix and package contract describe only the tested surface.

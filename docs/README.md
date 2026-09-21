@@ -4,9 +4,10 @@ Documentation is organized by responsibility. The taxonomy follows
 `usd-mmd-plugins`: design says what is intended, architecture fixes structure,
 reference reports what exists, and the roadmap contains incomplete work.
 
-**Current tree (2026-09-21): Phase 0 workspace scaffold.** The root build,
-package scaffolds, boundary checks, and installed-consumer test exist. There
-is no rigid-body API, solver implementation, OpenUSD bridge, or release. The
+**Current tree (2026-09-22): Phase 1 core extraction.** The root build,
+packages, boundary checks, and installed-consumer test exist. Neutral rigid
+transform values and typed handles are implemented; descriptors, world
+behavior, a solver backend, an OpenUSD bridge, and a release are not. The
 [capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
 claim implementation status.
 

@@ -4,9 +4,11 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-09-21): Phase 0 workspace scaffold.** Buildable and
-> installable `physicsCore` and `physicsJolt` package boundaries exist. No
-> rigid-body contract, solver backend, or OpenUSD plugin exists.
+> **Tree status (2026-09-22): Phase 1 core extraction.** Buildable and
+> installable `physicsCore` and `physicsJolt` package boundaries exist.
+> `physicsCore` provides neutral rigid-transform values and typed handles, but
+> no descriptors or world contract exists yet. No solver backend or OpenUSD
+> plugin exists.
 
 ## 1. Status vocabulary
 
@@ -28,6 +30,7 @@ capability on this page.
 | OpenStrata workspace | supported | Root build/test plus isolated package verification in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Windows build | supported | MSVC 19.51 and OpenStrata evidence in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Linux build | supported | GCC 15.2.0 evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
+| Hosted Windows and Linux CI | supported | Generated graph and test cells passed in the [hosted CI report](../reports/2026-09-22-phase0-hosted-ci.md) |
 | Installed-consumer test | supported | Root clean-prefix test and OpenStrata-generated consumers pass for both packages |
 | Versioned release | not present | `VERSION` exists for package coherence; no tag or release record exists |
 
@@ -35,8 +38,9 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsCore` package | partial | Installable `physicsCore::physicsCore` scaffold and version surface only; runtime contract is Phase 1 |
-| Opaque shape/body/constraint handles | planned | Extraction baseline only; no code here |
+| `physicsCore` package | partial | Installable `physicsCore::physicsCore` provides version, value, and handle surfaces; descriptors and runtime contract remain Phase 1 |
+| Neutral vector, quaternion, and transform values | supported | `physicsCore.values_handles` and the installed-consumer test cover the public headers and identity defaults |
+| Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
 | Shape descriptors | planned | Box first; sphere/capsule with Phase 4 |
 | Static and dynamic bodies | planned | No implementation |
 | Fixed constraints | planned | No implementation |
