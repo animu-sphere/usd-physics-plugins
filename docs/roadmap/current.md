@@ -1,8 +1,8 @@
 # Current roadmap — Phase 1 `physicsCore` extraction
 
 > **Status: Phase 1 in progress, 2026-09-22.** Phase 0 closed with successful
-> hosted graph, Linux, and Windows cells. Neutral values and typed handles are
-> the first implemented extraction slice.
+> hosted graph, Linux, and Windows cells. Neutral values, typed handles, and
+> validated descriptors are the implemented extraction slices.
 
 ## 1. Outcome
 
@@ -11,8 +11,7 @@ preserves the Stage Runner behavior without depending on Stage Runner,
 OpenUSD, or Jolt.
 
 ```text
-values and handles
-        -> descriptors and validation
+values, handles, and descriptors
         -> world lifecycle and state
         -> optional segment and ground queries
         -> Phase 2 Jolt extraction
@@ -24,21 +23,26 @@ values and handles
   installed `usd_physics/core/` include root.
 - Typed 64-bit `ShapeHandle`, `BodyHandle`, and `ConstraintHandle` values
   preserve invalid zero, comparison, and hashing behavior.
-- `physicsCore.values_handles` and the clean-prefix installed consumer cover
-  this public slice.
+- Box shape, static/dynamic body, and fixed-constraint descriptors preserve
+  the Stage Runner extraction baseline against neutral transforms and handles.
+- Descriptor validation rejects unsupported enum values, non-finite transforms,
+  invalid dimensions, invalid masses, missing categories, and invalid handles
+  with `std::invalid_argument`.
+- `CollisionFilter` uses 64-bit `categories` and `collidesWith` sets; no
+  backend layer identifier enters the public contract.
+- `physicsCore.values_handles`, `physicsCore.descriptors`, and the clean-prefix
+  installed consumer cover these public slices.
 - `RB-O1` has a proposed mixed error policy in the
   [rigid-body contract](../design/RIGID_BODY_CONTRACT.md#9-errors-and-validation).
+- `RB-O3` is resolved by the semantic category/mask contract in
+  [the body descriptor](../design/RIGID_BODY_CONTRACT.md#52-bodies).
 
 ## 3. Remaining Phase 1 work
 
-- Extract box shape, static/dynamic body, and fixed-constraint descriptors
-  against the neutral values and handles.
-- Implement and test descriptor, vector, transform, and fixed-step validation;
-  use those tests to accept or revise `RB-O1`.
+- Implement and test fixed-step validation; use the world tests to accept or
+  revise the remaining `RB-O1` branches.
 - Extract the single-owner world lifecycle, force/velocity commands, direct
   state, fixed stepping, and changed-state draining contract.
-- Settle `RB-O3` collision category/mask vocabulary before collision data is
-  frozen in the public body descriptor.
 - Settle `RB-O4` changed-state ordering across create, sleep, wake, teleport,
   and destroy before the world contract is accepted.
 - Extract optional segment and ground query capabilities with ignored-body and
@@ -53,6 +57,6 @@ values and handles
 - `physicsCore` public headers and link interfaces contain no OpenUSD, Jolt,
   Stage Runner, MMD, or VRM dependency.
 - A clean-prefix consumer includes and exercises the runtime contract.
-- `RB-O1`, `RB-O3`, and the Phase 1 portion of `RB-O4` are accepted or narrowed
-  to explicitly deferred behavior.
+- `RB-O1` and the Phase 1 portion of `RB-O4` are accepted or narrowed to
+  explicitly deferred behavior; the accepted `RB-O3` filter remains covered.
 - The capability matrix and package contract describe only the tested surface.

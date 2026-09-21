@@ -1,9 +1,9 @@
 # Rigid-body runtime contract
 
 > **Status: proposed, revised 2026-09-22.** This document describes the
-> intended extraction target. Neutral values and handles are implemented; see
-> the [capability matrix](../reference/CAPABILITY_MATRIX.md) for the exact
-> current boundary.
+> intended extraction target. Neutral values, handles, and descriptors are
+> implemented; see the [capability matrix](../reference/CAPABILITY_MATRIX.md)
+> for the exact current boundary.
 
 ## 1. Purpose
 
@@ -72,6 +72,15 @@ when a phase requires them.
 
 Collision filtering must be expressed semantically. A Jolt object-layer or
 broad-phase-layer index is not a public collision category.
+
+Phase 1 represents filtering with two 64-bit sets: `categories` states the
+semantic categories to which a body belongs, and `collidesWith` states the
+categories it accepts. A pair is admitted only when each body's categories
+intersect the other body's `collidesWith` set. `categories` must be non-zero;
+`collidesWith` may be zero for an intentionally non-colliding body. The
+default is category bit zero colliding with every category. This represents
+Stage Runner's static/moving policy, MMD's 16 groups and per-body masks, and
+future bridge-assigned categories without exposing backend layer numbers.
 
 ### 5.3 Constraints
 
@@ -180,7 +189,8 @@ contract. Broad additions require a consumer scenario and tests.
 - **RB-O2 (resolved for Phase 1):** minimal vector, rotation, and transform
   values live in `physicsCore`; a separate package requires an independent
   consumer and an architecture revision.
-- **RB-O3:** collision category/mask vocabulary that serves Stage Runner and
-  MMD without exposing backend layers.
+- **RB-O3 (resolved for Phase 1):** use the 64-bit `categories` and
+  `collidesWith` sets defined in §5.2. Backend layer assignment is private and
+  may cache distinct filter combinations without changing this contract.
 - **RB-O4:** semantics and ordering of changed-body extraction across create,
   sleep, wake, teleport, and destroy.

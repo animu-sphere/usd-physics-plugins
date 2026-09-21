@@ -6,8 +6,9 @@ capability on this page.
 
 > **Tree status (2026-09-22): Phase 1 core extraction.** Buildable and
 > installable `physicsCore` and `physicsJolt` package boundaries exist.
-> `physicsCore` provides neutral rigid-transform values and typed handles, but
-> no descriptors or world contract exists yet. No solver backend or OpenUSD
+> `physicsCore` provides neutral rigid-transform values, typed handles, and
+> validated box/body/fixed-constraint descriptors with semantic collision
+> filters, but no world contract exists yet. No solver backend or OpenUSD
 > plugin exists.
 
 ## 1. Status vocabulary
@@ -38,12 +39,12 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsCore` package | partial | Installable `physicsCore::physicsCore` provides version, value, and handle surfaces; descriptors and runtime contract remain Phase 1 |
+| `physicsCore` package | partial | Installable `physicsCore::physicsCore` provides version, value, handle, and descriptor surfaces; the runtime contract remains Phase 1 |
 | Neutral vector, quaternion, and transform values | supported | `physicsCore.values_handles` and the installed-consumer test cover the public headers and identity defaults |
 | Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
-| Shape descriptors | planned | Box first; sphere/capsule with Phase 4 |
-| Static and dynamic bodies | planned | No implementation |
-| Fixed constraints | planned | No implementation |
+| Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers the validated box descriptor; sphere/capsule remain Phase 4 |
+| Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; no body lifecycle exists yet |
+| Fixed-constraint descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers two distinct valid body handles; no constraint lifecycle exists yet |
 | Force and velocity operations | planned | No implementation |
 | Fixed-step world | planned | No implementation |
 | Direct body state | planned | No implementation |
@@ -51,7 +52,7 @@ capability on this page.
 | Segment query capability | planned | No implementation |
 | Ground query capability | planned | No implementation |
 | Ray or shape-cast capabilities | planned | Later consumer-driven addition |
-| Neutral collision filtering | planned | `RB-O3` unresolved |
+| Neutral collision filtering | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers 64-bit category/mask semantics and pair matching without backend layer identifiers; `RB-O3` is resolved |
 
 ## 4. Backends
 
