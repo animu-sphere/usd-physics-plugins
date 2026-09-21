@@ -7,4 +7,3 @@ namespace usd_physics::jolt {
 [[nodiscard]] bool backendAvailable() noexcept;
 
 } // namespace usd_physics::jolt
-

@@ -13,4 +13,3 @@ struct Version {
 [[nodiscard]] Version version() noexcept;
 
 } // namespace usd_physics::core
-

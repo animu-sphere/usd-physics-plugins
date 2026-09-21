@@ -7,4 +7,3 @@ bool backendAvailable() noexcept {
 }
 
 } // namespace usd_physics::jolt
-

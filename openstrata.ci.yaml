@@ -57,4 +57,3 @@ cells:
     host_packages:
       apt: [libx11-dev, libxt-dev]
     verify: test
-

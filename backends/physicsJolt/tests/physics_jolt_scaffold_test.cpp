@@ -5,4 +5,3 @@ int main() {
   const auto version = usd_physics::core::version();
   return version.major == 0 && !usd_physics::jolt::backendAvailable() ? 0 : 1;
 }
-

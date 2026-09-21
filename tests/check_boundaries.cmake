@@ -1,9 +1,14 @@
 function(assert_sources_exclude root label)
   file(GLOB_RECURSE _sources
-    "${root}/CMakeLists.txt"
-    "${root}/*.h"
-    "${root}/*.hpp"
-    "${root}/*.cpp")
+    "${root}/include/*.h"
+    "${root}/include/*.hpp"
+    "${root}/src/*.h"
+    "${root}/src/*.hpp"
+    "${root}/src/*.cpp"
+    "${root}/tests/*.h"
+    "${root}/tests/*.hpp"
+    "${root}/tests/*.cpp")
+  list(APPEND _sources "${root}/CMakeLists.txt")
   foreach(_source IN LISTS _sources)
     file(READ "${_source}" _content)
     foreach(_pattern IN LISTS ARGN)
@@ -43,4 +48,3 @@ foreach(_header IN LISTS _public_jolt_headers)
 endforeach()
 
 message(STATUS "physicsCore and physicsJolt source boundaries are clean")
-

@@ -6,4 +6,3 @@ if(NOT TARGET physicsCore::physicsCore)
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/physicsJoltTargets.cmake")
 check_required_components(physicsJolt)
-

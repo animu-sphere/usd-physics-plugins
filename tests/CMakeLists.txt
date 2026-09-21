@@ -8,6 +8,11 @@ add_test(NAME workspace.docs
     "-DPROJECT_ROOT=${PROJECT_SOURCE_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/check_docs.cmake")
 
+add_test(NAME workspace.versions
+  COMMAND "${CMAKE_COMMAND}"
+    "-DPROJECT_ROOT=${PROJECT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/check_versions.cmake")
+
 add_test(NAME workspace.installed_consumer
   COMMAND "${CMAKE_COMMAND}"
     "-DPROJECT_BUILD_DIR=${PROJECT_BINARY_DIR}"

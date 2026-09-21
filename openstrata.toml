@@ -15,4 +15,3 @@ release_members = [
   "physicsCore",
   "physicsJolt",
 ]
-

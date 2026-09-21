@@ -12,4 +12,3 @@ target_link_libraries(usd_physics_installed_consumer PRIVATE
 
 enable_testing()
 add_test(NAME installed_consumer.runs COMMAND usd_physics_installed_consumer)
-

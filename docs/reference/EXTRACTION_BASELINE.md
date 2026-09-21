@@ -51,4 +51,3 @@ mapping cases are separated. Backend tests move with Phase 2 and retain the
 falling body, closest hit, ignored body, ground contact, changed-state drain,
 constraint, and cleanup cases. Stage/session fixtures remain consumer tests in
 Stage Runner.
-

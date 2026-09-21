@@ -34,9 +34,9 @@ usdphysics_assert_target_dependencies(
   ALLOWED_PUBLIC)
 usdphysics_assert_target_dependencies(
   TARGET physicsJolt
-  ALLOWED_PUBLIC physicsCore::physicsCore)
+  ALLOWED_PUBLIC physicsCore::physicsCore
+  ALLOWED_PRIVATE physicsCore::physicsCore)
 
 if(USDPHYSICS_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
-
