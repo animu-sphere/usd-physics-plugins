@@ -1,26 +1,23 @@
 # External dependencies
 
 This page is the single source of truth for dependency versions and support
-claims. A candidate is not a supported dependency until Phase 0 has configured,
-built, and tested it in both build modes.
+claims.
 
-> **Status (2026-09-21): no dependency is validated in this repository.** The
-> versions below are alignment candidates derived from the extraction source
-> and sibling workspaces, not implementation claims.
+> **Status (2026-09-21): the dependency-free scaffold is validated with plain
+> CMake on Linux and OpenStrata on Windows.** The hosted matrix has not run in
+> this repository.
 
-## 1. Candidate baseline
+## 1. Baseline
 
-| Dependency | Candidate | Used by | Current status |
+| Dependency | Selected version | Used by | Current status |
 | --- | --- | --- | --- |
-| CMake | 3.25 or newer | workspace and every component | candidate from `usd-stage-runner`; not validated here |
-| C++ | C++17 | all C++ targets | candidate from extracted targets; not validated here |
-| OpenStrata platform | `cy2026`, `usd` profile | workspace composition | candidate from `usd-stage-runner`; not validated here |
-| OpenUSD | 26.08 exact for the first ecosystem integration | `physicsUsd`, `physicsSchema`, USD tests | candidate aligned with `usd-mmd-plugins`; not validated here |
-| Jolt Physics | exact version supplied by the selected OpenStrata/runtime composition | `physicsJolt` only | unresolved until Phase 0 records the package provenance and version |
-| CTest | version shipped with CMake | tests | not validated here |
-
-Phase 0 replaces each candidate with a verified version or range and links the
-CI or dated report that proves it.
+| CMake | 3.25 minimum | workspace and every component | verified with CMake 4.2.3 on Linux and 4.4.3 on Windows |
+| C++ | C++17 | all C++ targets | verified with GCC 15.2.0 and MSVC 19.51 |
+| OpenStrata | 0.23.2 | workspace composition and CI generation | Windows root build/test, isolated library tests, consumer verification, and packaging pass |
+| OpenStrata platform | `cy2026`, `usd` profile | workspace composition | digest-pinned Windows runtime materialized and validated; scaffold code does not link OpenUSD |
+| OpenUSD | 26.08 exact for the first ecosystem integration | future `physicsUsd`, `physicsSchema`, USD tests | aligned and CI runtime pinned; no target currently links it |
+| Jolt Physics | 5.5.0, commit `23dadd0e603f1b321142d4c74df07fce85064989` | future `physicsJolt` implementation only | selected from the extraction source; not linked by the Phase 0 scaffold |
+| CTest | version shipped with CMake | tests | five root tests pass on Linux and through OpenStrata on Windows |
 
 ## 2. OpenUSD
 
@@ -39,7 +36,7 @@ varies between distributions.
 Jolt is private to `physicsJolt`. Its headers and compile definitions do not
 appear in the `physicsCore` install interface.
 
-Before the version is accepted, Phase 0 records:
+Before the backend changes to supported, Phase 2 records:
 
 - source or binary provenance and license;
 - exact version or commit;
@@ -58,8 +55,8 @@ plain-CMake consumers of installed packages. Manifests and CMake package
 metadata must describe the same dependency graph.
 
 The first profile target is `cy2026` with the `usd` profile because that is the
-current Stage Runner extraction environment. The accepted version is recorded
-after Phase 0 verifies it alongside the selected OpenUSD and Jolt artifacts.
+current Stage Runner extraction environment. OpenStrata 0.23.2 and the runtime
+artifact pins are shared with the validated sibling workspaces.
 
 ## 5. Platform policy
 

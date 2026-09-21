@@ -9,8 +9,8 @@ status and ordering.
 
 | Phase | Status | Current outcome |
 | --- | --- | --- |
-| 0 — documentation and workspace skeleton | in progress | Documentation contract is being established; build, manifests, CI, dependency pins, and target scaffolds remain. |
-| 1 — extract `physicsCore` | not started | Waits for Phase 0 package and namespace decisions. |
+| 0 — documentation and workspace skeleton | in progress | Local plain-CMake and OpenStrata package evidence exists; the hosted Windows/Linux matrix remains. |
+| 1 — extract `physicsCore` | not started | Package, namespace, math ownership, and extraction baseline are fixed; waits for hosted delivery evidence and an `RB-O1` proposal. |
 | 2 — extract `physicsJolt` | not started | Waits for Phase 1 and an accepted Jolt dependency. |
 | 3 — Stage Runner migration | not started | Waits for installable Phase 1–2 packages. |
 | 4 — `physicsUsd` foundation | not started | Waits for the neutral rigid-body contract. |

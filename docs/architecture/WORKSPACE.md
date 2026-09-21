@@ -5,8 +5,8 @@ This document is the proposed binding contract for the planned
 directions, build modes, and structural invariants. Once accepted, a change
 that contradicts it updates this document first, in a focused change.
 
-> **Status (2026-09-21): proposed; implementation not started.**
-> Every identity below is reserved, not present. Creation status is recorded in
+> **Status (2026-09-21): accepted for the Phase 0 scaffold.**
+> Creation status is recorded in
 > the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
 ## 1. Identities
@@ -15,13 +15,13 @@ that contradicts it updates this document first, in a focused change.
 
 | Identity | Kind | Directory | Planned manifest | Role | Created in | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Solver-neutral value types, handles, descriptors, world lifecycle, state, validation, and optional query contracts. No OpenUSD or backend SDK. | Phase 1 | reserved |
-| `physicsJolt` | plain static CMake library | `backends/physicsJolt/` | `openstrata.library.yaml` | Jolt implementation of `physicsCore`; owns Jolt initialization, filters, jobs, resources, stepping, and queries. | Phase 2 | reserved |
+| `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Solver-neutral value types, handles, descriptors, world lifecycle, state, validation, and optional query contracts. No OpenUSD or backend SDK. | Phase 0 scaffold; Phase 1 runtime | scaffolded |
+| `physicsJolt` | plain static CMake library | `backends/physicsJolt/` | `openstrata.library.yaml` | Jolt implementation of `physicsCore`; owns Jolt initialization, filters, jobs, resources, stepping, and queries. | Phase 0 scaffold; Phase 2 backend | scaffolded; backend unavailable |
 | `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard `UsdPhysics` to core descriptors, transform conversion, transient scene/resource mapping, and synchronization records. | Phase 4 | reserved |
 
-Phase 0 may scaffold `physicsCore` and `physicsJolt` targets so the workspace
-builds, but a scaffold is reported as `not present` or `partial`, never as a
-supported runtime capability.
+The Phase 0 `physicsCore` and `physicsJolt` targets establish package and
+dependency boundaries only. They are reported as partial and do not count as
+supported runtime capabilities.
 
 ### 1.2 Later, only when the responsibility is real
 
@@ -126,9 +126,15 @@ consumer tests live under root `tests/`.
 
 ## 4. Namespace and include policy
 
-The public namespace and include root are `ARCH-O1`. They are fixed during
-Phase 0 before public headers land. They must be repository-owned and must not
-retain `usd_stage_runner` in the name.
+The public include root is `usd_physics/`. Public C++ names use the
+`usd_physics` namespace with component namespaces such as
+`usd_physics::core` and `usd_physics::jolt`. This resolves `ARCH-O1`; neither
+surface retains `usd_stage_runner`.
+
+Neutral vector, rotation, and transform values will live in `physicsCore` for
+the Phase 1 extraction. A separate math package is not admitted without a
+second repository-level consumer that needs it independently. This resolves
+`ARCH-O2` and `RB-O2` for the initial extraction.
 
 Public headers contain only types from their declared dependencies. Private
 backend headers live below the backend target and are not installed as part of
@@ -146,7 +152,8 @@ source checkout, build-tree include, undeclared sibling, or workspace-only
 target alias.
 
 Exact supported tools and platforms are owned by
-[DEPENDENCIES.md](DEPENDENCIES.md) and remain unclaimed until Phase 0 runs.
+[DEPENDENCIES.md](DEPENDENCIES.md). Current local evidence covers Linux; CI
+claims remain partial until the generated matrix runs.
 
 ## 6. Package boundaries
 
@@ -171,8 +178,5 @@ instead of dragging Stage Runner runtime identity into the core.
 
 ## 8. Open questions
 
-- **ARCH-O1:** final public namespace and include root.
-- **ARCH-O2:** whether neutral math values live inside `physicsCore` or a
-  separate package proven useful by another repository.
 - **ARCH-O3:** whether integration fixtures stay at root or under
   `libs/physicsUsd/tests/` until a second cross-component suite exists.

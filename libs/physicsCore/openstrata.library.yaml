@@ -1,0 +1,17 @@
+schema: openstrata.library/v1alpha1
+library:
+  id: physicsCore
+  version: 0.1.0
+cmake:
+  package: physicsCore
+  target: physicsCore::physicsCore
+package:
+  standalone: true
+  aggregate_member: true
+package_contract:
+  package_name: physicsCore
+  exported_targets: [physicsCore::physicsCore]
+  public_headers: [include/usd_physics/core/**]
+  consumer:
+    include: usd_physics/core/version.h
+    symbol: usd_physics::core::version

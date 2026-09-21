@@ -4,8 +4,9 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-09-21): documentation only.** No build system, runtime
-> component, test suite, package, backend, or OpenUSD plugin exists.
+> **Tree status (2026-09-21): Phase 0 workspace scaffold.** Buildable and
+> installable `physicsCore` and `physicsJolt` package boundaries exist. No
+> rigid-body contract, solver backend, or OpenUSD plugin exists.
 
 ## 1. Status vocabulary
 
@@ -23,18 +24,18 @@ capability on this page.
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
 | Documentation taxonomy and source-of-truth rules | supported | [`docs/README.md`](../README.md) and [documentation guidelines](../contributing/documentation.md) |
-| Plain CMake root build | not present | Phase 0 |
-| OpenStrata workspace | not present | Phase 0 |
-| Windows build | not present | No CI or dated report |
-| Linux build | not present | No CI or dated report |
-| Installed-consumer test | not present | Phase 0 |
-| Versioned release | not present | No `VERSION`, tag record, or release page |
+| Plain CMake root build | supported | Linux configure/build/test evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
+| OpenStrata workspace | supported | Root build/test plus isolated package verification in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
+| Windows build | supported | MSVC 19.51 and OpenStrata evidence in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
+| Linux build | supported | GCC 15.2.0 evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
+| Installed-consumer test | supported | Root clean-prefix test and OpenStrata-generated consumers pass for both packages |
+| Versioned release | not present | `VERSION` exists for package coherence; no tag or release record exists |
 
 ## 3. Rigid-body core
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsCore` package | not present | Planned Phase 1 |
+| `physicsCore` package | partial | Installable `physicsCore::physicsCore` scaffold and version surface only; runtime contract is Phase 1 |
 | Opaque shape/body/constraint handles | planned | Extraction baseline only; no code here |
 | Shape descriptors | planned | Box first; sphere/capsule with Phase 4 |
 | Static and dynamic bodies | planned | No implementation |
@@ -52,7 +53,7 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsJolt` package | not present | Planned Phase 2 |
+| `physicsJolt` package | partial | Installable `physicsJolt::physicsJolt` scaffold explicitly reports the backend unavailable; solver is Phase 2 |
 | Jolt initialization and lifetime | planned | No implementation |
 | Jolt body/shape/constraint conversion | planned | No implementation |
 | Jolt collision and support queries | planned | No implementation |

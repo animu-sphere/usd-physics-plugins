@@ -1,8 +1,8 @@
 # Installed package contract
 
-> **Status: proposed, 2026-09-21.** No package is built or installed yet. This
-> page reserves the package surfaces Phase 0–4 must establish; the capability
-> matrix records when they actually exist.
+> **Status: accepted for the Phase 0 package scaffolds, 2026-09-21.**
+> `physicsCore` and `physicsJolt` install and pass a clean-prefix consumer
+> test. Their runtime physics contracts remain unimplemented.
 
 ## 1. Purpose
 
@@ -14,15 +14,15 @@ not need this repository's source tree.
 
 | Package | Imported target | Provides | Planned phase |
 | --- | --- | --- | --- |
-| `physicsCore` | `physicsCore::physicsCore` | neutral values, handles, descriptors, world and query contracts | 1 |
-| `physicsJolt` | `physicsJolt::physicsJolt` | Jolt-backed world construction through neutral interfaces | 2 |
+| `physicsCore` | `physicsCore::physicsCore` | Phase 0 version surface; neutral values, handles, descriptors, world and query contracts follow in Phase 1 | scaffold present; runtime Phase 1 |
+| `physicsJolt` | `physicsJolt::physicsJolt` | Phase 0 explicit unavailable status; Jolt-backed world construction follows in Phase 2 | scaffold present; backend Phase 2 |
 | `physicsUsd` | `physicsUsd::physicsUsd` | USD translation, mappings, and synchronization records | 4 |
 | `secondaryMotion` | `secondaryMotion::secondaryMotion` | generic secondary-motion contracts | 6, if admitted |
 | `secondaryMotionVerlet` | `secondaryMotionVerlet::secondaryMotionVerlet` | first CPU solver | 6, if admitted |
 | `physicsSchema` | bundle contract to be defined at admission | generated schema library and resources | only if admitted |
 
-Names are reserved by the workspace contract but remain subject to
-`ARCH-O1` for the public include root and namespace.
+The public include root and namespace are fixed by
+[WORKSPACE.md §4](WORKSPACE.md#4-namespace-and-include-policy).
 
 ## 3. Install-interface rules
 

@@ -153,8 +153,9 @@ contract. Broad additions require a consumer scenario and tests.
 
 - **RB-O1:** error transport for validation, unsupported capabilities, and
   backend failures.
-- **RB-O2:** the minimal repository-owned math types and whether they form a
-  separate installed package.
+- **RB-O2 (resolved for Phase 1):** minimal vector, rotation, and transform
+  values live in `physicsCore`; a separate package requires an independent
+  consumer and an architecture revision.
 - **RB-O3:** collision category/mask vocabulary that serves Stage Runner and
   MMD without exposing backend layers.
 - **RB-O4:** semantics and ordering of changed-body extraction across create,

@@ -1,0 +1,4 @@
+add_executable(physics_jolt_scaffold_test physics_jolt_scaffold_test.cpp)
+target_link_libraries(physics_jolt_scaffold_test PRIVATE physicsJolt::physicsJolt)
+add_test(NAME physicsJolt.scaffold COMMAND physics_jolt_scaffold_test)
+
