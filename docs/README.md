@@ -1,0 +1,57 @@
+# usd-physics-plugins documentation
+
+Documentation is organized by responsibility. The taxonomy follows
+`usd-mmd-plugins`: design says what is intended, architecture fixes structure,
+reference reports what exists, and the roadmap contains incomplete work.
+
+**Current tree (2026-09-21): design bootstrap only.** There are no runtime
+libraries, OpenUSD bridge, backend implementations, packages, build commands,
+or releases in this repository yet. The
+[capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
+claim implementation status.
+
+| Category | Answers | Start here |
+| --- | --- | --- |
+| [architecture/](architecture/) | How the workspace is structured: identities, dependency directions, external dependencies, and installed packages. | [WORKSPACE.md](architecture/WORKSPACE.md) · [DEPENDENCIES.md](architecture/DEPENDENCIES.md) · [PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md) |
+| [design/](design/) | What the runtime contracts mean and why the boundaries exist. | [DESIGN_POLICY.md](design/DESIGN_POLICY.md) · [RIGID_BODY_CONTRACT.md](design/RIGID_BODY_CONTRACT.md) · [USD_BRIDGE_CONTRACT.md](design/USD_BRIDGE_CONTRACT.md) · [SECONDARY_MOTION_CONTRACT.md](design/SECONDARY_MOTION_CONTRACT.md) |
+| [reference/](reference/) | Facts about the current tree and implemented capabilities. | [CAPABILITY_MATRIX.md](reference/CAPABILITY_MATRIX.md) |
+| [roadmap/](roadmap/) | What is planned next, what is incomplete, and which phase owns it. | [README.md](roadmap/README.md) · [current.md](roadmap/current.md) |
+| [contributing/](contributing/) | How to maintain these documents. | [documentation.md](contributing/documentation.md) |
+
+`guides/`, `releases/`, and `reports/` are intentionally absent. They are
+created when there are verified commands, an actual release, or dated evidence
+from a real run respectively.
+
+## Canonical documents
+
+- [design/DESIGN_POLICY.md](design/DESIGN_POLICY.md) is the canonical long-form
+  design policy. It owns the repository purpose, central rule, boundaries,
+  schema policy, testing policy, and phase definitions.
+- Focused contracts own the detail of one area and win over the general design
+  policy in that area:
+  - [design/RIGID_BODY_CONTRACT.md](design/RIGID_BODY_CONTRACT.md) owns the
+    backend-neutral handles, descriptors, lifecycle, stepping, state, and
+    optional query capabilities;
+  - [design/USD_BRIDGE_CONTRACT.md](design/USD_BRIDGE_CONTRACT.md) owns
+    `UsdPhysics` interpretation, transform conversion, resource identity, and
+    writeback boundaries;
+  - [design/SECONDARY_MOTION_CONTRACT.md](design/SECONDARY_MOTION_CONTRACT.md)
+    owns the separation between rigid-body simulation and generic spring-chain
+    dynamics.
+- [architecture/WORKSPACE.md](architecture/WORKSPACE.md) is the proposed
+  binding workspace contract. Once accepted, a structural change updates that
+  document first.
+
+## Source-of-truth rules
+
+- Code is authoritative for implemented behavior; `architecture/` and
+  `reference/` record it and change with it.
+- `design/` defines intended contracts and labels unimplemented behavior.
+- `roadmap/` contains incomplete work only. Completed work is removed from the
+  active roadmap and reflected in `reference/`.
+- Exact dependency versions belong only in
+  [architecture/DEPENDENCIES.md](architecture/DEPENDENCIES.md).
+- Package names and consumer guarantees belong only in
+  [architecture/PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md).
+- The full maintenance rules are in
+  [contributing/documentation.md](contributing/documentation.md).
