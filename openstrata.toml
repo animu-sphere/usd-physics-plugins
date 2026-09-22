@@ -6,6 +6,11 @@ version = "0.1.0"
 platform = "cy2026"
 profile = "usd"
 
+[build.intents.jolt]
+cache = {
+  PHYSICSJOLT_REQUIRE_JOLT = { type = "BOOL", value = true }
+}
+
 [workspace]
 members = [
   "libs/physicsCore",

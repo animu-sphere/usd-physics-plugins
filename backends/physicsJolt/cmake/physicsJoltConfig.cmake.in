@@ -4,5 +4,67 @@ include(CMakeFindDependencyMacro)
 if(NOT TARGET physicsCore::physicsCore)
   find_dependency(physicsCore CONFIG)
 endif()
+@PHYSICSJOLT_FIND_JOLT_DEPENDENCY@
+
+set(_physicsJolt_requires_jolt @PHYSICSJOLT_BACKEND_AVAILABLE@)
+if(_physicsJolt_requires_jolt)
+  set(_physicsJolt_jolt_target [==[@PHYSICSJOLT_BACKEND_TARGET@]==])
+  if(NOT TARGET "${_physicsJolt_jolt_target}")
+    message(FATAL_ERROR
+      "physicsJolt requires the Jolt target '${_physicsJolt_jolt_target}'")
+  endif()
+
+  get_target_property(_physicsJolt_actual_jolt_definitions
+    "${_physicsJolt_jolt_target}" INTERFACE_COMPILE_DEFINITIONS)
+  if(_physicsJolt_actual_jolt_definitions MATCHES "-NOTFOUND$")
+    set(_physicsJolt_actual_jolt_definitions "")
+  endif()
+  set(_physicsJolt_expected_jolt_definitions
+    [==[@PHYSICSJOLT_JOLT_INTERFACE_COMPILE_DEFINITIONS@]==])
+  if(NOT "${_physicsJolt_actual_jolt_definitions}" STREQUAL
+      "${_physicsJolt_expected_jolt_definitions}")
+    message(FATAL_ERROR
+      "physicsJolt found a Jolt package with incompatible ABI compile definitions")
+  endif()
+
+  get_target_property(_physicsJolt_jolt_includes
+    "${_physicsJolt_jolt_target}" INTERFACE_INCLUDE_DIRECTORIES)
+  set(_physicsJolt_jolt_core_header "")
+  foreach(_physicsJolt_include IN LISTS _physicsJolt_jolt_includes)
+    if(NOT _physicsJolt_include MATCHES "^\\$<" AND
+       EXISTS "${_physicsJolt_include}/Jolt/Core/Core.h")
+      set(_physicsJolt_jolt_core_header
+        "${_physicsJolt_include}/Jolt/Core/Core.h")
+      break()
+    endif()
+  endforeach()
+  if(NOT _physicsJolt_jolt_core_header)
+    message(FATAL_ERROR
+      "physicsJolt could not verify the discovered Jolt package version")
+  endif()
+  file(STRINGS "${_physicsJolt_jolt_core_header}"
+    _physicsJolt_jolt_version_lines
+    REGEX "^#[ \t]*define[ \t]+JPH_VERSION_(MAJOR|MINOR|PATCH)[ \t]+[0-9]+")
+  foreach(_physicsJolt_required_version IN ITEMS
+      "JPH_VERSION_MAJOR 5"
+      "JPH_VERSION_MINOR 5"
+      "JPH_VERSION_PATCH 0")
+    string(REPLACE " " "[ \\t]+" _physicsJolt_version_pattern
+      "${_physicsJolt_required_version}")
+    set(_physicsJolt_version_matches FALSE)
+    foreach(_physicsJolt_version_line IN LISTS _physicsJolt_jolt_version_lines)
+      if(_physicsJolt_version_line MATCHES
+         "${_physicsJolt_version_pattern}([ \\t]|$)")
+        set(_physicsJolt_version_matches TRUE)
+        break()
+      endif()
+    endforeach()
+    if(NOT _physicsJolt_version_matches)
+      message(FATAL_ERROR
+        "physicsJolt requires Jolt Physics 5.5.0 exactly")
+    endif()
+  endforeach()
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/physicsJoltTargets.cmake")
 check_required_components(physicsJolt)

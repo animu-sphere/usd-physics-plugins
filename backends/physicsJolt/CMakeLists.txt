@@ -10,7 +10,7 @@ endif()
 
 project(physicsJolt
   VERSION ${_physics_jolt_version}
-  DESCRIPTION "Jolt backend package scaffold for physicsCore"
+  DESCRIPTION "Jolt Physics backend for physicsCore"
   LANGUAGES CXX)
 
 if(NOT DEFINED PHYSICSJOLT_BUILD_TESTS)
@@ -27,7 +27,41 @@ if(NOT TARGET physicsCore::physicsCore)
   find_package(physicsCore CONFIG REQUIRED)
 endif()
 
-add_library(physicsJolt STATIC src/availability.cpp)
+option(PHYSICSJOLT_REQUIRE_JOLT
+  "Fail configuration when Jolt Physics is unavailable" OFF)
+
+set(PHYSICSJOLT_BACKEND_TARGET "")
+find_package(Jolt CONFIG QUIET)
+if(TARGET Jolt::Jolt)
+  set(PHYSICSJOLT_BACKEND_TARGET Jolt::Jolt)
+elseif(TARGET Jolt)
+  set(PHYSICSJOLT_BACKEND_TARGET Jolt)
+endif()
+
+if(PHYSICSJOLT_REQUIRE_JOLT AND NOT PHYSICSJOLT_BACKEND_TARGET)
+  message(FATAL_ERROR
+    "physicsJolt requires Jolt Physics 5.5.0, but no Jolt CMake target was found")
+endif()
+
+if(PHYSICSJOLT_BACKEND_TARGET)
+  set(_physics_jolt_source src/jolt_world.cpp)
+  set(_physics_jolt_backend_label "${PHYSICSJOLT_BACKEND_TARGET}")
+  set(PHYSICSJOLT_BACKEND_AVAILABLE ON)
+  set(PHYSICSJOLT_FIND_JOLT_DEPENDENCY "find_dependency(Jolt CONFIG)")
+  get_target_property(PHYSICSJOLT_JOLT_INTERFACE_COMPILE_DEFINITIONS
+    ${PHYSICSJOLT_BACKEND_TARGET} INTERFACE_COMPILE_DEFINITIONS)
+  if(PHYSICSJOLT_JOLT_INTERFACE_COMPILE_DEFINITIONS MATCHES "-NOTFOUND$")
+    set(PHYSICSJOLT_JOLT_INTERFACE_COMPILE_DEFINITIONS "")
+  endif()
+else()
+  set(_physics_jolt_source src/availability.cpp)
+  set(_physics_jolt_backend_label "unavailable")
+  set(PHYSICSJOLT_BACKEND_AVAILABLE OFF)
+  set(PHYSICSJOLT_FIND_JOLT_DEPENDENCY "")
+  set(PHYSICSJOLT_JOLT_INTERFACE_COMPILE_DEFINITIONS "")
+endif()
+
+add_library(physicsJolt STATIC ${_physics_jolt_source})
 add_library(physicsJolt::physicsJolt ALIAS physicsJolt)
 set_target_properties(physicsJolt PROPERTIES
   EXPORT_NAME physicsJolt
@@ -37,6 +71,10 @@ target_include_directories(physicsJolt PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(physicsJolt PUBLIC physicsCore::physicsCore)
+if(PHYSICSJOLT_BACKEND_TARGET)
+  target_link_libraries(physicsJolt PRIVATE ${PHYSICSJOLT_BACKEND_TARGET})
+endif()
+message(STATUS "physicsJolt: backend ${_physics_jolt_backend_label}")
 
 include(GNUInstallDirs)
 install(TARGETS physicsJolt

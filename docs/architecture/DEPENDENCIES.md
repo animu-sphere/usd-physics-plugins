@@ -16,8 +16,8 @@ claims.
 | OpenStrata | 0.23.2 | workspace composition and CI generation | Windows root build/test, isolated library tests, consumer verification, and packaging pass |
 | OpenStrata platform | `cy2026`, `usd` profile | workspace composition | digest-pinned Windows runtime materialized and validated; scaffold code does not link OpenUSD |
 | OpenUSD | 26.08 exact for the first ecosystem integration | future `physicsUsd`, `physicsSchema`, USD tests | aligned and CI runtime pinned; no target currently links it |
-| Jolt Physics | 5.5.0, commit `23dadd0e603f1b321142d4c74df07fce85064989` | future `physicsJolt` implementation only | selected from the extraction source; not linked by the Phase 0 scaffold |
-| CTest | version shipped with CMake | tests | five root tests pass on Linux and through OpenStrata on Windows |
+| Jolt Physics | 5.5.0, tag `v5.5.0`, commit `23dadd0e603f1b321142d4c74df07fce85064989` | private `physicsJolt` implementation | Jolt-backed plain-CMake tests pass locally on Windows and Linux and the `jolt` OpenStrata intent passes on Windows; hosted Phase 2 evidence remains open |
+| CTest | version shipped with CMake | tests | 11 Jolt-enabled root tests pass on Windows and Linux and through OpenStrata on Windows |
 
 ## 2. OpenUSD
 
@@ -36,14 +36,33 @@ varies between distributions.
 Jolt is private to `physicsJolt`. Its headers and compile definitions do not
 appear in the `physicsCore` install interface.
 
-Before the backend changes to supported, Phase 2 records:
+The selected source is
+[`jrouwe/JoltPhysics`](https://github.com/jrouwe/JoltPhysics) tag `v5.5.0` at
+commit `23dadd0e603f1b321142d4c74df07fce85064989`. It is MIT licensed and exports
+the installed CMake target `Jolt::Jolt`. `physicsJolt` also accepts the
+unnamespaced `Jolt` target for source distributions that expose upstream's
+alternate target spelling; installed-package verification uses `Jolt::Jolt`.
 
-- source or binary provenance and license;
-- exact version or commit;
-- CMake target name;
-- compile options that affect ABI or determinism;
-- allocator and job-system integration policy;
-- Windows and Linux evidence where claimed.
+The verified Windows artifact is a Release, single-precision build with
+`DOUBLE_PRECISION=OFF`, `CROSS_PLATFORM_DETERMINISTIC=OFF`, and
+`INTERPROCEDURAL_OPTIMIZATION=OFF`. Its enabled x86 features are SSE4.1,
+SSE4.2, AVX, AVX2, LZCNT, TZCNT, F16C, and FMADD; AVX512 is disabled. A Jolt
+artifact with different ABI-affecting definitions must not be mixed into the
+same process.
+
+The installed `physicsJolt` package rechecks Jolt 5.5.0 and the exact exported
+ABI compile-definition set before importing its static target. A downstream
+configure fails rather than binding the package to a different Jolt build.
+
+`physicsJolt` uses `RegisterDefaultAllocator`, one reference-counted
+process-global Jolt factory/type-registration lifetime, and a 10 MiB temporary
+allocator per world. Each world owns a `JobSystemThreadPool` with Jolt's
+maximum job/barrier counts and `hardware_concurrency - 1` workers, falling
+back to zero worker threads when only one hardware thread is reported. The
+initial world capacity is 1,024 bodies, 1,024 body pairs, and 1,024 contact
+constraints. Exhausted creation capacity is reported as
+`PhysicsErrorCode::resourceExhausted`; update failures are reported as
+`PhysicsErrorCode::solverFailure`.
 
 An optional no-Jolt stub may help a workspace configure, but it does not count
 as backend support and cannot make backend tests pass vacuously.

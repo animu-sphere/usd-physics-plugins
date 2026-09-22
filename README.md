@@ -2,11 +2,12 @@
 
 Backend-neutral physics runtime components for OpenUSD-based applications.
 
-> **Status: Phase 1 core extraction complete.** The repository builds and
-> installs `physicsCore` and `physicsJolt`; neutral rigid-transform values,
-> typed handles, validated box/body/fixed-constraint descriptors, the
-> single-owner world contract, and optional segment and ground queries are
-> implemented. An OpenUSD bridge and a solver backend are not. The
+> **Status (2026-09-23): Phase 2 backend extraction in progress.** The
+> repository builds and installs `physicsCore` and `physicsJolt`; the neutral
+> core contract and a Jolt-backed world with fixed stepping, changed state,
+> segment queries, and ground queries are implemented. The Jolt-required
+> OpenStrata intent passes
+> locally; hosted Phase 2 evidence and an OpenUSD bridge remain. The
 > [capability matrix](docs/reference/CAPABILITY_MATRIX.md) is the only page
 > that states what exists, and the [current roadmap](docs/roadmap/current.md)
 > states what comes next.
@@ -57,7 +58,7 @@ their backend.
 | Component | Kind | Role | State |
 | --- | --- | --- | --- |
 | `physicsCore` | plain C++ library | Handles, descriptors, world lifecycle, state, and optional query contracts; no OpenUSD and no backend SDK | Phase 1 contract implemented and installed |
-| `physicsJolt` | plain C++ library | First rigid-body backend implementing `physicsCore` | package scaffold present; backend unavailable |
+| `physicsJolt` | plain C++ library | First rigid-body backend implementing `physicsCore` | Phase 2 implementation present; hosted evidence pending |
 | `physicsUsd` | OpenUSD-facing C++ library | Translate standard `UsdPhysics` declarations to runtime descriptors and maintain transient prim/resource mappings | planned |
 | `secondaryMotion` | plain C++ library | Solver-neutral spring-chain and collider contracts | deferred until the rigid-body boundary is extracted |
 | `secondaryMotionVerlet` | plain C++ library | First deterministic CPU secondary-motion solver | deferred until a real VRM integration slice requires it |
