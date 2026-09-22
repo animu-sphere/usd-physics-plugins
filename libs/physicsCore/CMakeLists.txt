@@ -25,6 +25,8 @@ endif()
 
 add_library(physicsCore STATIC
   src/descriptors.cpp
+  src/errors.cpp
+  src/world.cpp
   src/version.cpp)
 add_library(physicsCore::physicsCore ALIAS physicsCore)
 set_target_properties(physicsCore PROPERTIES

@@ -1,9 +1,10 @@
 # Rigid-body runtime contract
 
 > **Status: proposed, revised 2026-09-22.** This document describes the
-> intended extraction target. Neutral values, handles, and descriptors are
-> implemented; see the [capability matrix](../reference/CAPABILITY_MATRIX.md)
-> for the exact current boundary.
+> intended extraction target. Neutral values, handles, descriptors, typed
+> errors, and the single-owner world interface are implemented; see the
+> [capability matrix](../reference/CAPABILITY_MATRIX.md) for the exact current
+> boundary.
 
 ## 1. Purpose
 
@@ -101,11 +102,13 @@ destroy constraint -> destroy body -> destroy unused shape
 ```
 
 Destroying an invalid or stale handle must not access freed backend memory.
-The contract must define whether an operation reports failure or is idempotent
-before Phase 1 freezes the API.
+Destruction returns `false` for an unknown, stale, cross-world, or already
+destroyed handle. Destroying a body also destroys its dependent constraints;
+destroying an in-use shape fails.
 
-A world reset destroys every transient resource and invalidates every handle
-from that world.
+Destroying a world destroys every transient resource and invalidates every
+handle from that world. A separate in-place reset operation is not part of the
+Phase 1 contract.
 
 ## 7. Stepping and state
 
@@ -119,6 +122,14 @@ State retrieval has two paths:
 
 Changed-body extraction returns neutral body handles and physical state. It
 does not write a USD stage or a Stage Runner runtime world.
+
+Phase 1 extraction is deterministic: each body appears at most once, results
+are ordered by ascending opaque handle value, and taking the results drains the
+queue. Creation is represented by the descriptor and direct initial state, not
+by the changed queue. A successful command becomes observable through changed
+state after stepping; destruction removes pending state for that body. Sleep,
+wake, and teleport operations are not in the Phase 1 API and must define their
+queue behavior when admitted.
 
 ## 8. Optional query capabilities
 
@@ -149,7 +160,7 @@ dimensions, or impossible descriptors are rejected consistently before
 backend calls. Resource exhaustion and unsupported backend capabilities are
 distinguishable from invalid input.
 
-`RB-O1` has the following proposed mixed policy for Phase 1:
+`RB-O1` uses the following mixed policy for Phase 1:
 
 - value and descriptor validation throws `std::invalid_argument` before a
   backend call;
@@ -167,8 +178,8 @@ distinguishable from invalid input.
   typed `PhysicsError` carrying a solver-neutral `PhysicsErrorCode`.
 
 This retains the proven Stage Runner call patterns while making backend
-failures distinguishable. Phase 1 descriptor and world slices must test the
-relevant branch before this proposal becomes accepted.
+failures distinguishable. Descriptor and world contract tests cover the
+Phase 1 branches; a concrete backend must retain the same outcomes.
 
 ## 10. Threading and ownership
 
@@ -184,13 +195,13 @@ contract. Broad additions require a consumer scenario and tests.
 
 ## 12. Open questions
 
-- **RB-O1 (proposed resolution):** use the mixed policy in §9; accept it only
-  with the descriptor and world contract tests.
+- **RB-O1 (resolved for Phase 1):** use the tested mixed policy in §9.
 - **RB-O2 (resolved for Phase 1):** minimal vector, rotation, and transform
   values live in `physicsCore`; a separate package requires an independent
   consumer and an architecture revision.
 - **RB-O3 (resolved for Phase 1):** use the 64-bit `categories` and
   `collidesWith` sets defined in §5.2. Backend layer assignment is private and
   may cache distinct filter combinations without changing this contract.
-- **RB-O4:** semantics and ordering of changed-body extraction across create,
-  sleep, wake, teleport, and destroy.
+- **RB-O4 (resolved for Phase 1):** use the ordering and drain semantics in
+  §7. Sleep, wake, and teleport remain outside the current API and must extend
+  this rule explicitly when admitted.

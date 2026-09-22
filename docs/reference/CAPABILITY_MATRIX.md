@@ -8,8 +8,8 @@ capability on this page.
 > installable `physicsCore` and `physicsJolt` package boundaries exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
 > validated box/body/fixed-constraint descriptors with semantic collision
-> filters, but no world contract exists yet. No solver backend or OpenUSD
-> plugin exists.
+> filters plus a single-owner world contract. Optional queries, a solver
+> backend, and an OpenUSD plugin do not exist yet.
 
 ## 1. Status vocabulary
 
@@ -39,16 +39,16 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsCore` package | partial | Installable `physicsCore::physicsCore` provides version, value, handle, and descriptor surfaces; the runtime contract remains Phase 1 |
+| `physicsCore` package | partial | Installable `physicsCore::physicsCore` provides version, value, handle, descriptor, error, and world surfaces; optional queries remain Phase 1 |
 | Neutral vector, quaternion, and transform values | supported | `physicsCore.values_handles` and the installed-consumer test cover the public headers and identity defaults |
 | Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
 | Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers the validated box descriptor; sphere/capsule remain Phase 4 |
-| Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; no body lifecycle exists yet |
-| Fixed-constraint descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers two distinct valid body handles; no constraint lifecycle exists yet |
-| Force and velocity operations | planned | No implementation |
-| Fixed-step world | planned | No implementation |
-| Direct body state | planned | No implementation |
-| Changed-body extraction | planned | No implementation |
+| Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; lifecycle is covered by the partial world contract below, while no solver backend exists yet |
+| Fixed-constraint descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers two distinct valid body handles; lifecycle is covered by the partial world contract below, while no solver backend exists yet |
+| Force and velocity operations | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers the public command contract, validation, and dynamic/static/stale/cross-world outcomes through a deterministic contract world; no solver backend exists |
+| Fixed-step world | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers the single-owner lifecycle interface and finite positive step validation; no solver backend exists |
+| Direct body state | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers neutral state and unknown/stale/cross-world errors through the contract world; no solver backend exists |
+| Changed-body extraction | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers unique handle ordering, drain behavior, creation exclusion, and destruction cleanup through the contract world; sleep, wake, and teleport are outside the Phase 1 API |
 | Segment query capability | planned | No implementation |
 | Ground query capability | planned | No implementation |
 | Ray or shape-cast capabilities | planned | Later consumer-driven addition |

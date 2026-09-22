@@ -2,7 +2,8 @@
 
 > **Status: Phase 1 in progress, 2026-09-22.** Phase 0 closed with successful
 > hosted graph, Linux, and Windows cells. Neutral values, typed handles, and
-> validated descriptors are the implemented extraction slices.
+> validated descriptors plus the world lifecycle/state contract are the
+> implemented extraction slices.
 
 ## 1. Outcome
 
@@ -32,19 +33,17 @@ values, handles, and descriptors
   backend layer identifier enters the public contract.
 - `physicsCore.values_handles`, `physicsCore.descriptors`, and the clean-prefix
   installed consumer cover these public slices.
-- `RB-O1` has a proposed mixed error policy in the
-  [rigid-body contract](../design/RIGID_BODY_CONTRACT.md#9-errors-and-validation).
+- `physicsCore.world` covers fixed-step/vector validation, explicit resource
+  lifecycle, commands, direct state, deterministic changed-state draining,
+  stale and cross-world handle behavior, and typed backend errors.
+- `RB-O1` is resolved by the tested mixed error policy in the
+  [rigid-body contract](../design/RIGID_BODY_CONTRACT.md#9-errors-and-validation),
+  and the Phase 1 portion of `RB-O4` fixes changed-state drain ordering.
 - `RB-O3` is resolved by the semantic category/mask contract in
   [the body descriptor](../design/RIGID_BODY_CONTRACT.md#52-bodies).
 
 ## 3. Remaining Phase 1 work
 
-- Implement and test fixed-step validation; use the world tests to accept or
-  revise the remaining `RB-O1` branches.
-- Extract the single-owner world lifecycle, force/velocity commands, direct
-  state, fixed stepping, and changed-state draining contract.
-- Settle `RB-O4` changed-state ordering across create, sleep, wake, teleport,
-  and destroy before the world contract is accepted.
 - Extract optional segment and ground query capabilities with ignored-body and
   support-contact behavior.
 - Keep `PhysicsRuntime`, prim identity, dirty synchronization, and Stage
@@ -57,6 +56,5 @@ values, handles, and descriptors
 - `physicsCore` public headers and link interfaces contain no OpenUSD, Jolt,
   Stage Runner, MMD, or VRM dependency.
 - A clean-prefix consumer includes and exercises the runtime contract.
-- `RB-O1` and the Phase 1 portion of `RB-O4` are accepted or narrowed to
-  explicitly deferred behavior; the accepted `RB-O3` filter remains covered.
+- The accepted `RB-O1`, `RB-O3`, and Phase 1 `RB-O4` behavior remains covered.
 - The capability matrix and package contract describe only the tested surface.

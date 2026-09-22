@@ -6,8 +6,9 @@ reference reports what exists, and the roadmap contains incomplete work.
 
 **Current tree (2026-09-22): Phase 1 core extraction.** The root build,
 packages, boundary checks, and installed-consumer test exist. Neutral rigid
-transform values and typed handles are implemented; descriptors, world
-behavior, a solver backend, an OpenUSD bridge, and a release are not. The
+transform values, typed handles, validated descriptors, and the single-owner
+world contract are implemented; optional queries, a solver backend, an OpenUSD
+bridge, and a release are not. The
 [capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
 claim implementation status.
 

@@ -4,9 +4,9 @@ Backend-neutral physics runtime components for OpenUSD-based applications.
 
 > **Status: Phase 1 core extraction.** The repository builds and installs
 > `physicsCore` and `physicsJolt`; neutral rigid-transform values, typed
-> handles, and validated box/body/fixed-constraint descriptors are
-> implemented, but rigid-body runtime behavior, an OpenUSD bridge, and a
-> solver backend are not. The
+> handles, validated box/body/fixed-constraint descriptors, and the
+> single-owner world contract are implemented, but optional query contracts,
+> an OpenUSD bridge, and a solver backend are not. The
 > [capability matrix](docs/reference/CAPABILITY_MATRIX.md) is the only page
 > that states what exists, and the [current roadmap](docs/roadmap/current.md)
 > states what comes next.
@@ -56,7 +56,7 @@ their backend.
 
 | Component | Kind | Role | State |
 | --- | --- | --- | --- |
-| `physicsCore` | plain C++ library | Handles, descriptors, world lifecycle, state, and optional query contracts; no OpenUSD and no backend SDK | neutral values, handles, and validated descriptors present; remaining runtime API planned |
+| `physicsCore` | plain C++ library | Handles, descriptors, world lifecycle, state, and optional query contracts; no OpenUSD and no backend SDK | neutral values, handles, descriptors, and world contract present; optional queries planned |
 | `physicsJolt` | plain C++ library | First rigid-body backend implementing `physicsCore` | package scaffold present; backend unavailable |
 | `physicsUsd` | OpenUSD-facing C++ library | Translate standard `UsdPhysics` declarations to runtime descriptors and maintain transient prim/resource mappings | planned |
 | `secondaryMotion` | plain C++ library | Solver-neutral spring-chain and collider contracts | deferred until the rigid-body boundary is extracted |
