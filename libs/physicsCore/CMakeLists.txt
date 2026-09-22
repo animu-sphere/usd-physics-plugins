@@ -26,6 +26,8 @@ endif()
 add_library(physicsCore STATIC
   src/descriptors.cpp
   src/errors.cpp
+  src/ground_query.cpp
+  src/segment_query.cpp
   src/world.cpp
   src/version.cpp)
 add_library(physicsCore::physicsCore ALIAS physicsCore)

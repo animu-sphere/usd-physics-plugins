@@ -1,6 +1,8 @@
 #include "usd_physics/core/descriptors.h"
 #include "usd_physics/core/errors.h"
+#include "usd_physics/core/ground_query.h"
 #include "usd_physics/core/handles.h"
+#include "usd_physics/core/segment_query.h"
 #include "usd_physics/core/value_types.h"
 #include "usd_physics/core/version.h"
 #include "usd_physics/core/world.h"
@@ -24,6 +26,11 @@ int main() {
        transform, 1.0, {}});
   usd_physics::core::validatePhysicsStep(
       usd_physics::core::PhysicsWorld::Duration{1.0 / 60.0});
+  usd_physics::core::validateSegmentEndpoints({}, {0.0, 0.0, 1.0});
+  usd_physics::core::validateSegmentHit({body, 0.5});
+  usd_physics::core::validateGroundProbeDistance(0.1);
+  usd_physics::core::validateGroundContact(
+      {body, {0.0, 1.0, 0.0}, 0.05});
   const usd_physics::core::BodyState state{body, transform, {}};
   const usd_physics::core::PhysicsError error{
       usd_physics::core::PhysicsErrorCode::solverFailure, "solver failed"};

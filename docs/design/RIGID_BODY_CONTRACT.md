@@ -1,8 +1,9 @@
 # Rigid-body runtime contract
 
 > **Status: proposed, revised 2026-09-22.** This document describes the
-> intended extraction target. Neutral values, handles, descriptors, typed
-> errors, and the single-owner world interface are implemented; see the
+> intended runtime contract. The Phase 1 neutral values, handles, descriptors,
+> typed errors, single-owner world interface, and optional segment and ground
+> query interfaces are implemented; see the
 > [capability matrix](../reference/CAPABILITY_MATRIX.md) for the exact current
 > boundary.
 
@@ -24,7 +25,7 @@ The initial behavior comes from `usd-stage-runner`'s current `physicsCore` and
 - create/destroy lifecycle;
 - force and linear-velocity operations;
 - `bodyState`, fixed-step simulation, and changed-body collection;
-- optional `CollisionQuery::segmentHit` and `GroundQuery::groundContact`.
+- optional `SegmentQuery::segmentHit` and `GroundQuery::groundContact`.
 
 This is a behavioral seed, not a commitment to retain Stage Runner's namespace,
 headers, or `runtimeCore` types.
@@ -151,7 +152,17 @@ core contract.
 
 The proven baseline includes first-hit world-space segment queries with an
 ignored body, and ground contacts containing support body, normal, and
-distance.
+distance. Phase 1 names those independent interfaces `SegmentQuery` and
+`GroundQuery`. A backend world advertises support by inheriting the applicable
+interface; a consumer discovers it with `dynamic_cast`, and a null result means
+the capability is unsupported.
+
+Segment endpoints must be finite and distinct. A segment hit contains a valid
+body and a finite fraction in `[0, 1]`. A ground probe distance must be finite
+and non-negative. A ground contact contains a valid support body, a finite
+non-zero normal, and a finite non-negative distance. Unknown, stale, or
+cross-world target and ignored-body handles are backend lookup failures and
+throw `std::out_of_range`.
 
 ## 9. Errors and validation
 
