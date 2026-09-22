@@ -36,6 +36,8 @@ int main() {
       world->createShape({core::ShapeType::box, {0.5, 0.5, 0.5}});
   const auto wallShape =
       world->createShape({core::ShapeType::box, {0.5, 2.0, 0.5}});
+  const auto supportShape =
+      world->createShape({core::ShapeType::box, {2.0, 0.1, 2.0}});
 
   const auto floor = world->createBody(
       {floorShape, core::MotionType::staticBody,
@@ -62,6 +64,29 @@ int main() {
        core::Transform{{-2.0, 0.65, 0.0}, {}}, 1.0, {2, 2}});
   if (groundQuery->groundContact(filteredProbe, 0.2)) {
     return fail("the ground query must honor the target collision filter");
+  }
+  const auto lowerSupport = world->createBody(
+      {supportShape, core::MotionType::staticBody,
+       core::Transform{{10.0, -0.4, 0.0}, {}}, 0.0, {}});
+  const auto slopedSupport = world->createBody(
+      {supportShape, core::MotionType::staticBody,
+       core::Transform{{10.0, 0.0, 0.0},
+                       {0.965925826, 0.0, 0.0, 0.258819045}},
+       0.0, {}});
+  const auto nearestProbe = world->createBody(
+      {cubeShape, core::MotionType::dynamicBody,
+       core::Transform{{10.0, 1.0, 0.0}, {}}, 1.0, {}});
+  const auto nearestContact = groundQuery->groundContact(nearestProbe, 1.0);
+  if (!nearestContact || nearestContact->supportBody != slopedSupport) {
+    return fail("the ground query must prefer the nearest upward support");
+  }
+
+  try {
+    static_cast<void>(world->createBody(
+        {cubeShape, core::MotionType::dynamicBody, {},
+         std::numeric_limits<double>::denorm_min(), {}}));
+    return fail("dynamic body mass must remain representable in Jolt");
+  } catch (const std::invalid_argument&) {
   }
 
   const auto wallHit =
@@ -117,8 +142,9 @@ int main() {
   }
 
   if (!world->destroyBody(probe) || !world->destroyBody(filteredProbe) ||
-      !world->destroyBody(wall) ||
-      !world->destroyShape(wallShape)) {
+      !world->destroyBody(nearestProbe) || !world->destroyBody(slopedSupport) ||
+      !world->destroyBody(lowerSupport) || !world->destroyBody(wall) ||
+      !world->destroyShape(supportShape) || !world->destroyShape(wallShape)) {
     return fail("queried resources must retain explicit lifetime");
   }
 

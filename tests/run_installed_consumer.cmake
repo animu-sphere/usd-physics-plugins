@@ -4,7 +4,8 @@ endif()
 
 set(_prefix "${PROJECT_BUILD_DIR}/installed-consumer-prefix")
 set(_build "${PROJECT_BUILD_DIR}/installed-consumer-build")
-file(REMOVE_RECURSE "${_prefix}" "${_build}")
+set(_mismatch_build "${PROJECT_BUILD_DIR}/incompatible-jolt-consumer-build")
+file(REMOVE_RECURSE "${_prefix}" "${_build}" "${_mismatch_build}")
 
 execute_process(
   COMMAND "${CMAKE_COMMAND}" --install "${PROJECT_BUILD_DIR}"
@@ -58,6 +59,26 @@ if(TEST_TOOLCHAIN_FILE)
 endif()
 if(TEST_JOLT_DIR)
   list(APPEND _configure_args "-DJolt_DIR=${TEST_JOLT_DIR}")
+
+  set(_mismatch_args ${_configure_args})
+  list(FIND _mismatch_args "${_build}" _mismatch_build_index)
+  if(_mismatch_build_index EQUAL -1)
+    message(FATAL_ERROR "could not prepare incompatible Jolt consumer check")
+  endif()
+  list(REMOVE_AT _mismatch_args ${_mismatch_build_index})
+  list(INSERT _mismatch_args ${_mismatch_build_index} "${_mismatch_build}")
+  list(APPEND _mismatch_args "-DTEST_FAKE_INCOMPATIBLE_JOLT=ON")
+  execute_process(
+    COMMAND "${CMAKE_COMMAND}" ${_mismatch_args}
+    RESULT_VARIABLE _mismatch_result
+    OUTPUT_VARIABLE _mismatch_output
+    ERROR_VARIABLE _mismatch_error)
+  if(NOT _mismatch_result OR
+     NOT "${_mismatch_output}\n${_mismatch_error}" MATCHES
+       "incompatible ABI compile definitions")
+    message(FATAL_ERROR
+      "installed package did not reject an incompatible Jolt target")
+  endif()
 endif()
 execute_process(
   COMMAND "${CMAKE_COMMAND}" ${_configure_args}

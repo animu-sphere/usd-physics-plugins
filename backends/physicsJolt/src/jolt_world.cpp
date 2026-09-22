@@ -112,8 +112,8 @@ public:
         return static_cast<JPH::ObjectLayer>(index);
       }
     }
-    if (records_.size() >
-        static_cast<std::size_t>(std::numeric_limits<JPH::ObjectLayer>::max())) {
+    if (records_.size() >=
+        static_cast<std::size_t>(JPH::cObjectLayerInvalid)) {
       throw core::PhysicsError{core::PhysicsErrorCode::resourceExhausted,
                                "Jolt object-layer capacity was exhausted"};
     }
@@ -321,10 +321,15 @@ public:
         dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static,
         objectLayer);
     if (dynamic) {
+      const float mass = toJoltFloat(descriptor.mass, "body mass");
+      if (mass <= 0.0f || !std::isfinite(1.0f / mass)) {
+        throw std::invalid_argument(
+            "body mass must remain positive with finite inverse mass in the "
+            "Jolt scalar range");
+      }
       settings.mOverrideMassProperties =
           JPH::EOverrideMassProperties::CalculateInertia;
-      settings.mMassPropertiesOverride.mMass =
-          toJoltFloat(descriptor.mass, "body mass");
+      settings.mMassPropertiesOverride.mMass = mass;
     }
 
     JPH::Body* body = physicsSystem_.GetBodyInterface().CreateBody(settings);
@@ -479,8 +484,8 @@ public:
       }
       const double distance =
           std::max(0.0, static_cast<double>(hit.mFraction) * maxDistance);
-      if (groundHit == nullptr || normal.GetY() > groundNormal.GetY() ||
-          (normal.GetY() == groundNormal.GetY() && distance < groundDistance)) {
+      if (groundHit == nullptr || distance < groundDistance ||
+          (distance == groundDistance && normal.GetY() > groundNormal.GetY())) {
         groundHit = &hit;
         groundNormal = normal;
         groundDistance = distance;

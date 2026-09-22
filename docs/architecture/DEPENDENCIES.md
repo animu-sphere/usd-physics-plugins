@@ -50,6 +50,10 @@ SSE4.2, AVX, AVX2, LZCNT, TZCNT, F16C, and FMADD; AVX512 is disabled. A Jolt
 artifact with different ABI-affecting definitions must not be mixed into the
 same process.
 
+The installed `physicsJolt` package rechecks Jolt 5.5.0 and the exact exported
+ABI compile-definition set before importing its static target. A downstream
+configure fails rather than binding the package to a different Jolt build.
+
 `physicsJolt` uses `RegisterDefaultAllocator`, one reference-counted
 process-global Jolt factory/type-registration lifetime, and a 10 MiB temporary
 allocator per world. Each world owns a `JobSystemThreadPool` with Jolt's

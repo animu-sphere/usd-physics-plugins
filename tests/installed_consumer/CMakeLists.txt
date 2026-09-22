@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.25)
 project(UsdPhysicsInstalledConsumer LANGUAGES CXX)
 
+if(TEST_FAKE_INCOMPATIBLE_JOLT)
+  add_library(Jolt::Jolt INTERFACE IMPORTED)
+endif()
+
 find_package(physicsCore CONFIG REQUIRED)
 find_package(physicsJolt CONFIG REQUIRED)
 

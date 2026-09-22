@@ -214,6 +214,7 @@ jobs:
             -S .ci/jolt/Build
             -B .ci/jolt-build
             "-DCMAKE_INSTALL_PREFIX=$prefix"
+            -DCMAKE_BUILD_TYPE=Release
             -DINTERPROCEDURAL_OPTIMIZATION=OFF
             -DDOUBLE_PRECISION=OFF
             -DCROSS_PLATFORM_DETERMINISTIC=OFF
