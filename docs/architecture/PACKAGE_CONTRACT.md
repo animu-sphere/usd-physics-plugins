@@ -3,7 +3,8 @@
 > **Status: accepted, revised 2026-09-22.** `physicsCore` and `physicsJolt`
 > install and pass a clean-prefix consumer test. `physicsCore` now includes
 > neutral values, typed handles, validated descriptors, typed errors, and the
-> single-owner world interface and validation surface.
+> single-owner world plus optional segment and ground query interfaces and
+> validation surfaces.
 
 ## 1. Purpose
 
@@ -15,7 +16,7 @@ not need this repository's source tree.
 
 | Package | Imported target | Provides | Planned phase |
 | --- | --- | --- | --- |
-| `physicsCore` | `physicsCore::physicsCore` | Version surface plus neutral vector, quaternion, transform, typed handles, validated box/body/fixed-constraint descriptors, semantic collision filters, typed errors, and the world lifecycle/state interface; optional query contracts follow in Phase 1 | values, handles, descriptors, errors, and world contract present; queries remain Phase 1 |
+| `physicsCore` | `physicsCore::physicsCore` | Version surface plus neutral vector, quaternion, transform, typed handles, validated box/body/fixed-constraint descriptors, semantic collision filters, typed errors, world lifecycle/state, and optional segment and ground query interfaces | Phase 1 surface present |
 | `physicsJolt` | `physicsJolt::physicsJolt` | Phase 0 explicit unavailable status; Jolt-backed world construction follows in Phase 2 | scaffold present; backend Phase 2 |
 | `physicsUsd` | `physicsUsd::physicsUsd` | USD translation, mappings, and synchronization records | 4 |
 | `secondaryMotion` | `secondaryMotion::secondaryMotion` | generic secondary-motion contracts | 6, if admitted |

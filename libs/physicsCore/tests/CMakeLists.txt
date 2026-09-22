@@ -13,3 +13,7 @@ add_test(NAME physicsCore.descriptors COMMAND physics_core_descriptors_test)
 add_executable(physics_core_world_test physics_core_world_test.cpp)
 target_link_libraries(physics_core_world_test PRIVATE physicsCore::physicsCore)
 add_test(NAME physicsCore.world COMMAND physics_core_world_test)
+
+add_executable(physics_core_queries_test physics_core_queries_test.cpp)
+target_link_libraries(physics_core_queries_test PRIVATE physicsCore::physicsCore)
+add_test(NAME physicsCore.queries COMMAND physics_core_queries_test)

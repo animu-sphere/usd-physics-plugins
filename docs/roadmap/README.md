@@ -9,8 +9,7 @@ status and ordering.
 
 | Phase | Status | Current outcome |
 | --- | --- | --- |
-| 1 — extract `physicsCore` | in progress | Neutral values, typed handles, validated descriptors, semantic collision filters, and the world contract are implemented; optional queries are next. |
-| 2 — extract `physicsJolt` | not started | Waits for Phase 1 and an accepted Jolt dependency. |
+| 2 — extract `physicsJolt` | not started | The complete installed Phase 1 contract and selected Jolt 5.5.0 dependency are ready for backend extraction. |
 | 3 — Stage Runner migration | not started | Waits for installable Phase 1–2 packages. |
 | 4 — `physicsUsd` foundation | not started | Waits for the neutral rigid-body contract. |
 | 5 — MMD validation | not started | Waits for the USD bridge and a generated vertical-slice fixture. |
@@ -23,7 +22,7 @@ version plan exists; release numbers do not belong in the phase definitions.
 
 ## Current plan
 
-[current.md](current.md) contains the ordered Phase 1 extraction work.
+[current.md](current.md) contains the ordered Phase 2 extraction work.
 Completed items leave that page and are reflected in the
 [capability matrix](../reference/CAPABILITY_MATRIX.md).
 

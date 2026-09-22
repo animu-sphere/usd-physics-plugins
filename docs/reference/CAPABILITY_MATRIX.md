@@ -4,12 +4,12 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-09-22): Phase 1 core extraction.** Buildable and
+> **Tree status (2026-09-22): Phase 1 core extraction complete.** Buildable and
 > installable `physicsCore` and `physicsJolt` package boundaries exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
 > validated box/body/fixed-constraint descriptors with semantic collision
-> filters plus a single-owner world contract. Optional queries, a solver
-> backend, and an OpenUSD plugin do not exist yet.
+> filters, a single-owner world contract, and optional segment and ground
+> query interfaces. A solver backend and an OpenUSD plugin do not exist yet.
 
 ## 1. Status vocabulary
 
@@ -39,7 +39,7 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsCore` package | partial | Installable `physicsCore::physicsCore` provides version, value, handle, descriptor, error, and world surfaces; optional queries remain Phase 1 |
+| `physicsCore` package | supported | Installable `physicsCore::physicsCore` provides the complete Phase 1 version, value, handle, descriptor, error, world, segment-query, and ground-query surfaces; the installed-consumer test exercises every public header |
 | Neutral vector, quaternion, and transform values | supported | `physicsCore.values_handles` and the installed-consumer test cover the public headers and identity defaults |
 | Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
 | Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers the validated box descriptor; sphere/capsule remain Phase 4 |
@@ -49,8 +49,8 @@ capability on this page.
 | Fixed-step world | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers the single-owner lifecycle interface and finite positive step validation; no solver backend exists |
 | Direct body state | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers neutral state and unknown/stale/cross-world errors through the contract world; no solver backend exists |
 | Changed-body extraction | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers unique handle ordering, drain behavior, creation exclusion, and destruction cleanup through the contract world; sleep, wake, and teleport are outside the Phase 1 API |
-| Segment query capability | planned | No implementation |
-| Ground query capability | planned | No implementation |
+| Segment query capability | supported | [`physics_core_queries_test.cpp`](../../libs/physicsCore/tests/physics_core_queries_test.cpp) covers optional capability discovery, finite distinct endpoints, an ignored body, and first-hit body/fraction validation |
+| Ground query capability | supported | [`physics_core_queries_test.cpp`](../../libs/physicsCore/tests/physics_core_queries_test.cpp) covers optional capability discovery, body and probe-distance forwarding, and support body/normal/distance validation |
 | Ray or shape-cast capabilities | planned | Later consumer-driven addition |
 | Neutral collision filtering | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers 64-bit category/mask semantics and pair matching without backend layer identifiers; `RB-O3` is resolved |
 

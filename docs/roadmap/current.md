@@ -1,60 +1,63 @@
-# Current roadmap — Phase 1 `physicsCore` extraction
+# Current roadmap — Phase 2 `physicsJolt` extraction
 
-> **Status: Phase 1 in progress, 2026-09-22.** Phase 0 closed with successful
-> hosted graph, Linux, and Windows cells. Neutral values, typed handles, and
-> validated descriptors plus the world lifecycle/state contract are the
-> implemented extraction slices.
+> **Status: not started, 2026-09-22.** Phase 1 is complete. The next delivery
+> slice moves the proven Stage Runner Jolt implementation behind the installed
+> `physicsCore` contract without changing its observable behavior.
 
 ## 1. Outcome
 
-Phase 1 produces an installed, solver-neutral `physicsCore` package that
-preserves the Stage Runner behavior without depending on Stage Runner,
-OpenUSD, or Jolt.
+Phase 2 produces an installed `physicsJolt` package that constructs a
+solver-backed world while keeping every Jolt type, identifier, allocator, job
+system, layer, and query implementation private.
 
 ```text
-values, handles, and descriptors
-        -> world lifecycle and state
-        -> optional segment and ground queries
-        -> Phase 2 Jolt extraction
+installed physicsCore contract
+        -> physicsJolt world factory
+        -> Jolt resource lifecycle and fixed stepping
+        -> changed state, segment queries, and ground queries
 ```
 
-## 2. Current evidence
+## 2. Available prerequisites
 
-- `Vector3`, `Quaternion`, and rigid `Transform` values are available from the
-  installed `usd_physics/core/` include root.
-- Typed 64-bit `ShapeHandle`, `BodyHandle`, and `ConstraintHandle` values
-  preserve invalid zero, comparison, and hashing behavior.
-- Box shape, static/dynamic body, and fixed-constraint descriptors preserve
-  the Stage Runner extraction baseline against neutral transforms and handles.
-- Descriptor validation rejects unsupported enum values, non-finite transforms,
-  invalid dimensions, invalid masses, missing categories, and invalid handles
-  with `std::invalid_argument`.
-- `CollisionFilter` uses 64-bit `categories` and `collidesWith` sets; no
-  backend layer identifier enters the public contract.
-- `physicsCore.values_handles`, `physicsCore.descriptors`, and the clean-prefix
-  installed consumer cover these public slices.
-- `physicsCore.world` covers fixed-step/vector validation, explicit resource
-  lifecycle, commands, direct state, deterministic changed-state draining,
-  stale and cross-world handle behavior, and typed backend errors.
-- `RB-O1` is resolved by the tested mixed error policy in the
-  [rigid-body contract](../design/RIGID_BODY_CONTRACT.md#9-errors-and-validation),
-  and the Phase 1 portion of `RB-O4` fixes changed-state drain ordering.
-- `RB-O3` is resolved by the semantic category/mask contract in
-  [the body descriptor](../design/RIGID_BODY_CONTRACT.md#52-bodies).
+- Phase 1 provides installed neutral values, typed handles, validated
+  descriptors, typed errors, world lifecycle/state, and optional `SegmentQuery`
+  and `GroundQuery` interfaces.
+- Jolt Physics 5.5.0 at commit
+  `23dadd0e603f1b321142d4c74df07fce85064989` is selected in the
+  [dependency contract](../architecture/DEPENDENCIES.md).
+- The Stage Runner extraction baseline records the proven initialization,
+  lifecycle, stepping, changed-state, ignored-body segment, and support-contact
+  behavior to preserve.
+- The package scaffold, exported target, boundary checks, and clean-prefix
+  installed-consumer path already exist.
 
-## 3. Remaining Phase 1 work
+## 3. Remaining Phase 2 work
 
-- Extract optional segment and ground query capabilities with ignored-body and
-  support-contact behavior.
-- Keep `PhysicsRuntime`, prim identity, dirty synchronization, and Stage
-  traversal in Stage Runner.
+- Record Jolt source or binary provenance, license, CMake target, ABI-affecting
+  compile options, allocator policy, and job-system policy alongside the
+  dependency contract.
+- Replace the unavailable scaffold with a factory for a Jolt-backed
+  `PhysicsWorld` while keeping backend headers and link details out of
+  `physicsCore`.
+- Implement neutral shape, body, constraint, force, velocity, state, and
+  fixed-step conversion with the Phase 1 validation and error outcomes.
+- Implement deterministic changed-state draining and explicit cleanup without
+  exposing native IDs through public handles.
+- Implement `SegmentQuery` with ignored-body behavior and `GroundQuery` with
+  support body, normal, and distance results.
+- Add focused backend tests for falling bodies, constraints, cleanup, changed
+  state, closest segment hits, ignored bodies, and ground support.
+- Verify plain CMake, clean-prefix installed consumption, OpenStrata
+  composition, and the claimed Windows and Linux cells.
 
-## 4. Phase 1 completion criteria
+## 4. Phase 2 completion criteria
 
-- The full neutral extraction baseline is implemented under
-  `usd_physics::core` and covered by deterministic tests.
-- `physicsCore` public headers and link interfaces contain no OpenUSD, Jolt,
-  Stage Runner, MMD, or VRM dependency.
-- A clean-prefix consumer includes and exercises the runtime contract.
-- The accepted `RB-O1`, `RB-O3`, and Phase 1 `RB-O4` behavior remains covered.
-- The capability matrix and package contract describe only the tested surface.
+- Falling-body, cleanup, changed-state, segment-query, and ground-query tests
+  pass through the installed `physicsCore` contract.
+- Public `physicsCore` and `physicsJolt` headers expose no Jolt type or native
+  resource identifier.
+- The backend preserves Phase 1 stale, cross-world, validation, error, and
+  changed-state ordering behavior.
+- Package metadata and OpenStrata composition describe the same private Jolt
+  dependency edge.
+- The capability matrix claims only the backend behavior exercised by tests.
