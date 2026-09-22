@@ -21,8 +21,8 @@ that contradicts it updates this document first, in a focused change.
 
 The Phase 0 targets established package and dependency boundaries.
 `physicsCore` now has supported value, handle, descriptor, and world-contract
-slices, while its package as a whole remains partial. `physicsJolt` remains a partial
-unavailable scaffold.
+slices, while its package as a whole remains partial. `physicsJolt` remains a
+partial unavailable scaffold.
 
 ### 1.2 Later, only when the responsibility is real
 

@@ -213,6 +213,10 @@ int main() {
   DeterministicWorld otherWorld;
 
   const auto box = world.createShape({ShapeType::box, {0.5, 0.5, 0.5}});
+  const auto otherBox =
+      otherWorld.createShape({ShapeType::box, {0.5, 0.5, 0.5}});
+  const auto otherBody = otherWorld.createBody(
+      {otherBox, MotionType::dynamicBody, Transform{}, 1.0, {}});
   const auto floor = world.createBody(
       {box, MotionType::staticBody, Transform{{0.0, -0.5, 0.0}, {}}, 0.0, {}});
   const auto first = world.createBody(
@@ -221,8 +225,8 @@ int main() {
       {box, MotionType::dynamicBody, Transform{{0.0, 3.0, 0.0}, {}}, 1.0, {}});
   const auto idle = world.createBody(
       {box, MotionType::dynamicBody, Transform{{0.0, 4.0, 0.0}, {}}, 1.0, {}});
-  if (!box || !floor || !first || !second || !idle || first == second ||
-      !world.takeChangedBodyStates().empty()) {
+  if (!box || !otherBox || !otherBody || !floor || !first || !second ||
+      !idle || first == second || !world.takeChangedBodyStates().empty()) {
     return 1;
   }
 
@@ -254,6 +258,13 @@ int main() {
       !rejectsInvalidArgument([&] {
         otherWorld.createBody({box, MotionType::dynamicBody, {}, 1.0, {}});
       }) ||
+      !rejectsInvalidArgument([&] {
+        world.createConstraint({ConstraintType::fixed, floor, otherBody});
+      }) ||
+      !rejectsInvalidArgument([&] {
+        world.createConstraint(
+            {ConstraintType::fixed, floor, BodyHandle{floor.value() + 1000}});
+      }) ||
       !rejectsOutOfRange([&] { world.bodyState(BodyHandle{}); }) ||
       !rejectsOutOfRange([&] { otherWorld.bodyState(first); })) {
     return 4;
@@ -281,6 +292,9 @@ int main() {
   world.step(PhysicsWorld::Duration{0.5});
   if (!constraint || world.destroyShape(box) ||
       !world.destroyBody(first) || world.destroyBody(first) ||
+      world.applyForce(first, {1.0, 0.0, 0.0}) ||
+      world.destroyBody(otherBody) || otherWorld.destroyBody(first) ||
+      world.destroyShape(otherBox) ||
       world.destroyConstraint(constraint) ||
       !rejectsOutOfRange([&] { world.bodyState(first); }) ||
       !world.destroyBody(second) || !world.destroyBody(idle) ||
