@@ -56,6 +56,9 @@ endif()
 if(TEST_TOOLCHAIN_FILE)
   list(APPEND _configure_args "-DCMAKE_TOOLCHAIN_FILE=${TEST_TOOLCHAIN_FILE}")
 endif()
+if(TEST_JOLT_DIR)
+  list(APPEND _configure_args "-DJolt_DIR=${TEST_JOLT_DIR}")
+endif()
 execute_process(
   COMMAND "${CMAKE_COMMAND}" ${_configure_args}
   RESULT_VARIABLE _configure_result)

@@ -1,5 +1,8 @@
 schema: 1
 
+# The generated workflow must retain the repository-specific pinned Jolt
+# checkout/build steps and export its install prefix to the `jolt` intent.
+
 bootstrap:
   ost:
     version: "0.23.2"
@@ -40,6 +43,7 @@ cells:
       expected_oci_digest: sha256:d3ff79a6f330558c3b9a427a927d340fe3dcab1fe89107faa0ea9f66a104b7bf
     platform: cy2026
     profile: usd
+    intent: jolt
     host_python: "3.13"
     verify: test
 
@@ -53,6 +57,7 @@ cells:
       expected_oci_digest: sha256:8d2d599489ee623044f4360ad3a2b979e2966e6ad2f949e5aa9083570e59cc4f
     platform: cy2026
     profile: usd
+    intent: jolt
     host_python: "3.13"
     host_packages:
       apt: [libx11-dev, libxt-dev]

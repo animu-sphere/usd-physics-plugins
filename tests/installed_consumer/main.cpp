@@ -38,5 +38,16 @@ int main() {
       error.code() != usd_physics::core::PhysicsErrorCode::solverFailure) {
     return 3;
   }
-  return usd_physics::jolt::backendAvailable() ? 4 : 0;
+  if (usd_physics::jolt::backendAvailable()) {
+    return usd_physics::jolt::createWorld() ? 0 : 4;
+  }
+  try {
+    static_cast<void>(usd_physics::jolt::createWorld());
+  } catch (const usd_physics::core::PhysicsError& unavailable) {
+    return unavailable.code() ==
+                   usd_physics::core::PhysicsErrorCode::backendUnavailable
+               ? 0
+               : 5;
+  }
+  return 6;
 }

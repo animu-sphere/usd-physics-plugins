@@ -4,7 +4,8 @@
 > install and pass a clean-prefix consumer test. `physicsCore` now includes
 > neutral values, typed handles, validated descriptors, typed errors, and the
 > single-owner world plus optional segment and ground query interfaces and
-> validation surfaces.
+> validation surfaces. A Jolt-enabled `physicsJolt` install also resolves its
+> private SDK dependency and constructs a world through `createWorld()`.
 
 ## 1. Purpose
 
@@ -17,7 +18,7 @@ not need this repository's source tree.
 | Package | Imported target | Provides | Planned phase |
 | --- | --- | --- | --- |
 | `physicsCore` | `physicsCore::physicsCore` | Version surface plus neutral vector, quaternion, transform, typed handles, validated box/body/fixed-constraint descriptors, semantic collision filters, typed errors, world lifecycle/state, and optional segment and ground query interfaces | Phase 1 surface present |
-| `physicsJolt` | `physicsJolt::physicsJolt` | Phase 0 explicit unavailable status; Jolt-backed world construction follows in Phase 2 | scaffold present; backend Phase 2 |
+| `physicsJolt` | `physicsJolt::physicsJolt` | `backendAvailable()` plus `createWorld()`; a Jolt-enabled build provides shapes, bodies, fixed constraints, commands, stepping, changed state, segment queries, and ground queries, while a no-Jolt build reports typed unavailability | Phase 2 implementation present; hosted evidence pending |
 | `physicsUsd` | `physicsUsd::physicsUsd` | USD translation, mappings, and synchronization records | 4 |
 | `secondaryMotion` | `secondaryMotion::secondaryMotion` | generic secondary-motion contracts | 6, if admitted |
 | `secondaryMotionVerlet` | `secondaryMotionVerlet::secondaryMotionVerlet` | first CPU solver | 6, if admitted |
@@ -58,8 +59,9 @@ find_package(physicsJolt CONFIG REQUIRED)
 target_link_libraries(my_runtime PRIVATE physicsJolt::physicsJolt)
 ```
 
-These examples are illustrative until installed-consumer tests exist and must
-not be copied into a build guide as verified commands before then.
+The installed-consumer test verifies both package imports. A Jolt-enabled
+consumer must also make the selected Jolt installation discoverable to CMake;
+the installed `physicsJolt` config resolves that declared dependency.
 
 ## 5. Versioning
 

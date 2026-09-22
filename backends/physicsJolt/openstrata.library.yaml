@@ -18,4 +18,4 @@ package_contract:
   public_headers: [include/usd_physics/jolt/**]
   consumer:
     include: usd_physics/jolt/availability.h
-    symbol: usd_physics::jolt::backendAvailable
+    symbol: usd_physics::jolt::createWorld

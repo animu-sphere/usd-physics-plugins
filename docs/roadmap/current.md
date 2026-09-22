@@ -1,8 +1,9 @@
 # Current roadmap — Phase 2 `physicsJolt` extraction
 
-> **Status: not started, 2026-09-22.** Phase 1 is complete. The next delivery
-> slice moves the proven Stage Runner Jolt implementation behind the installed
-> `physicsCore` contract without changing its observable behavior.
+> **Status: in progress, 2026-09-23.** The Jolt-backed runtime and Windows/Linux
+> plain-CMake/installed-consumer slices are implemented, and the Jolt-required
+> OpenStrata intent passes locally on Windows. Hosted evidence remains before
+> Phase 2 is complete.
 
 ## 1. Outcome
 
@@ -33,22 +34,11 @@ installed physicsCore contract
 
 ## 3. Remaining Phase 2 work
 
-- Record Jolt source or binary provenance, license, CMake target, ABI-affecting
-  compile options, allocator policy, and job-system policy alongside the
-  dependency contract.
-- Replace the unavailable scaffold with a factory for a Jolt-backed
-  `PhysicsWorld` while keeping backend headers and link details out of
-  `physicsCore`.
-- Implement neutral shape, body, constraint, force, velocity, state, and
-  fixed-step conversion with the Phase 1 validation and error outcomes.
-- Implement deterministic changed-state draining and explicit cleanup without
-  exposing native IDs through public handles.
-- Implement `SegmentQuery` with ignored-body behavior and `GroundQuery` with
-  support body, normal, and distance results.
-- Add focused backend tests for falling bodies, constraints, cleanup, changed
-  state, closest segment hits, ignored bodies, and ground support.
-- Verify plain CMake, clean-prefix installed consumption, OpenStrata
-  composition, and the claimed Windows and Linux cells.
+- Run the configured Jolt-enabled hosted Windows/Linux Phase 2 cells and
+  record dated evidence.
+- Reconcile any platform-specific Jolt compile options discovered by those
+  cells with the dependency contract before changing the capability claim to
+  fully supported.
 
 ## 4. Phase 2 completion criteria
 
@@ -58,6 +48,6 @@ installed physicsCore contract
   resource identifier.
 - The backend preserves Phase 1 stale, cross-world, validation, error, and
   changed-state ordering behavior.
-- Package metadata and OpenStrata composition describe the same private Jolt
-  dependency edge.
+- Package metadata and the `jolt` OpenStrata intent describe the same private
+  Jolt dependency edge.
 - The capability matrix claims only the backend behavior exercised by tests.

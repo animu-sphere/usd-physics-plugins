@@ -4,5 +4,6 @@ include(CMakeFindDependencyMacro)
 if(NOT TARGET physicsCore::physicsCore)
   find_dependency(physicsCore CONFIG)
 endif()
+@PHYSICSJOLT_FIND_JOLT_DEPENDENCY@
 include("${CMAKE_CURRENT_LIST_DIR}/physicsJoltTargets.cmake")
 check_required_components(physicsJolt)

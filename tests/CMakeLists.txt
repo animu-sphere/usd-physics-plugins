@@ -25,6 +25,7 @@ add_test(NAME workspace.installed_consumer
     "-DTEST_RC_COMPILER=${CMAKE_RC_COMPILER}"
     "-DTEST_MT=${CMAKE_MT}"
     "-DTEST_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+    "-DTEST_JOLT_DIR=${Jolt_DIR}"
     "-DTEST_CONFIG=$<CONFIG>"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/run_installed_consumer.cmake")
 set_tests_properties(workspace.installed_consumer PROPERTIES

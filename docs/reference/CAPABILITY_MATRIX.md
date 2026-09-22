@@ -4,12 +4,16 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-09-22): Phase 1 core extraction complete.** Buildable and
-> installable `physicsCore` and `physicsJolt` package boundaries exist.
+> **Tree status (2026-09-23): Phase 2 backend extraction in progress.**
+> Buildable and installable `physicsCore` and `physicsJolt` package boundaries
+> exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
 > validated box/body/fixed-constraint descriptors with semantic collision
 > filters, a single-owner world contract, and optional segment and ground
-> query interfaces. A solver backend and an OpenUSD plugin do not exist yet.
+> query interfaces. `physicsJolt` implements those contracts when a compatible
+> Jolt package is present and retains a typed unavailable fallback otherwise.
+> The Jolt-required OpenStrata intent passes locally; hosted backend evidence
+> and an OpenUSD plugin do not exist yet.
 
 ## 1. Status vocabulary
 
@@ -32,7 +36,7 @@ capability on this page.
 | Windows build | supported | MSVC 19.51 and OpenStrata evidence in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Linux build | supported | GCC 15.2.0 evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
 | Hosted Windows and Linux CI | supported | Generated graph and test cells passed in the [hosted CI report](../reports/2026-09-22-phase0-hosted-ci.md) |
-| Installed-consumer test | supported | Root clean-prefix test and OpenStrata-generated consumers pass for both packages |
+| Installed-consumer test | supported | Root clean-prefix test passes for both no-Jolt and Jolt-enabled package installs on Windows and Linux; see the [Windows](../reports/2026-09-22-phase2-windows-backend.md) and [Linux](../reports/2026-09-22-phase2-linux-backend.md) Phase 2 reports |
 | Versioned release | not present | `VERSION` exists for package coherence; no tag or release record exists |
 
 ## 3. Rigid-body core
@@ -43,12 +47,12 @@ capability on this page.
 | Neutral vector, quaternion, and transform values | supported | `physicsCore.values_handles` and the installed-consumer test cover the public headers and identity defaults |
 | Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
 | Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers the validated box descriptor; sphere/capsule remain Phase 4 |
-| Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; lifecycle is covered by the partial world contract below, while no solver backend exists yet |
-| Fixed-constraint descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers two distinct valid body handles; lifecycle is covered by the partial world contract below, while no solver backend exists yet |
-| Force and velocity operations | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers the public command contract, validation, and dynamic/static/stale/cross-world outcomes through a deterministic contract world; no solver backend exists |
-| Fixed-step world | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers the single-owner lifecycle interface and finite positive step validation; no solver backend exists |
-| Direct body state | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers neutral state and unknown/stale/cross-world errors through the contract world; no solver backend exists |
-| Changed-body extraction | partial | [`physics_core_world_test.cpp`](../../libs/physicsCore/tests/physics_core_world_test.cpp) covers unique handle ordering, drain behavior, creation exclusion, and destruction cleanup through the contract world; sleep, wake, and teleport are outside the Phase 1 API |
+| Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) covers backend lifecycle and filtering |
+| Fixed-constraint descriptors | supported | Core tests cover two distinct valid body handles; the Jolt backend test covers creation and dependent cleanup |
+| Force and velocity operations | supported | Core tests cover validation and dynamic/static/stale/cross-world outcomes; the focused Jolt test covers admitted dynamic commands, static and cross-world rejection, and finite-vector validation |
+| Fixed-step world | supported | Core validation plus the Jolt falling/settling test pass on Windows and Linux; see the Phase 2 backend reports |
+| Direct body state | supported | Core contract tests and the Jolt falling, filtering, stale-handle, and cross-world tests pass on Windows and Linux |
+| Changed-body extraction | supported | Core and Jolt tests cover unique handle ordering, drain behavior, creation exclusion, and destruction cleanup on Windows and Linux; sleep, wake, and teleport remain outside the current API |
 | Segment query capability | supported | [`physics_core_queries_test.cpp`](../../libs/physicsCore/tests/physics_core_queries_test.cpp) covers optional capability discovery, finite distinct endpoints, an ignored body, and first-hit body/fraction validation |
 | Ground query capability | supported | [`physics_core_queries_test.cpp`](../../libs/physicsCore/tests/physics_core_queries_test.cpp) covers optional capability discovery, body and probe-distance forwarding, and support body/normal/distance validation |
 | Ray or shape-cast capabilities | planned | Later consumer-driven addition |
@@ -58,10 +62,10 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsJolt` package | partial | Installable `physicsJolt::physicsJolt` scaffold explicitly reports the backend unavailable; solver is Phase 2 |
-| Jolt initialization and lifetime | planned | No implementation |
-| Jolt body/shape/constraint conversion | planned | No implementation |
-| Jolt collision and support queries | planned | No implementation |
+| `physicsJolt` package | partial | Installable `physicsJolt::physicsJolt` exposes `backendAvailable()` and `createWorld()`; Jolt-enabled and typed unavailable clean-prefix consumers pass on Windows and Linux, and the Jolt-required OpenStrata intent passes locally; hosted evidence remains open |
+| Jolt initialization and lifetime | partial | Reference-counted factory/type registration, per-world temporary allocator and job system, explicit resource cleanup, and typed errors are covered by Windows/Linux plain-CMake and local Windows OpenStrata evidence; hosted evidence remains open |
+| Jolt body/shape/constraint conversion | supported | Box shapes, static/dynamic bodies, normalized rotations, mass, semantic filters, fixed constraints, force/velocity commands, stepping, state, and cleanup pass focused Windows and Linux tests |
+| Jolt collision and support queries | supported | Closest segment hit, ignored body, support identity, upward normal, distance, validation, and cross-world rejection pass focused Windows and Linux tests |
 | Alternative rigid-body backend | unsupported | No implementation phase committed |
 
 ## 5. OpenUSD bridge
