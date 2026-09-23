@@ -29,24 +29,31 @@ installed physicsCore + physicsJolt
 - `StageSession::PhysicsWorldFactory` already gives the standalone and usdview
   hosts one backend-selection seam.
 
-## 3. Remaining Phase 3 work
+## 3. Completed locally
 
-- Replace Stage Runner's repository-local `physicsCore` and `physicsJolt`
+- Replaced Stage Runner's repository-local `physicsCore` and `physicsJolt`
   source edges with installed-package discovery and equivalent OpenStrata
   requirements.
-- Adapt Stage Runner includes, namespace usage, and math values explicitly at
+- Adapted Stage Runner includes, namespace usage, and math values explicitly at
   the composition boundary.
-- Move prim/body mapping, dirty synchronization, and fixed-step delegation from
-  the local `PhysicsRuntime` into `stageRuntime`; do not move `PrimId` or
+- Moved prim/body mapping, dirty synchronization, and fixed-step delegation from
+  the local `PhysicsRuntime` into `stageRuntime` without moving `PrimId` or
   `RuntimeWorld` into the external package.
-- Keep the Runner physics schema importer in Stage Runner as a temporary
+- Kept the Runner physics schema importer in Stage Runner as a temporary
   compatibility path that produces neutral external descriptors.
-- Preserve `StageSession::PhysicsWorldFactory` and use the same external Jolt
+- Preserved `StageSession::PhysicsWorldFactory` and used the same external Jolt
   factory in standalone and usdview hosts.
-- Remove the repository-local physics libraries only after the installed
-  package path passes the existing parity suite.
+- Removed the repository-local physics libraries after the installed package
+  path passed all 48 local Windows parity tests.
 
-## 4. Phase 3 completion criteria
+## 4. Remaining Phase 3 work
+
+- Publish immutable OCI sources for the pinned Windows package artifacts.
+- Produce and publish equivalent Linux package artifacts.
+- Run the Stage Runner hosted Windows and Linux suites from fresh artifact
+  caches and record the evidence.
+
+## 5. Phase 3 completion criteria
 
 - Existing falling-body, character grounding, jump-support, and camera
   collision scenarios pass against installed `physicsCore` and `physicsJolt`.
