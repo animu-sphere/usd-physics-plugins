@@ -1,53 +1,60 @@
-# Current roadmap — Phase 2 `physicsJolt` extraction
+# Current roadmap — Phase 3 Stage Runner migration
 
-> **Status: in progress, 2026-09-23.** The Jolt-backed runtime and Windows/Linux
-> plain-CMake/installed-consumer slices are implemented, and the Jolt-required
-> OpenStrata intent passes locally on Windows. Hosted evidence remains before
-> Phase 2 is complete.
+> **Status: in progress, 2026-09-23.** Phase 2 is complete: the installed
+> `physicsCore` and `physicsJolt` packages pass local and hosted Windows/Linux
+> verification. The next slice migrates Stage Runner to those packages while
+> preserving its orchestration and authored compatibility behavior.
 
 ## 1. Outcome
 
-Phase 2 produces an installed `physicsJolt` package that constructs a
-solver-backed world while keeping every Jolt type, identifier, allocator, job
-system, layer, and query implementation private.
+Phase 3 makes `usd-stage-runner` a consumer of the installed packages instead
+of an owner of the neutral physics and Jolt backend implementations.
 
 ```text
-installed physicsCore contract
-        -> physicsJolt world factory
-        -> Jolt resource lifecycle and fixed stepping
-        -> changed state, segment queries, and ground queries
+installed physicsCore + physicsJolt
+        -> Stage Runner composition boundary
+        -> fixed-step orchestration and gameplay capabilities
+        -> incremental runtime-layer synchronization
 ```
 
 ## 2. Available prerequisites
 
-- Phase 1 provides installed neutral values, typed handles, validated
-  descriptors, typed errors, world lifecycle/state, and optional `SegmentQuery`
-  and `GroundQuery` interfaces.
-- Jolt Physics 5.5.0 at commit
-  `23dadd0e603f1b321142d4c74df07fce85064989` is selected in the
-  [dependency contract](../architecture/DEPENDENCIES.md).
-- The Stage Runner extraction baseline records the proven initialization,
-  lifecycle, stepping, changed-state, ignored-body segment, and support-contact
-  behavior to preserve.
-- The package scaffold, exported target, boundary checks, and clean-prefix
-  installed-consumer path already exist.
+- Phase 1 provides the installed neutral values, handles, descriptors, errors,
+  world contract, and optional segment and ground query capabilities.
+- Phase 2 provides the installed Jolt-backed world factory with passing local
+  and hosted Windows/Linux evidence.
+- The Stage Runner extraction inventory fixes the current public surface,
+  consumers, compatibility importer, fixed-step order, and deterministic parity
+  evidence at its recorded source revision.
+- `StageSession::PhysicsWorldFactory` already gives the standalone and usdview
+  hosts one backend-selection seam.
 
-## 3. Remaining Phase 2 work
+## 3. Remaining Phase 3 work
 
-- Run the configured Jolt-enabled hosted Windows/Linux Phase 2 cells and
-  record dated evidence.
-- Reconcile any platform-specific Jolt compile options discovered by those
-  cells with the dependency contract before changing the capability claim to
-  fully supported.
+- Replace Stage Runner's repository-local `physicsCore` and `physicsJolt`
+  source edges with installed-package discovery and equivalent OpenStrata
+  requirements.
+- Adapt Stage Runner includes, namespace usage, and math values explicitly at
+  the composition boundary.
+- Move prim/body mapping, dirty synchronization, and fixed-step delegation from
+  the local `PhysicsRuntime` into `stageRuntime`; do not move `PrimId` or
+  `RuntimeWorld` into the external package.
+- Keep the Runner physics schema importer in Stage Runner as a temporary
+  compatibility path that produces neutral external descriptors.
+- Preserve `StageSession::PhysicsWorldFactory` and use the same external Jolt
+  factory in standalone and usdview hosts.
+- Remove the repository-local physics libraries only after the installed
+  package path passes the existing parity suite.
 
-## 4. Phase 2 completion criteria
+## 4. Phase 3 completion criteria
 
-- Falling-body, cleanup, changed-state, segment-query, and ground-query tests
-  pass through the installed `physicsCore` contract.
-- Public `physicsCore` and `physicsJolt` headers expose no Jolt type or native
-  resource identifier.
-- The backend preserves Phase 1 stale, cross-world, validation, error, and
-  changed-state ordering behavior.
-- Package metadata and the `jolt` OpenStrata intent describe the same private
-  Jolt dependency edge.
-- The capability matrix claims only the backend behavior exercised by tests.
+- Existing falling-body, character grounding, jump-support, and camera
+  collision scenarios pass against installed `physicsCore` and `physicsJolt`.
+- Stage Runner no longer owns the reusable neutral physics implementation or
+  the Jolt backend, and no Jolt type crosses a public Stage Runner boundary.
+- Prim/body mapping, fixed-step ordering, changed-state synchronization, and
+  discardable runtime-layer behavior remain owned and tested by Stage Runner.
+- Runner physics schema fixtures continue to work through the local
+  compatibility importer; no new `runner:physics:*` property is added.
+- Plain CMake, OpenStrata, standalone, and usdview resolve the same package and
+  world-factory graph.
