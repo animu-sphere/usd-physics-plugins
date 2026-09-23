@@ -1,7 +1,7 @@
 # usd-physics-plugins design policy
 
-> **Status: proposed, revised 2026-09-22.** This policy defines intended
-> behavior while Phase 1 extracts the neutral runtime contract. The
+> **Status: proposed, revised 2026-09-23.** This policy defines intended
+> behavior while Phase 3 migrates Stage Runner to the extracted packages. The
 > [capability matrix](../reference/CAPABILITY_MATRIX.md) is the only source for
 > implementation claims.
 >

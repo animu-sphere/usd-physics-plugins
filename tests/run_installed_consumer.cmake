@@ -5,6 +5,10 @@ endif()
 set(_prefix "${PROJECT_BUILD_DIR}/installed-consumer-prefix")
 set(_build "${PROJECT_BUILD_DIR}/installed-consumer-build")
 set(_mismatch_build "${PROJECT_BUILD_DIR}/incompatible-jolt-consumer-build")
+set(_expected_backend_available OFF)
+if(TEST_JOLT_DIR)
+  set(_expected_backend_available ON)
+endif()
 file(REMOVE_RECURSE "${_prefix}" "${_build}" "${_mismatch_build}")
 
 execute_process(
@@ -38,6 +42,7 @@ set(_configure_args
   -B "${_build}"
   -G "${TEST_GENERATOR}"
   "-DCMAKE_BUILD_TYPE=${TEST_CONFIG}"
+  "-DEXPECT_PHYSICSJOLT_BACKEND_AVAILABLE=${_expected_backend_available}"
   "-DCMAKE_PREFIX_PATH=${_prefix}")
 if(TEST_GENERATOR_PLATFORM)
   list(APPEND _configure_args -A "${TEST_GENERATOR_PLATFORM}")

@@ -1,6 +1,6 @@
 # Installed package contract
 
-> **Status: accepted, revised 2026-09-22.** `physicsCore` and `physicsJolt`
+> **Status: accepted, revised 2026-09-23.** `physicsCore` and `physicsJolt`
 > install and pass a clean-prefix consumer test. `physicsCore` now includes
 > neutral values, typed handles, validated descriptors, typed errors, and the
 > single-owner world plus optional segment and ground query interfaces and
@@ -18,7 +18,7 @@ not need this repository's source tree.
 | Package | Imported target | Provides | Planned phase |
 | --- | --- | --- | --- |
 | `physicsCore` | `physicsCore::physicsCore` | Version surface plus neutral vector, quaternion, transform, typed handles, validated box/body/fixed-constraint descriptors, semantic collision filters, typed errors, world lifecycle/state, and optional segment and ground query interfaces | Phase 1 surface present |
-| `physicsJolt` | `physicsJolt::physicsJolt` | `backendAvailable()` plus `createWorld()`; a Jolt-enabled build provides shapes, bodies, fixed constraints, commands, stepping, changed state, segment queries, and ground queries, while a no-Jolt build reports typed unavailability | Phase 2 implementation present; hosted evidence pending |
+| `physicsJolt` | `physicsJolt::physicsJolt` | `physicsJolt_BACKEND_AVAILABLE` package metadata, `backendAvailable()`, and `createWorld()`; a Jolt-enabled build provides shapes, bodies, fixed constraints, commands, stepping, changed state, segment queries, and ground queries, while a no-Jolt build reports typed unavailability | Phase 2 complete |
 | `physicsUsd` | `physicsUsd::physicsUsd` | USD translation, mappings, and synchronization records | 4 |
 | `secondaryMotion` | `secondaryMotion::secondaryMotion` | generic secondary-motion contracts | 6, if admitted |
 | `secondaryMotionVerlet` | `secondaryMotionVerlet::secondaryMotionVerlet` | first CPU solver | 6, if admitted |

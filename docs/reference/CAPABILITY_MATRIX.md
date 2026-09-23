@@ -4,7 +4,7 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-09-23): Phase 2 backend extraction in progress.**
+> **Tree status (2026-09-23): Phase 2 complete; Phase 3 migration in progress.**
 > Buildable and installable `physicsCore` and `physicsJolt` package boundaries
 > exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
@@ -12,8 +12,9 @@ capability on this page.
 > filters, a single-owner world contract, and optional segment and ground
 > query interfaces. `physicsJolt` implements those contracts when a compatible
 > Jolt package is present and retains a typed unavailable fallback otherwise.
-> The Jolt-required OpenStrata intent passes locally; hosted backend evidence
-> and an OpenUSD plugin do not exist yet.
+> The Jolt-required OpenStrata intent passes locally and in hosted Windows and
+> Linux CI. Stage Runner has not migrated to the installed packages, and an
+> OpenUSD plugin does not exist yet.
 
 ## 1. Status vocabulary
 
@@ -62,8 +63,8 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsJolt` package | partial | Installable `physicsJolt::physicsJolt` exposes `backendAvailable()` and `createWorld()`; Jolt-enabled and typed unavailable clean-prefix consumers pass on Windows and Linux, and the Jolt-required OpenStrata intent passes locally; hosted evidence remains open |
-| Jolt initialization and lifetime | partial | Reference-counted factory/type registration, per-world temporary allocator and job system, explicit resource cleanup, and typed errors are covered by Windows/Linux plain-CMake and local Windows OpenStrata evidence; hosted evidence remains open |
+| `physicsJolt` package | supported | Installable `physicsJolt::physicsJolt` exposes `backendAvailable()` and `createWorld()`; Jolt-enabled and typed unavailable clean-prefix consumers pass on Windows and Linux, and the Jolt-required OpenStrata intent passes locally and in the [hosted backend report](../reports/2026-09-23-phase2-hosted-backend.md) |
+| Jolt initialization and lifetime | supported | Reference-counted factory/type registration, per-world temporary allocator and job system, explicit resource cleanup, and typed errors are covered by Windows/Linux plain-CMake, local Windows OpenStrata, and [hosted Windows/Linux](../reports/2026-09-23-phase2-hosted-backend.md) evidence |
 | Jolt body/shape/constraint conversion | supported | Box shapes, static/dynamic bodies, normalized rotations, mass, semantic filters, fixed constraints, force/velocity commands, stepping, state, and cleanup pass focused Windows and Linux tests |
 | Jolt collision and support queries | supported | Closest segment hit, ignored body, support identity, upward normal, distance, validation, and cross-world rejection pass focused Windows and Linux tests |
 | Alternative rigid-body backend | unsupported | No implementation phase committed |

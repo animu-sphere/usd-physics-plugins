@@ -6,6 +6,7 @@ if(NOT TARGET physicsCore::physicsCore)
 endif()
 @PHYSICSJOLT_FIND_JOLT_DEPENDENCY@
 
+set(physicsJolt_BACKEND_AVAILABLE @PHYSICSJOLT_BACKEND_AVAILABLE@)
 set(_physicsJolt_requires_jolt @PHYSICSJOLT_BACKEND_AVAILABLE@)
 if(_physicsJolt_requires_jolt)
   set(_physicsJolt_jolt_target [==[@PHYSICSJOLT_BACKEND_TARGET@]==])
