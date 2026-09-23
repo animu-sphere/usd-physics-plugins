@@ -15,7 +15,7 @@ claim implementation status.
 
 | Category | Answers | Start here |
 | --- | --- | --- |
-| [architecture/](architecture/) | How the workspace is structured: identities, dependency directions, external dependencies, and installed packages. | [WORKSPACE.md](architecture/WORKSPACE.md) · [DEPENDENCIES.md](architecture/DEPENDENCIES.md) · [PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md) |
+| [architecture/](architecture/) | How the workspace is structured: identities, dependency directions, external dependencies, installed packages, and release schema. | [WORKSPACE.md](architecture/WORKSPACE.md) · [DEPENDENCIES.md](architecture/DEPENDENCIES.md) · [PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md) · [RELEASE_SCHEMA.md](architecture/RELEASE_SCHEMA.md) |
 | [design/](design/) | What the runtime contracts mean and why the boundaries exist. | [DESIGN_POLICY.md](design/DESIGN_POLICY.md) · [RIGID_BODY_CONTRACT.md](design/RIGID_BODY_CONTRACT.md) · [USD_BRIDGE_CONTRACT.md](design/USD_BRIDGE_CONTRACT.md) · [SECONDARY_MOTION_CONTRACT.md](design/SECONDARY_MOTION_CONTRACT.md) |
 | [reference/](reference/) | Facts about the current tree, extraction input, and implemented capabilities. | [CAPABILITY_MATRIX.md](reference/CAPABILITY_MATRIX.md) · [EXTRACTION_BASELINE.md](reference/EXTRACTION_BASELINE.md) |
 | [roadmap/](roadmap/) | What is planned next, what is incomplete, and which phase owns it. | [README.md](roadmap/README.md) · [current.md](roadmap/current.md) |
@@ -56,5 +56,7 @@ actual release exist. `reports/` begins with the Phase 0 scaffold verification.
   [architecture/DEPENDENCIES.md](architecture/DEPENDENCIES.md).
 - Package names and consumer guarantees belong only in
   [architecture/PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md).
+- Release units, registry identities, and promotion gates belong in
+  [architecture/RELEASE_SCHEMA.md](architecture/RELEASE_SCHEMA.md).
 - The full maintenance rules are in
   [contributing/documentation.md](contributing/documentation.md).
