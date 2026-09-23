@@ -441,6 +441,21 @@ jobs:
         env:
           CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
         run: ost test --target ${{ matrix.platform }} --profile ${{ matrix.profile }} ${{ matrix.intent_flags }}
+      - name: Verify and package Linux physics libraries
+        if: ${{ matrix.name == 'workspace-pr-linux' }}
+        shell: bash
+        env:
+          CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
+        run: |
+          set -euo pipefail
+          mkdir -p .ost-ci
+          for library in libs/physicsCore backends/physicsJolt; do
+            name="$(basename "$library")"
+            ost library build "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > ".ost-ci/${name}-build.json"
+            ost library test "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > ".ost-ci/${name}-test.json"
+            ost library verify-consumer "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > ".ost-ci/${name}-consumer.json"
+            ost library package "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > ".ost-ci/${name}-package.json"
+          done
       - name: Run the workspace verification pyramid
         if: ${{ matrix.verify == 'pyramid' || matrix.verify == 'package' }}
         shell: bash
@@ -459,5 +474,7 @@ jobs:
             **/.strata/reports/
             **/dist/plugins/
             **/dist/tools/
+            libs/physicsCore/dist/
+            backends/physicsJolt/dist/
             dist/products/
             .ost-ci/
