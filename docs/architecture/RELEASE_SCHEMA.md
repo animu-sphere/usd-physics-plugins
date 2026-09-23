@@ -87,10 +87,9 @@ draft is reviewed and published.
 
 ## 4. Current boundary
 
-The existing public Windows `physicsCore` and `physicsJolt` OCI artifacts have
-been pulled and verified from a fresh cache for the Phase 3 migration. They
-remain valid exact-digest inputs for that consumer, but do not imply Linux
-availability or a formal versioned release. The first release workflow should
-be implemented and dry-run before any `v0.1.0` tag is pushed. Linux artifacts,
-cross-repository hosted consumer evidence, and a finalized release note are
-still required.
+The existing public Windows and Linux `physicsCore` and `physicsJolt` OCI
+artifacts have been pulled and verified from fresh caches for the Phase 3
+migration. They remain valid exact-digest inputs for that consumer, but do not
+constitute a formal versioned release. The first release workflow should be
+implemented and dry-run before any `v0.1.0` tag is pushed. Cross-repository
+hosted consumer evidence and a finalized release note are still required.
