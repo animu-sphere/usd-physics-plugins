@@ -45,10 +45,10 @@ alternate target spelling; installed-package verification uses `Jolt::Jolt`.
 
 The verified Windows artifact is a Release, single-precision build with
 `DOUBLE_PRECISION=OFF`, `CROSS_PLATFORM_DETERMINISTIC=OFF`, and
-`INTERPROCEDURAL_OPTIMIZATION=OFF`. Its enabled x86 features are SSE4.1,
-SSE4.2, AVX, AVX2, LZCNT, TZCNT, F16C, and FMADD; AVX512 is disabled. A Jolt
-artifact with different ABI-affecting definitions must not be mixed into the
-same process.
+`INTERPROCEDURAL_OPTIMIZATION=OFF`. Its imported target exports no optional x86
+instruction-set definitions; compatible consumer builds disable SSE4.1, SSE4.2,
+AVX, AVX2, AVX512, LZCNT, TZCNT, F16C, and FMADD. A Jolt artifact with different
+ABI-affecting definitions must not be mixed into the same process.
 
 The installed `physicsJolt` package rechecks Jolt 5.5.0 and the exact exported
 ABI compile-definition set before importing its static target. A downstream

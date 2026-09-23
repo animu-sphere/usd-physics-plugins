@@ -45,13 +45,18 @@ installed physicsCore + physicsJolt
   factory in standalone and usdview hosts.
 - Removed the repository-local physics libraries after the installed package
   path passed all 48 local Windows parity tests.
+- Published the pinned Windows packages as public, immutable OCI artifacts and
+  verified both OCI and content digests from a fresh cache.
 
 ## 4. Remaining Phase 3 work
 
-- Publish immutable OCI sources for the pinned Windows package artifacts.
 - Produce and publish equivalent Linux package artifacts.
 - Run the Stage Runner hosted Windows and Linux suites from fresh artifact
   caches and record the evidence.
+- Implement and dry-run the versioned release workflow against the
+  [release schema](../architecture/RELEASE_SCHEMA.md) before creating a tag;
+  the currently published Windows artifacts are Phase 3 inputs, not a full
+  release.
 
 ## 5. Phase 3 completion criteria
 

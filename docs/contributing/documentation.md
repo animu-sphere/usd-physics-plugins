@@ -56,6 +56,8 @@ Open questions use a document-specific prefix and a never-reused number:
   [DEPENDENCIES.md](../architecture/DEPENDENCIES.md).
 - Installed package promises:
   [PACKAGE_CONTRACT.md](../architecture/PACKAGE_CONTRACT.md).
+- Release identity and promotion gates:
+  [RELEASE_SCHEMA.md](../architecture/RELEASE_SCHEMA.md).
 - What is implemented:
   [CAPABILITY_MATRIX.md](../reference/CAPABILITY_MATRIX.md).
 
