@@ -50,15 +50,17 @@ installed physicsCore + physicsJolt
 - Published equivalent Linux packages and verified their content and OCI
   digests from a fresh cache; see the
   [Linux artifact report](../reports/2026-09-23-phase3-linux-artifacts.md).
+- Stage Runner passed hosted Windows and Linux OpenStrata consumer builds and
+  tests with artifact caches disabled, plus the plain-CMake hosted jobs;
+  [the consumer run](https://github.com/animu-sphere/usd-stage-runner/actions/runs/35853380748)
+  records both platform cells.
 
 ## 4. Remaining Phase 3 work
 
-- Run the Stage Runner hosted Windows and Linux suites from fresh artifact
-  caches and record the evidence.
 - Implement and dry-run the versioned release workflow against the
   [release schema](../architecture/RELEASE_SCHEMA.md) before creating a tag;
-  the currently published Windows and Linux artifacts are Phase 3 inputs, not a full
-  release.
+  the currently published Windows and Linux artifacts are Phase 3 inputs, not
+  a full release.
 
 ## 5. Phase 3 completion criteria
 

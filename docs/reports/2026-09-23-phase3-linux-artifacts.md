@@ -38,3 +38,11 @@ check for `physicsCore`.
 These artifacts are Phase 3 consumer inputs, not a versioned `v0.1.0` release.
 Stage Runner's hosted Windows and Linux consumer results and the release dry
 run remain separate gates.
+
+## Follow-up
+
+Later on 2026-09-23 UTC, Stage Runner's
+[hosted Windows and Linux run](https://github.com/animu-sphere/usd-stage-runner/actions/runs/35853380748)
+passed 46 tests per platform using the published packages with artifact caches
+disabled. Its separate plain-CMake run also passed. The versioned release dry
+run remains open.
