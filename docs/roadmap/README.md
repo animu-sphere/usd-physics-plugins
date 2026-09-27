@@ -9,8 +9,8 @@ status and ordering.
 
 | Phase | Status | Current outcome |
 | --- | --- | --- |
-| 3 — Stage Runner migration | in progress | Consume the installed Phase 1–2 packages without changing Stage Runner orchestration or compatibility behavior. |
-| 4 — `physicsUsd` foundation | not started | Waits for the neutral rigid-body contract. |
+| 3 — Stage Runner migration | in progress | Consumer migration verified; versioned release workflow remains. |
+| 4 — `physicsUsd` foundation | in progress | Box snapshot parser exists; artifact rollout and wider declarations remain. |
 | 5 — MMD validation | not started | Waits for the USD bridge and a generated vertical-slice fixture. |
 | 6 — secondary-motion core | not started | Deferred until rigid-body extraction is stable and a VRM slice validates the descriptor. |
 | 7 — VRM validation | not started | Waits for Phase 6 and a format-owned adapter. |
@@ -21,7 +21,7 @@ version plan exists; release numbers do not belong in the phase definitions.
 
 ## Current plan
 
-[current.md](current.md) contains the ordered Phase 3 migration work.
+[current.md](current.md) contains release follow-up and the next Phase 4 slice.
 Completed items leave that page and are reflected in the
 [capability matrix](../reference/CAPABILITY_MATRIX.md).
 

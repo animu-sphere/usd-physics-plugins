@@ -15,7 +15,7 @@ claims.
 | C++ | C++17 | all C++ targets | verified with GCC 15.2.0 and MSVC 19.51 |
 | OpenStrata | 0.23.2 | workspace composition and CI generation | Windows root build/test, isolated library tests, consumer verification, and packaging pass |
 | OpenStrata platform | `cy2026`, `usd` profile | workspace composition | digest-pinned Windows runtime materialized and validated; scaffold code does not link OpenUSD |
-| OpenUSD | 26.08 exact for the first ecosystem integration | future `physicsUsd`, `physicsSchema`, USD tests | aligned and CI runtime pinned; no target currently links it |
+| OpenUSD | 26.08 exact for the first ecosystem integration | `physicsUsd` and USD tests; future `physicsSchema` | Box adapter and clean-prefix consumer verified locally on Windows; hosted bridge evidence remains open |
 | Jolt Physics | 5.5.0, tag `v5.5.0`, commit `23dadd0e603f1b321142d4c74df07fce85064989` | private `physicsJolt` implementation | Jolt-backed plain-CMake tests pass locally on Windows and Linux and the `jolt` OpenStrata intent passes on Windows; hosted Phase 2 evidence remains open |
 | CTest | version shipped with CMake | tests | 11 Jolt-enabled root tests pass on Windows and Linux and through OpenStrata on Windows |
 

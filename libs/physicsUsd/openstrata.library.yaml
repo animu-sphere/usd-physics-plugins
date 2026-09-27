@@ -1,0 +1,21 @@
+schema: openstrata.library/v1alpha1
+library:
+  id: physicsUsd
+  version: 0.1.0
+cmake:
+  package: physicsUsd
+  target: physicsUsd::physicsUsd
+requires:
+  libraries:
+    - id: physicsCore
+      version: ">=0.1,<0.2"
+package:
+  standalone: true
+  aggregate_member: true
+package_contract:
+  package_name: physicsUsd
+  exported_targets: [physicsUsd::physicsUsd]
+  public_headers: [include/usd_physics/usd/**]
+  consumer:
+    include: usd_physics/usd/box_scene.h
+    symbol: usd_physics::usd::readBoxScene

@@ -4,7 +4,7 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-09-23): Phase 2 complete; Phase 3 migration in progress.**
+> **Tree status (2026-09-27): Phase 2 complete; Phase 3 release follow-up and Phase 4 Box foundation in progress.**
 > Buildable and installable `physicsCore` and `physicsJolt` package boundaries
 > exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
@@ -13,8 +13,9 @@ capability on this page.
 > query interfaces. `physicsJolt` implements those contracts when a compatible
 > Jolt package is present and retains a typed unavailable fallback otherwise.
 > The Jolt-required OpenStrata intent passes locally and in hosted Windows and
-> Linux CI. Stage Runner has not migrated to the installed packages, and an
-> OpenUSD plugin does not exist yet.
+> Linux CI. Stage Runner has migrated to installed core/backend packages. An
+> optional installable `physicsUsd` Box reader now exists; an OpenUSD plugin
+> does not. Bridge artifact publication and hosted parity remain open.
 
 ## 1. Status vocabulary
 
@@ -73,17 +74,26 @@ capability on this page.
 
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
-| `physicsUsd` package | not present | Planned Phase 4 |
+| `physicsUsd` package | partial | Optional installed `physicsUsd::physicsUsd`; `physicsUsd.box_scene` and clean-prefix USD consumer test |
 | `UsdPhysicsScene` gravity | planned | No implementation |
-| Box/sphere/capsule collision | planned | No implementation |
-| `UsdPhysicsRigidBodyAPI` | planned | No implementation |
-| `UsdPhysicsMassAPI` | planned | No implementation |
+| Box collision | partial | Cube size and ordered scales; `physicsUsd.box_scene` covers conversion, disabled static colliders, and invalid dimensions |
+| Sphere/capsule collision | planned | No implementation |
+| `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic or disabled static body on the collision Cube; kinematic, collider-free, nested, and compound bodies rejected |
+| `UsdPhysicsMassAPI` | partial | Explicit positive dynamic mass in kg; density inference, inherited mass, inertia and center-of-mass overrides rejected |
 | Fixed joints | planned | No implementation |
 | Other standard joints, limits, and drives | planned | Phase 5 expands from consumer fixtures |
 | Prim/resource mappings | planned | No implementation |
 | Stage reset/rebuild | planned | No implementation |
 | Incremental USD change processing | unsupported | Rebuild-first policy; no implementation |
 | USD state synchronization records | planned | `USD-O3` unresolved |
+
+The [Box contract](../design/USD_BRIDGE_CONTRACT.md) documents the bounded
+subset. It requires Y-up meters/kg, translate then scale, and identity
+ancestors or resetXformStack. Animated values, instances, other standard
+physics APIs/properties, scenes, and joints fail with typed code/path diagnostics.
+Tests live in [box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp).
+The parser never edits USD or creates resources; returned paths are snapshot
+identities belonging to the caller's Stage, not persistent runtime mappings.
 
 ## 6. Secondary motion
 
@@ -106,8 +116,8 @@ capability on this page.
 
 | Scenario | Status | Evidence / note |
 | --- | --- | --- |
-| Stage Runner falling body | planned | Phase 3 |
-| Stage Runner character grounding and camera collision | planned | Phase 3 |
+| Stage Runner falling body | supported | Installed core/backend migration verified in the [Phase 3 artifact report](../reports/2026-09-23-phase3-linux-artifacts.md); standard Box consumer remains opt-in |
+| Stage Runner character grounding and camera collision | supported | Same installed-package consumer evidence; standard/compatibility parity is covered in Stage Runner's optional `stage_runtime.standard_physics_parity` test |
 | MMD rigid bodies and joints through standard USD | planned | Phase 5 |
 | VRM-derived secondary motion | planned | Phase 7 |
 | Vehicle primitives | planned | Phase 8 |

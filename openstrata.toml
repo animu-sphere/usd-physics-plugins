@@ -11,10 +11,16 @@ cache = {
   PHYSICSJOLT_REQUIRE_JOLT = { type = "BOOL", value = true }
 }
 
+[build.intents.usd]
+cache = {
+  USDPHYSICS_BUILD_USD = { type = "BOOL", value = true }
+}
+
 [workspace]
 members = [
   "libs/physicsCore",
   "backends/physicsJolt",
+  "libs/physicsUsd",
 ]
 release_members = [
   "physicsCore",

@@ -26,6 +26,8 @@ add_test(NAME workspace.installed_consumer
     "-DTEST_MT=${CMAKE_MT}"
     "-DTEST_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
     "-DTEST_JOLT_DIR=${Jolt_DIR}"
+    "-DTEST_USD=${USDPHYSICS_BUILD_USD}"
+    "-DTEST_PXR_DIR=${pxr_DIR}"
     "-DTEST_CONFIG=$<CONFIG>"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/run_installed_consumer.cmake")
 set_tests_properties(workspace.installed_consumer PROPERTIES
