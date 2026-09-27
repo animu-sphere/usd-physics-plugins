@@ -11,6 +11,7 @@ endif()
 
 foreach(_manifest IN ITEMS
     "${PROJECT_ROOT}/libs/physicsCore/openstrata.library.yaml"
+    "${PROJECT_ROOT}/libs/physicsUsd/openstrata.library.yaml"
     "${PROJECT_ROOT}/backends/physicsJolt/openstrata.library.yaml")
   file(READ "${_manifest}" _content)
   string(REGEX MATCH "version:[ \t]*\"?([^\" \t\r\n]+)"

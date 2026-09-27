@@ -2,12 +2,13 @@
 
 Backend-neutral physics runtime components for OpenUSD-based applications.
 
-> **Status (2026-09-23): Phase 2 backend extraction in progress.** The
+> **Status (2026-09-27): core/backend extraction complete; Box USD foundation in progress.** The
 > repository builds and installs `physicsCore` and `physicsJolt`; the neutral
 > core contract and a Jolt-backed world with fixed stepping, changed state,
 > segment queries, and ground queries are implemented. The Jolt-required
 > OpenStrata intent passes
-> locally; hosted Phase 2 evidence and an OpenUSD bridge remain. The
+> locally and in hosted CI. An optional `physicsUsd` package now reads standard
+> Box declarations; wider bridge support and artifact rollout remain. The
 > [capability matrix](docs/reference/CAPABILITY_MATRIX.md) is the only page
 > that states what exists, and the [current roadmap](docs/roadmap/current.md)
 > states what comes next.
@@ -19,6 +20,12 @@ validate it with
 [`usd-vrm-plugins`](https://github.com/animu-sphere/usd-vrm-plugins).
 
 ## The central rule
+
+The optional Box adapter builds with `-DUSDPHYSICS_BUILD_USD=ON` and an OpenUSD
+26.08 install on `CMAKE_PREFIX_PATH`. It installs `physicsUsd::physicsUsd` and
+`usd_physics/usd/box_scene.h`. The core/backend-only root build remains the
+default. See the [bounded Box contract](docs/design/USD_BRIDGE_CONTRACT.md)
+for supported declarations and explicit rejection behavior.
 
 > **OpenUSD describes the physical world; `usd-physics-plugins` makes that
 > world executable without exposing a backend SDK to its consumers.**

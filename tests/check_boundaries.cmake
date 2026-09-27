@@ -47,4 +47,12 @@ foreach(_header IN LISTS _public_jolt_headers)
   endif()
 endforeach()
 
-message(STATUS "physicsCore and physicsJolt source boundaries are clean")
+assert_sources_exclude(
+  "${PROJECT_ROOT}/libs/physicsUsd"
+  "physicsUsd"
+  "[#]include[ \\t]*[<\"]Jolt/"
+  "usd_stage_runner"
+  "usd_mmd"
+  "usd_vrm")
+
+message(STATUS "physicsCore, physicsJolt, and physicsUsd source boundaries are clean")

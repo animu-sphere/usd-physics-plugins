@@ -19,7 +19,7 @@ not need this repository's source tree.
 | --- | --- | --- | --- |
 | `physicsCore` | `physicsCore::physicsCore` | Version surface plus neutral vector, quaternion, transform, typed handles, validated box/body/fixed-constraint descriptors, semantic collision filters, typed errors, world lifecycle/state, and optional segment and ground query interfaces | Phase 1 surface present |
 | `physicsJolt` | `physicsJolt::physicsJolt` | `physicsJolt_BACKEND_AVAILABLE` package metadata, `backendAvailable()`, and `createWorld()`; a Jolt-enabled build provides shapes, bodies, fixed constraints, commands, stepping, changed state, segment queries, and ground queries, while a no-Jolt build reports typed unavailability | Phase 2 complete |
-| `physicsUsd` | `physicsUsd::physicsUsd` | USD translation, mappings, and synchronization records | 4 |
+| `physicsUsd` | `physicsUsd::physicsUsd` | Validated standard Box snapshots; mappings and synchronization records remain planned | Phase 4 subset implemented |
 | `secondaryMotion` | `secondaryMotion::secondaryMotion` | generic secondary-motion contracts | 6, if admitted |
 | `secondaryMotionVerlet` | `secondaryMotionVerlet::secondaryMotionVerlet` | first CPU solver | 6, if admitted |
 | `physicsSchema` | bundle contract to be defined at admission | generated schema library and resources | only if admitted |
@@ -28,6 +28,14 @@ The public include root and namespace are fixed by
 [WORKSPACE.md §4](WORKSPACE.md#4-namespace-and-include-policy).
 
 ## 3. Install-interface rules
+
+The optional `physicsUsd` target builds with `USDPHYSICS_BUILD_USD=ON` in the
+root or as a standalone `libs/physicsUsd` project. It exports public headers
+under `usd_physics/usd/`, links only `physicsCore` and OpenUSD `usd`, `usdGeom`,
+and `usdPhysics` targets (also accepting `pxr::` names), and resolves those
+dependencies from its installed config. The clean-prefix consumer includes a
+standard Cube import when this option is enabled. Its OpenStrata member is
+declared but has not entered the published release/artifact set.
 
 Every library package must:
 

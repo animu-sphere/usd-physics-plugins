@@ -27,8 +27,18 @@ endif()
 
 add_subdirectory(libs/physicsCore)
 add_subdirectory(backends/physicsJolt)
+option(USDPHYSICS_BUILD_USD "Build the optional standard OpenUSD declaration adapter" OFF)
+if(USDPHYSICS_BUILD_USD)
+  add_subdirectory(libs/physicsUsd)
+endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/UsdPhysicsBoundaryChecks.cmake")
+if(TARGET physicsUsd)
+  usdphysics_assert_target_dependencies(
+    TARGET physicsUsd
+    ALLOWED_PUBLIC physicsCore::physicsCore usd usdGeom usdPhysics pxr::usd pxr::usdGeom pxr::usdPhysics
+    ALLOWED_PRIVATE physicsCore::physicsCore usd usdGeom usdPhysics pxr::usd pxr::usdGeom pxr::usdPhysics)
+endif()
 usdphysics_assert_target_dependencies(
   TARGET physicsCore
   ALLOWED_PUBLIC)

@@ -26,3 +26,13 @@ target_link_libraries(usd_physics_installed_consumer PRIVATE
 
 enable_testing()
 add_test(NAME installed_consumer.runs COMMAND usd_physics_installed_consumer)
+if(TEST_USD)
+  find_package(physicsUsd CONFIG REQUIRED)
+  add_executable(usd_physics_usd_consumer usd_main.cpp)
+  target_link_libraries(usd_physics_usd_consumer PRIVATE physicsUsd::physicsUsd)
+  add_test(NAME installed_consumer.usd COMMAND usd_physics_usd_consumer)
+  if(WIN32)
+    set_tests_properties(installed_consumer.usd PROPERTIES ENVIRONMENT_MODIFICATION
+      "PATH=path_list_prepend:${pxr_DIR}/bin;PATH=path_list_prepend:${pxr_DIR}/lib;PATH=path_list_prepend:${Python3_RUNTIME_LIBRARY_DIRS}")
+  endif()
+endif()

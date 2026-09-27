@@ -1,76 +1,32 @@
-# Current roadmap — Phase 3 Stage Runner migration
+# Current roadmap — release follow-up and Phase 4
 
-> **Status: in progress, 2026-09-23.** Phase 2 is complete: the installed
-> `physicsCore` and `physicsJolt` packages pass local and hosted Windows/Linux
-> verification. The next slice migrates Stage Runner to those packages while
-> preserving its orchestration and authored compatibility behavior.
+Status: in progress, 2026-09-27. The installed core/backend consumer migration
+has passed hosted Windows/Linux verification. An optional standard Box reader
+is implemented; the [capability matrix](../reference/CAPABILITY_MATRIX.md)
+records the supported subset and tests.
 
-## 1. Outcome
+## 1. Release follow-up
 
-Phase 3 makes `usd-stage-runner` a consumer of the installed packages instead
-of an owner of the neutral physics and Jolt backend implementations.
+Implement and dry-run the versioned release workflow against the
+[release schema](../architecture/RELEASE_SCHEMA.md) before creating a tag.
+Existing Windows/Linux core/backend artifacts remain migration inputs rather
+than a full release.
 
-```text
-installed physicsCore + physicsJolt
-        -> Stage Runner composition boundary
-        -> fixed-step orchestration and gameplay capabilities
-        -> incremental runtime-layer synchronization
-```
+## 2. Next Box delivery slice
 
-## 2. Available prerequisites
+- Validate and publish Windows/Linux `physicsUsd` artifacts and pin them in
+  Stage Runner's OpenStrata requirements before enabling standard import by default.
+- Run hosted standard/compatibility parity including standalone and usdview.
+- Extend through working fixtures for scene gravity, additional shapes,
+  mass inference, fixed joints, and composed transforms.
+- Resolve stage-generation identity and synchronization contracts before
+  introducing retained resource mappings in the package.
 
-- Phase 1 provides the installed neutral values, handles, descriptors, errors,
-  world contract, and optional segment and ground query capabilities.
-- Phase 2 provides the installed Jolt-backed world factory with passing local
-  and hosted Windows/Linux evidence.
-- The Stage Runner extraction inventory fixes the current public surface,
-  consumers, compatibility importer, fixed-step order, and deterministic parity
-  evidence at its recorded source revision.
-- `StageSession::PhysicsWorldFactory` already gives the standalone and usdview
-  hosts one backend-selection seam.
+## 3. Completion criteria
 
-## 3. Completed locally
-
-- Replaced Stage Runner's repository-local `physicsCore` and `physicsJolt`
-  source edges with installed-package discovery and equivalent OpenStrata
-  requirements.
-- Adapted Stage Runner includes, namespace usage, and math values explicitly at
-  the composition boundary.
-- Moved prim/body mapping, dirty synchronization, and fixed-step delegation from
-  the local `PhysicsRuntime` into `stageRuntime` without moving `PrimId` or
-  `RuntimeWorld` into the external package.
-- Kept the Runner physics schema importer in Stage Runner as a temporary
-  compatibility path that produces neutral external descriptors.
-- Preserved `StageSession::PhysicsWorldFactory` and used the same external Jolt
-  factory in standalone and usdview hosts.
-- Removed the repository-local physics libraries after the installed package
-  path passed all 48 local Windows parity tests.
-- Published the pinned Windows packages as public, immutable OCI artifacts and
-  verified both OCI and content digests from a fresh cache.
-- Published equivalent Linux packages and verified their content and OCI
-  digests from a fresh cache; see the
-  [Linux artifact report](../reports/2026-09-23-phase3-linux-artifacts.md).
-- Stage Runner passed hosted Windows and Linux OpenStrata consumer builds and
-  tests with artifact caches disabled, plus the plain-CMake hosted jobs;
-  [the consumer run](https://github.com/animu-sphere/usd-stage-runner/actions/runs/35853380748)
-  records both platform cells.
-
-## 4. Remaining Phase 3 work
-
-- Implement and dry-run the versioned release workflow against the
-  [release schema](../architecture/RELEASE_SCHEMA.md) before creating a tag;
-  the currently published Windows and Linux artifacts are Phase 3 inputs, not
-  a full release.
-
-## 5. Phase 3 completion criteria
-
-- Existing falling-body, character grounding, jump-support, and camera
-  collision scenarios pass against installed `physicsCore` and `physicsJolt`.
-- Stage Runner no longer owns the reusable neutral physics implementation or
-  the Jolt backend, and no Jolt type crosses a public Stage Runner boundary.
-- Prim/body mapping, fixed-step ordering, changed-state synchronization, and
-  discardable runtime-layer behavior remain owned and tested by Stage Runner.
-- Runner physics schema fixtures continue to work through the local
-  compatibility importer; no new `runner:physics:*` property is added.
-- Plain CMake, OpenStrata, standalone, and usdview resolve the same package and
-  world-factory graph.
+Standard declarations become the primary authored representation in Stage
+Runner while core/backend packages remain reusable and contain no gameplay
+policy. The same package graph must work in plain CMake and OpenStrata, on
+Windows and Linux. Keep Runner compatibility fixtures until all host and
+runtime-layer parity gates pass. The wider intended bridge is defined in
+[USD_BRIDGE_CONTRACT.md](../design/USD_BRIDGE_CONTRACT.md).

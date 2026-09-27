@@ -1,7 +1,30 @@
 # OpenUSD physics bridge contract
 
-> **Status: proposed, 2026-09-21.** `physicsUsd` is planned for Phase 4 and is
-> not present. See the [capability matrix](../reference/CAPABILITY_MATRIX.md).
+> **Status: proposed, updated 2026-09-27.** A bounded Box snapshot reader is
+> implemented; the wider bridge remains planned. See the
+> [capability matrix](../reference/CAPABILITY_MATRIX.md).
+
+The initial implementation exposes `usd_physics::usd::readBoxScene()` and
+`BoxBody` in `usd_physics/usd/box_scene.h`. It returns validated neutral shape,
+motion, transform, and mass values sorted by absolute prim path. It owns no
+world, handles, persistent mapping, or USD edits. Callers must keep the result
+associated with its source Stage and discard it at reload; stage-generation
+identities and synchronization records remain future work.
+
+The Box subset requires collision and body on the same Cube, Y-up meters/kg,
+explicit positive mass for dynamic bodies, one translate op then scale ops,
+and identity ancestors or resetXformStack. Static collision-only Cubes and
+disabled rigid bodies are static; disabled collision-only Cubes are skipped.
+A rigid body with disabled collision is rejected until collider-free bodies
+are supported. Kinematic bodies, animated declarations, scenes, joints,
+instances, nested bodies, inherited/density-based mass, materials, and all
+other authored `physics:*` properties are rejected. No default mass is
+substituted for unsupported USD mass inference.
+
+For this surface, `USD-O2` uses typed `ImportErrorCode` plus the offending path
+on `ImportError`: `invalidStage`, `unsupportedUnits`, `unsupportedDeclaration`,
+`unsupportedTransform`, and `invalidValue`. Consumers assert code/path, not
+diagnostic prose. Validation completes before a snapshot is returned.
 
 ## 1. Purpose
 

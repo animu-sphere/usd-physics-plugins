@@ -18,7 +18,7 @@ that contradicts it updates this document first, in a focused change.
 | --- | --- | --- | --- | --- | --- | --- |
 | `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Solver-neutral value types, handles, descriptors, world lifecycle, state, validation, and optional query contracts. No OpenUSD or backend SDK. | Phase 0 scaffold; Phase 1 runtime | Phase 1 values, handles, descriptors, world contract, and segment/ground queries implemented |
 | `physicsJolt` | plain static CMake library | `backends/physicsJolt/` | `openstrata.library.yaml` | Jolt implementation of `physicsCore`; owns Jolt initialization, filters, jobs, resources, stepping, and queries. | Phase 0 scaffold; Phase 2 backend | backend implemented; Windows and Linux plain-CMake and installed-consumer evidence present |
-| `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard `UsdPhysics` to core descriptors, transform conversion, transient scene/resource mapping, and synchronization records. | Phase 4 | reserved |
+| `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard Box declarations to neutral snapshots; resource mapping and synchronization records remain planned. | Phase 4 | optional installable Box reader implemented |
 
 The Phase 0 targets established package and dependency boundaries.
 `physicsCore` has supported value, handle, descriptor, and world-contract

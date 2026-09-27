@@ -28,7 +28,8 @@ foreach(_metadata IN LISTS _installed_metadata)
   file(READ "${_metadata}" _content)
   string(REPLACE "\\" "/" _content "${_content}")
   foreach(_forbidden IN ITEMS
-      "${_core_source}" "${_jolt_source}" "${_core_build}" "${_jolt_build}")
+      "${_core_source}" "${_jolt_source}" "${_core_build}" "${_jolt_build}"
+      "${PROJECT_SOURCE_ROOT}/libs/physicsUsd" "${PROJECT_BUILD_DIR}/libs/physicsUsd")
     string(FIND "${_content}" "${_forbidden}" _position)
     if(NOT _position EQUAL -1)
       message(FATAL_ERROR
@@ -46,6 +47,10 @@ set(_configure_args
   "-DCMAKE_PREFIX_PATH=${_prefix}")
 if(TEST_GENERATOR_PLATFORM)
   list(APPEND _configure_args -A "${TEST_GENERATOR_PLATFORM}")
+endif()
+if(TEST_USD)
+  list(APPEND _configure_args "-DTEST_USD=ON" "-Dpxr_DIR=${TEST_PXR_DIR}"
+    "-DCMAKE_PREFIX_PATH=${_prefix}\;${TEST_PXR_DIR}")
 endif()
 if(TEST_MAKE_PROGRAM)
   list(APPEND _configure_args "-DCMAKE_MAKE_PROGRAM=${TEST_MAKE_PROGRAM}")
