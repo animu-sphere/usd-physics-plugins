@@ -78,7 +78,7 @@ int main() {
       {Code::unsupportedDeclaration, [](auto, auto p) { pxr::UsdPhysicsRigidBodyAPI(p).CreateKinematicEnabledAttr().Set(true); }},
       {Code::unsupportedDeclaration, [](auto, auto p) { pxr::UsdPhysicsRigidBodyAPI(p).CreateVelocityAttr().Set(pxr::GfVec3f(1)); }},
       {Code::unsupportedDeclaration, [](auto, auto p) { pxr::UsdPhysicsMassAPI(p).CreateDensityAttr().Set(1000.0f); }},
-      {Code::unsupportedDeclaration, [](auto, auto p) { p.RemoveAPI<pxr::UsdPhysicsMassAPI>(); }},
+      {Code::unsupportedDeclaration, [](auto, auto p) { p.template RemoveAPI<pxr::UsdPhysicsMassAPI>(); }},
       {Code::unsupportedDeclaration, [](auto, auto p) { p.SetTypeName(pxr::TfToken("Sphere")); }},
       {Code::unsupportedDeclaration, [](auto, auto p) { pxr::UsdPhysicsCollisionAPI(p).CreateCollisionEnabledAttr().Set(false); }},
       {Code::unsupportedDeclaration, [](auto s, auto) { pxr::UsdPhysicsScene::Define(s, pxr::SdfPath("/Scene")); }},
