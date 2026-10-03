@@ -4,7 +4,7 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-09-27): Phase 2 complete; Phase 3 release follow-up and Phase 4 Box foundation in progress.**
+> **Tree status (2026-10-04): Phase 2 complete; Phase 3 release follow-up and Phase 4 Box foundation in progress.**
 > Buildable and installable `physicsCore` and `physicsJolt` package boundaries
 > exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
@@ -75,6 +75,7 @@ capability on this page.
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
 | `physicsUsd` package | partial | Optional installed `physicsUsd::physicsUsd`; `physicsUsd.box_scene` and clean-prefix USD consumer test |
+| Box artifact validation | partial | `usd-jolt` CI cells configure Windows/Linux builds and isolated packaging of core/backend/USD; [local Windows evidence](../reports/2026-10-04-phase4-usd-artifacts.md). Hosted execution and public USD artifacts pending |
 | `UsdPhysicsScene` gravity | planned | No implementation |
 | Box collision | partial | Cube size and ordered scales; `physicsUsd.box_scene` covers conversion, disabled static colliders, and invalid dimensions |
 | Sphere/capsule collision | planned | No implementation |

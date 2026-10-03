@@ -10,3 +10,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-09-22 Phase 2 Linux backend verification](2026-09-22-phase2-linux-backend.md)
 - [2026-09-23 Phase 2 hosted backend verification](2026-09-23-phase2-hosted-backend.md)
 - [2026-09-23 Phase 3 Linux package artifacts](2026-09-23-phase3-linux-artifacts.md)
+- [2026-10-04 Phase 4 local USD artifact preparation](2026-10-04-phase4-usd-artifacts.md)
