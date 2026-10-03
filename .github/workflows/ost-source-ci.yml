@@ -14,7 +14,8 @@
 # secrets; keep it that way when editing the matrix.
 #
 # Repository additions retained after regeneration: build pinned Jolt beside
-# the workspace and expose its install prefix to the generated `jolt` intent.
+# the workspace and expose its install prefix to the generated `usd-jolt` intent;
+# test and package all three physics libraries on Windows and Linux.
 name: ost source ci
 
 on:
@@ -170,7 +171,7 @@ jobs:
             hosted: true
             runner_profile: windows-hosted
             verify: test
-            intent_flags: "--intent jolt"
+            intent_flags: "--intent usd-jolt"
             runtime_remote: "oci://ghcr.io/animu-sphere/openstrata-runtime-cy2026-usd@sha256:d3ff79a6f330558c3b9a427a927d340fe3dcab1fe89107faa0ea9f66a104b7bf"
             host_python: "3.13"
             host_packages_apt: ""
@@ -191,7 +192,7 @@ jobs:
             hosted: true
             runner_profile: linux-hosted
             verify: test
-            intent_flags: "--intent jolt"
+            intent_flags: "--intent usd-jolt"
             runtime_remote: "oci://ghcr.io/animu-sphere/openstrata-runtime-cy2026-usd@sha256:8d2d599489ee623044f4360ad3a2b979e2966e6ad2f949e5aa9083570e59cc4f"
             host_python: "3.13"
             host_packages_apt: "libx11-dev libxt-dev"
@@ -441,21 +442,21 @@ jobs:
         env:
           CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
         run: ost test --target ${{ matrix.platform }} --profile ${{ matrix.profile }} ${{ matrix.intent_flags }}
-      - name: Verify and package Linux physics libraries
-        if: ${{ matrix.name == 'workspace-pr-linux' }}
+      - name: Verify and package physics libraries on both platforms
         shell: bash
         env:
           CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
         run: |
           set -euo pipefail
           mkdir -p .ost-ci
-          for library in libs/physicsCore backends/physicsJolt; do
+          for library in libs/physicsCore backends/physicsJolt libs/physicsUsd; do
             name="$(basename "$library")"
             ost library build "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > ".ost-ci/${name}-build.json"
             ost library test "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > ".ost-ci/${name}-test.json"
-            # Jolt's imported target needs the external Jolt SDK. The root
-            # installed-consumer test carries that SDK prefix; OpenStrata's
-            # generated consumer intentionally clears CMAKE_PREFIX_PATH.
+            # Jolt and USD need external SDKs. The root installed-consumer
+            # test carries those SDK prefixes; OpenStrata's generated
+            # consumer intentionally clears CMAKE_PREFIX_PATH and excludes
+            # the runtime SDK from its plain-library closure.
             if [ "$name" = physicsCore ]; then
               ost library verify-consumer "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > ".ost-ci/${name}-consumer.json"
             fi
@@ -482,5 +483,6 @@ jobs:
             **/dist/tools/
             libs/physicsCore/dist/
             backends/physicsJolt/dist/
+            libs/physicsUsd/dist/
             dist/products/
             .ost-ci/

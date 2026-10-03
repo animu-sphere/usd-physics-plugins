@@ -5,6 +5,11 @@ has passed hosted Windows/Linux verification. An optional standard Box reader
 is implemented; the [capability matrix](../reference/CAPABILITY_MATRIX.md)
 records the supported subset and tests.
 
+The `usd-jolt` intent and source-CI cells now build the Box reader together
+with Jolt and package all three libraries on both OSes. The
+[local artifact report](../reports/2026-10-04-phase4-usd-artifacts.md) records
+Windows validation; hosted results and public `physicsUsd` pins remain pending.
+
 ## 1. Release follow-up
 
 Implement and dry-run the versioned release workflow against the
