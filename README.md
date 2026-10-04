@@ -27,6 +27,13 @@ The optional Box adapter builds with `-DUSDPHYSICS_BUILD_USD=ON` and an OpenUSD
 default. See the [bounded Box contract](docs/design/USD_BRIDGE_CONTRACT.md)
 for supported declarations and explicit rejection behavior.
 
+`ost build --intent usd-jolt` and `ost test --intent usd-jolt` validate the
+reader and Jolt together, including the clean-prefix USD consumer. Source CI
+uses that intent on Windows and Linux and retains isolated library archives
+for `physicsCore`, `physicsJolt`, and `physicsUsd`. Public USD artifact pins and
+hosted evidence for this new gate remain pending; see the
+[local artifact report](docs/reports/2026-10-04-phase4-usd-artifacts.md).
+
 > **OpenUSD describes the physical world; `usd-physics-plugins` makes that
 > world executable without exposing a backend SDK to its consumers.**
 
