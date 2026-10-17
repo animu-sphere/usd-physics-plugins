@@ -386,8 +386,33 @@ void checkPrimitives() {
   }
 }
 
+void checkKinematic() {
+  for (const auto type : {"Cube", "Sphere", "Capsule"}) {
+    auto stage = fixture();
+    auto prim = stage->GetPrimAtPath(pxr::SdfPath("/World/Box"));
+    prim.SetTypeName(pxr::TfToken(type));
+    prim.GetAttribute(pxr::TfToken("xformOp:scale")).Set(pxr::GfVec3f(1));
+    const pxr::UsdPhysicsRigidBodyAPI api(prim);
+    api.CreateKinematicEnabledAttr().Set(true);
+    prim.RemoveAPI<pxr::UsdPhysicsMassAPI>();
+    prim.RemoveProperty(pxr::TfToken("physics:mass"));
+    std::string before, after;
+    stage->GetRootLayer()->ExportToString(&before);
+    const auto bodies = usd::readPrimitiveScene(stage);
+    stage->GetRootLayer()->ExportToString(&after);
+    check(before == after && bodies.size() == 1 &&
+              bodies[0].motionType == core::MotionType::kinematicBody &&
+              bodies[0].transform.translation == core::Vector3{0, 3, 0},
+          "kinematic snapshot needs no mass and does not edit USD");
+    api.CreateRigidBodyEnabledAttr().Set(false);
+    check(usd::readPrimitiveScene(stage)[0].motionType == core::MotionType::staticBody,
+          "disabled body is static even with kinematic flag");
+  }
+}
+
 int main() {
   try {
+    checkKinematic();
     checkPrimitives();
     checkHierarchy();
     auto stage = fixture();
@@ -482,10 +507,10 @@ int main() {
            p.GetAttribute(pxr::TfToken("xformOp:translate"))
                .Set(pxr::GfVec3f(2), 1);
          }},
-        {Code::unsupportedDeclaration,
+        {Code::invalidValue,
          [](auto, auto p) {
            pxr::UsdPhysicsRigidBodyAPI(p).CreateKinematicEnabledAttr().Set(
-               true);
+               true, 1);
          }},
         {Code::unsupportedDeclaration,
          [](auto, auto p) {

@@ -51,6 +51,14 @@ retain their meaning; rebuild all packages and consumers together for this
 layout as well. `physicsUsd` adds `readPrimitiveScene()` in `box_scene.h`,
 retaining the Cube-only `readBoxScene()` surface. No artifact pin is updated.
 
+The local kinematic increment adds `MotionType::kinematicBody` and the optional
+`KinematicMotion` interface in `usd_physics/core/kinematic_motion.h`.
+`physicsJolt` exposes it through capability discovery; `PhysicsWorld`'s virtual
+surface and existing enum values retain their meaning. Rebuild packages and
+consumers together to use the new header and implementation. The installed
+consumer exercises capability discovery and a target movement. No published
+version or artifact pin changes.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;

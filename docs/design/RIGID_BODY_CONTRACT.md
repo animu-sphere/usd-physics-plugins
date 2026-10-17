@@ -1,6 +1,6 @@
 # Rigid-body runtime contract
 
-> **Status: proposed, revised 2026-09-22.** This document describes the
+> **Status: proposed, revised 2026-10-18.** This document describes the
 > intended runtime contract. The Phase 1 neutral values, handles, descriptors,
 > typed errors, single-owner world interface, and optional segment and ground
 > query interfaces are implemented; see the
@@ -81,8 +81,15 @@ use the body origin, even when it differs from the shape's center of mass.
 
 A body descriptor identifies its shape, motion type, initial transform, mass,
 and collision-filter semantics. Damping, friction, restitution, angular
-velocity, kinematic motion, and continuous-collision behavior are added only
+velocity and continuous-collision behavior are added only
 when a phase requires them.
+
+The local Phase 4 increment adds `MotionType::kinematicBody`. It is driven by
+explicit pose commands rather than gravity, forces or impulses from contacts.
+Its mass must be finite and non-negative but is not used for simulation.
+Force and linear-velocity commands remain restricted to dynamic bodies.
+Backends supporting kinematic motion expose the optional `KinematicMotion`
+interface below; `PhysicsWorld` gains no mandatory virtual operation.
 
 Collision filtering must be expressed semantically. A Jolt object-layer or
 broad-phase-layer index is not a public collision category.
@@ -143,6 +150,29 @@ by the changed queue. A successful command becomes observable through changed
 state after stepping; destruction removes pending state for that body. Sleep,
 wake, and teleport operations are not in the Phase 1 API and must define their
 queue behavior when admitted.
+
+### 7.1 Kinematic motion capability
+
+`KinematicMotion`, declared in `usd_physics/core/kinematic_motion.h`, is
+discovered with `dynamic_cast` from `PhysicsWorld`, like optional queries.
+`moveKinematic(body, target, duration)` sets linear and angular velocities to
+reach a world-space body origin and orientation after the supplied positive
+duration. It does not teleport. Collider-local poses and centers of mass do
+not change the target frame. Finite, nonzero quaternions are normalized by
+the backend. Backend precision/range failures reject before mutation.
+
+The caller commands a target before each matching fixed step. Velocities
+persist until replaced; to hold a pose, resubmit the current pose. No implicit
+stop, target tracking, timestep accumulator or USD animation sampling is
+introduced. The linear velocity in `BodyState` is the center-of-mass velocity,
+which can differ from body-origin velocity for offset shapes during rotation.
+
+Invalid values throw `std::invalid_argument` before handle lookup. Unknown,
+stale, cross-world and non-kinematic targets return `false`. Commands do not
+enqueue changed states: stepping collects kinematic changes with the same
+unique handle ordering, drain and destruction semantics as dynamic bodies.
+Dynamic bodies can respond to contact with a moving kinematic collider;
+solver contact tolerances remain backend-specific.
 
 ## 8. Optional query capabilities
 

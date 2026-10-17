@@ -39,7 +39,12 @@ checks use a tolerance of `1e-9`.
 Animated ancestors beyond a reset do not participate. Collision-only geometry
 and disabled rigid bodies are static; disabled collision-only geometry is
 skipped. A rigid body with disabled collision is rejected until collider-free
-bodies are supported. Kinematic bodies, animated declarations, scenes, joints,
+bodies are supported. Enabled bodies with `physics:kinematicEnabled = true`
+map to `MotionType::kinematicBody` without requiring mass; their snapshot mass
+is the neutral default and is ignored. Disabled rigid bodies remain static
+even with the kinematic flag. The flag must be time-independent. The reader
+does not sample animation or issue runtime movement commands.
+Animated declarations, scenes, joints,
 instances, nested or compound bodies, collider mass overrides,
 inherited/density-based mass, materials, and all other authored `physics:*`
 properties are rejected. No default mass is substituted for unsupported USD

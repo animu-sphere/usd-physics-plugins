@@ -27,6 +27,7 @@ struct ShapeDescriptor {
 enum class MotionType {
   staticBody,
   dynamicBody,
+  kinematicBody,
 };
 
 using CollisionCategories = std::uint64_t;

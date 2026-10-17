@@ -1,5 +1,7 @@
 # Phase 4 Sphere and Capsule snapshots (2026-10-18)
 
+Follow-up: [kinematic motion and snapshots](2026-10-18-phase4-kinematic.md).
+
 Dated local Windows evidence following the
 [collider-local Box increment](2026-10-18-phase4-collider-local-pose.md).
 

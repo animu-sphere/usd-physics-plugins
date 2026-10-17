@@ -2,6 +2,7 @@
 
 #include "usd_physics/core/errors.h"
 #include "usd_physics/core/ground_query.h"
+#include "usd_physics/core/kinematic_motion.h"
 #include "usd_physics/core/segment_query.h"
 
 #include <Jolt/Jolt.h>
@@ -248,6 +249,7 @@ bool stateChanged(const core::BodyState& previous,
 }
 
 class JoltWorld final : public core::PhysicsWorld,
+                        public core::KinematicMotion,
                         public core::GroundQuery,
                         public core::SegmentQuery {
 public:
@@ -339,13 +341,15 @@ public:
     }
 
     const bool dynamic = descriptor.motionType == core::MotionType::dynamicBody;
+    const bool kinematic = descriptor.motionType == core::MotionType::kinematicBody;
     const JPH::ObjectLayer objectLayer =
         layers_.layerFor(descriptor.motionType, descriptor.collisionFilter);
     JPH::BodyCreationSettings settings(
         shape->second.shape,
         toJoltPosition(descriptor.initialTransform.translation, "body position"),
         toJoltRotation(descriptor.initialTransform.rotation),
-        dynamic ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static,
+        dynamic ? JPH::EMotionType::Dynamic
+                : kinematic ? JPH::EMotionType::Kinematic : JPH::EMotionType::Static,
         objectLayer);
     if (dynamic) {
       const float mass = toJoltFloat(descriptor.mass, "body mass");
@@ -467,6 +471,30 @@ public:
     return readBodyState(body, found->second);
   }
 
+  bool moveKinematic(core::BodyHandle body, core::Transform target,
+                     Duration duration) override {
+    core::validateKinematicTarget(target, duration);
+    const auto found = bodies_.find(body);
+    if (found == bodies_.end() ||
+        found->second.motionType != core::MotionType::kinematicBody)
+      return false;
+    const auto position = toJoltPosition(target.translation, "kinematic target");
+    const auto rotation = toJoltRotation(target.rotation);
+    const float seconds = toJoltFloat(duration.count(), "kinematic duration");
+    if (seconds <= 0 || !std::isfinite(1.0f / seconds))
+      throw std::invalid_argument("kinematic duration exceeds backend precision");
+    // MoveKinematic computes center-of-mass velocities, even for offset shapes.
+    // Reject overflow before Jolt mutates the body.
+    const auto& nativeBody = *found->second.body;
+    const auto center = position + rotation * nativeBody.GetShape()->GetCenterOfMass();
+    const auto velocity = (center - nativeBody.GetCenterOfMassPosition()) / seconds;
+    (void)toJoltVector(toCorePosition(velocity), "kinematic linear velocity");
+    (void)toJoltFloat(3.141592653589793 / seconds, "kinematic angular velocity");
+    physicsSystem_.GetBodyInterface().MoveKinematic(
+        found->second.id, position, rotation, seconds);
+    return true;
+  }
+
   std::optional<core::GroundContact>
   groundContact(core::BodyHandle body, double maxDistance) const override {
     core::validateGroundProbeDistance(maxDistance);
@@ -584,7 +612,7 @@ public:
           "Jolt physics update exhausted a configured simulation capacity"};
     }
     for (auto& entry : bodies_) {
-      if (entry.second.motionType != core::MotionType::dynamicBody) {
+      if (entry.second.motionType == core::MotionType::staticBody) {
         continue;
       }
       core::BodyState current = readBodyState(entry.first, entry.second);

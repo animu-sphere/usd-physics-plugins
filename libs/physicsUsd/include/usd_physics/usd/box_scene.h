@@ -52,8 +52,9 @@ readPrimitiveScene(const pxr::UsdStageRefPtr &stage);
 // collision Cube on the body, or one translated/rotated child Cube of a
 // rigid body Xform. Composes time-independent affine transforms and reset
 // stacks. Cube scales are baked into dimensions; shear and inverse ops fail.
-// Separate body frames must be rigid; child reset stacks, compounds and
-// kinematic bodies remain unsupported. The path and transform identify the
+// Separate body frames must be rigid; child reset stacks and compounds remain
+// unsupported. Enabled kinematic bodies need no mass (it is ignored); disabled
+// rigid bodies are static. The path and transform identify the
 // body frame, never a displaced collider frame.
 // shape.localTransform carries the collider frame relative to that body.
 // No USD edits or runtime resources are created. Results are sorted by path.
