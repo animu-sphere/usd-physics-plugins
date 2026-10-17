@@ -9,9 +9,11 @@
 #include <pxr/base/gf/vec3d.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/sdf/layer.h>
+#include <pxr/usd/usdGeom/capsule.h>
 #include <pxr/usd/usdGeom/cube.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/pointInstancer.h>
+#include <pxr/usd/usdGeom/sphere.h>
 #include <pxr/usd/usdGeom/xform.h>
 #include <pxr/usd/usdPhysics/collisionAPI.h>
 #include <pxr/usd/usdPhysics/massAPI.h>
@@ -250,8 +252,143 @@ void checkHierarchy() {
   }
 }
 
+void checkPrimitives() {
+  const pxr::SdfPath childPath("/World/Body/Shape");
+  const pxr::SdfPath directPath("/World/Box");
+  for (const bool child : {false, true}) {
+    for (const auto type : {pxr::TfToken("Sphere"), pxr::TfToken("Capsule")}) {
+      for (const auto axis : {pxr::UsdGeomTokens->x, pxr::UsdGeomTokens->y,
+                              pxr::UsdGeomTokens->z}) {
+        auto stage = child ? childFixture() : fixture();
+        const auto path = child ? childPath : directPath;
+        auto prim = stage->GetPrimAtPath(path);
+        prim.SetTypeName(type);
+        auto xform = pxr::UsdGeomXformable(prim);
+        xform.ClearXformOpOrder();
+        xform.AddTranslateOp().Set(pxr::GfVec3d(1, 2, -3));
+        xform.AddRotateXYZOp().Set(pxr::GfVec3f(17, -23, 41));
+        xform.AddScaleOp().Set(pxr::GfVec3f(-2, 2, 2));
+        const bool capsule = type == pxr::TfToken("Capsule");
+        if (capsule) {
+          pxr::UsdGeomCapsule(prim).CreateRadiusAttr().Set(0.25);
+          pxr::UsdGeomCapsule(prim).CreateHeightAttr().Set(3.0);
+          pxr::UsdGeomCapsule(prim).CreateAxisAttr().Set(axis);
+        } else {
+          pxr::UsdGeomSphere(prim).CreateRadiusAttr().Set(0.25);
+        }
+        std::string before, after;
+        stage->GetRootLayer()->ExportToString(&before);
+        const auto bodies = usd::readPrimitiveScene(stage);
+        stage->GetRootLayer()->ExportToString(&after);
+        check(before == after && bodies.size() == 1,
+              "read-only primitive snapshot");
+        const auto &body = bodies[0];
+        check(body.path == (child ? "/World/Body" : "/World/Box") &&
+                  body.mass == (child ? 4 : 70) &&
+                  body.motionType == core::MotionType::dynamicBody &&
+                  body.shape.type == (capsule ? core::ShapeType::capsule
+                                              : core::ShapeType::sphere) &&
+                  std::abs(body.shape.radius - .5) < 1e-9 &&
+                  (!capsule || std::abs(body.shape.halfHeight - 3) < 1e-9),
+              "primitive identity, mass and scaled dimensions");
+        auto matrix = [](core::Transform pose) {
+          pxr::GfMatrix4d result(1.0);
+          const auto q = pose.rotation;
+          result.SetRotate(pxr::GfQuatd(q.w, q.x, q.y, q.z));
+          result.SetTranslateOnly(pxr::GfVec3d(
+              pose.translation.x, pose.translation.y, pose.translation.z));
+          return result;
+        };
+        const auto actual =
+            matrix(body.shape.localTransform) * matrix(body.transform);
+        const auto expected =
+            xform.ComputeLocalToWorldTransform(pxr::UsdTimeCode::Default());
+        check(pxr::GfIsClose(actual.Transform(pxr::GfVec3d(0)),
+                             expected.Transform(pxr::GfVec3d(0)), 1e-8),
+              "primitive center");
+        if (capsule) {
+          const int index = axis == pxr::UsdGeomTokens->x   ? 0
+                            : axis == pxr::UsdGeomTokens->y ? 1
+                                                            : 2;
+          // Compare both axial tips as a set so reflected scales are exercised.
+          for (const double sign : {-1.0, 1.0}) {
+            const auto tip = actual.Transform(pxr::GfVec3d(0, sign * 3.5, 0));
+            pxr::GfVec3d source(0);
+            source[index] = 1.75;
+            check(pxr::GfIsClose(tip, expected.Transform(source), 1e-8) ||
+                      pxr::GfIsClose(tip, expected.Transform(-source), 1e-8),
+                  "capsule tips match USD axis and composed geometry");
+          }
+        }
+        using Edit = std::function<void(const pxr::UsdPrim &)>;
+        std::vector<std::pair<Code, Edit>> invalid{
+            {Code::unsupportedTransform,
+             [](auto p) {
+               p.GetAttribute(pxr::TfToken("xformOp:scale"))
+                   .Set(pxr::GfVec3f(1, 2, 1));
+             }},
+            {Code::invalidValue,
+             [](auto p) { p.GetAttribute(pxr::TfToken("radius")).Set(0.0); }},
+            {Code::invalidValue,
+             [](auto p) { p.GetAttribute(pxr::TfToken("radius")).Set(-1.0); }},
+            {Code::invalidValue,
+             [](auto p) {
+               p.GetAttribute(pxr::TfToken("radius"))
+                   .Set(std::numeric_limits<double>::infinity());
+             }},
+            {Code::invalidValue,
+             [](auto p) {
+               p.GetAttribute(pxr::TfToken("radius")).Set(.25, 1);
+             }},
+        };
+        if (capsule) {
+          invalid.push_back({Code::invalidValue, [](auto p) {
+                               pxr::UsdGeomCapsule(p).CreateAxisAttr().Set(
+                                   pxr::TfToken("bad"));
+                             }});
+          invalid.push_back({Code::invalidValue, [](auto p) {
+                               pxr::UsdGeomCapsule(p).CreateHeightAttr().Set(
+                                   -1.0);
+                             }});
+          invalid.push_back({Code::invalidValue, [](auto p) {
+                               pxr::UsdGeomCapsule(p).CreateHeightAttr().Set(
+                                   std::numeric_limits<double>::quiet_NaN());
+                             }});
+          invalid.push_back({Code::invalidValue, [](auto p) {
+                               pxr::UsdGeomCapsule(p).CreateHeightAttr().Set(
+                                   3.0, 1);
+                             }});
+          invalid.push_back({Code::invalidValue, [](auto p) {
+                               pxr::UsdGeomCapsule(p).CreateAxisAttr().Set(
+                                   pxr::UsdGeomTokens->y, 1);
+                             }});
+        }
+        for (const auto &entry : invalid) {
+          auto copy = pxr::UsdStage::CreateInMemory();
+          copy->GetRootLayer()->ImportFromString(before);
+          entry.second(copy->GetPrimAtPath(path));
+          try {
+            (void)usd::readPrimitiveScene(copy);
+            throw std::runtime_error("invalid primitive accepted");
+          } catch (const usd::ImportError &error) {
+            check(error.code() == entry.first &&
+                      error.path() == path.GetString(),
+                  "primitive diagnostic code/path");
+          }
+        }
+        if (capsule) {
+          pxr::UsdGeomCapsule(prim).GetHeightAttr().Set(0.0);
+          check(usd::readPrimitiveScene(stage)[0].shape.halfHeight == 0,
+                "zero-height capsule");
+        }
+      }
+    }
+  }
+}
+
 int main() {
   try {
+    checkPrimitives();
     checkHierarchy();
     auto stage = fixture();
     std::string before, after;

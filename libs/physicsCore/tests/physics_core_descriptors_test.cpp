@@ -54,6 +54,25 @@ int main() {
 
   const auto infinity = std::numeric_limits<double>::infinity();
   const auto nan = std::numeric_limits<double>::quiet_NaN();
+  for (const auto type : {ShapeType::sphere, ShapeType::capsule}) {
+    ShapeDescriptor shape;
+    shape.type = type;
+    shape.halfHeight = 0;
+    validateShapeDescriptor(shape);
+    for (const double radius : {0.0, -1.0, infinity, nan}) {
+      shape.radius = radius;
+      if (!rejectsInvalidArgument([&] { validateShapeDescriptor(shape); }))
+        return 5;
+    }
+    shape.radius = 1;
+    if (type == ShapeType::capsule) {
+      for (const double height : {-1.0, infinity, nan}) {
+        shape.halfHeight = height;
+        if (!rejectsInvalidArgument([&] { validateShapeDescriptor(shape); }))
+          return 6;
+      }
+    }
+  }
   for (const auto &transform :
        {Transform{{nan, 0, 0}, {}}, Transform{{}, {1, infinity, 0, 0}},
         Transform{{}, {0, 0, 0, 0}}}) {

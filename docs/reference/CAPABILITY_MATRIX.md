@@ -8,13 +8,13 @@ capability on this page.
 > Buildable and installable `physicsCore` and `physicsJolt` package boundaries
 > exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
-> validated box/body/fixed-constraint descriptors with semantic collision
+> validated box/sphere/capsule/body/fixed-constraint descriptors with semantic collision
 > filters, a single-owner world contract, and optional segment and ground
 > query interfaces. `physicsJolt` implements those contracts when a compatible
 > Jolt package is present and retains a typed unavailable fallback otherwise.
 > The Jolt-required OpenStrata intent passes locally and in hosted Windows and
 > Linux CI. Stage Runner has migrated to installed core/backend packages. An
-> optional installable `physicsUsd` Box reader now exists; an OpenUSD plugin
+> optional installable `physicsUsd` primitive reader now exists; an OpenUSD plugin
 > does not. Bridge artifact publication and hosted parity remain open.
 
 ## 1. Status vocabulary
@@ -48,7 +48,7 @@ capability on this page.
 | `physicsCore` package | supported | Installable `physicsCore::physicsCore` provides the complete Phase 1 version, value, handle, descriptor, error, world, segment-query, and ground-query surfaces; the installed-consumer test exercises every public header |
 | Neutral vector, quaternion, and transform values | supported | `physicsCore.values_handles` and the installed-consumer test cover the public headers and identity defaults |
 | Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
-| Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers box dimensions and identity/finite/nonzero local pose validation; sphere/capsule remain Phase 4 |
+| Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers box dimensions, positive sphere/capsule radius, non-negative capsule cylinder half-height, and identity/finite/nonzero local pose validation |
 | Collider-local pose in Jolt | supported | [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) checks translated/rotated geometry by ray queries, contact settling, and body-origin state/changed-state reporting |
 | Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) covers backend lifecycle and filtering |
 | Fixed-constraint descriptors | supported | Core tests cover two distinct valid body handles; the Jolt backend test covers creation and dependent cleanup |
@@ -67,7 +67,7 @@ capability on this page.
 | --- | --- | --- |
 | `physicsJolt` package | supported | Installable `physicsJolt::physicsJolt` exposes `backendAvailable()` and `createWorld()`; Jolt-enabled and typed unavailable clean-prefix consumers pass on Windows and Linux, and the Jolt-required OpenStrata intent passes locally and in the [hosted backend report](../reports/2026-09-23-phase2-hosted-backend.md) |
 | Jolt initialization and lifetime | supported | Reference-counted factory/type registration, per-world temporary allocator and job system, explicit resource cleanup, and typed errors are covered by Windows/Linux plain-CMake, local Windows OpenStrata, and [hosted Windows/Linux](../reports/2026-09-23-phase2-hosted-backend.md) evidence |
-| Jolt body/shape/constraint conversion | supported | Box shapes, static/dynamic bodies, normalized rotations, mass, semantic filters, fixed constraints, force/velocity commands, stepping, state, and cleanup pass focused Windows and Linux tests |
+| Jolt body/shape/constraint conversion | supported | Box shapes, static/dynamic bodies, normalized rotations, mass, semantic filters, fixed constraints, force/velocity commands, stepping, state, and cleanup pass focused Windows and Linux tests. Sphere/capsule query and settling checks pass locally on Windows; [primitive report](../reports/2026-10-18-phase4-primitives.md) |
 | Jolt collision and support queries | supported | Closest segment hit, ignored body, support identity, upward normal, distance, validation, and cross-world rejection pass focused Windows and Linux tests |
 | Alternative rigid-body backend | unsupported | No implementation phase committed |
 
@@ -80,8 +80,8 @@ capability on this page.
 | `UsdPhysicsScene` gravity | planned | No implementation |
 | Box collision | partial | Cube size and composed scales, on the body Cube or one translated/rotated descendant Cube of a rigid body Xform; `physicsUsd.box_scene` checks all eight transformed corners, disabled static colliders, and invalid dimensions |
 | Composed transforms | partial | Time-independent translate/rotate/orient/scale/matrix ops, ancestors, identity/body reset stacks and collider-local poses; shear, perspective, inverse ops and child reset stacks rejected. `physicsUsd.box_scene` checks intermediate Xforms and reflected scales |
-| Sphere/capsule collision | planned | No implementation |
-| `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic or disabled static body on a collision Cube or parent Xform; kinematic, collider-free, nested, and compound bodies rejected |
+| Sphere/capsule collision | partial | `readPrimitiveScene()` accepts direct or single-child Sphere/Capsule with uniform composed scale and local poses; X/Y/Z capsule axes and zero height are covered by `physicsUsd.box_scene`. Nonuniform scale, invalid/animated dimensions and axes reject. Jolt query, local rotation, scalar-range rejection and settling checks run in `physicsJolt.backend`; [local Windows evidence](../reports/2026-10-18-phase4-primitives.md) |
+| `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic or disabled static body on supported collision geometry or parent Xform; kinematic, collider-free, nested, and compound bodies rejected |
 | `UsdPhysicsMassAPI` | partial | Explicit positive dynamic mass in kg; density inference, inherited mass, inertia and center-of-mass overrides rejected |
 | Fixed joints | planned | No implementation |
 | Other standard joints, limits, and drives | planned | Phase 5 expands from consumer fixtures |
@@ -90,14 +90,14 @@ capability on this page.
 | Incremental USD change processing | unsupported | Rebuild-first policy; no implementation |
 | USD state synchronization records | planned | `USD-O3` unresolved |
 
-The [Box contract](../design/USD_BRIDGE_CONTRACT.md) documents the bounded
+The [bridge contract](../design/USD_BRIDGE_CONTRACT.md) documents the bounded
 subset. It requires Y-up meters/kg and explicit positive dynamic mass;
 separate body Xforms must compose to a rigid world frame. Animated values,
 instances, other standard
 physics APIs/properties, scenes, and joints fail with typed code/path diagnostics.
 Tests live in [box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp).
 Local Windows validation is recorded in the
-[collider-pose report](../reports/2026-10-18-phase4-collider-local-pose.md).
+[primitive report](../reports/2026-10-18-phase4-primitives.md).
 The parser never edits USD or creates resources; returned paths are snapshot
 identities belonging to the caller's Stage, not persistent runtime mappings.
 

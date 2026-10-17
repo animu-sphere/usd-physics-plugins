@@ -59,9 +59,13 @@ generation counters are encoded in the value is private.
 
 ### 5.1 Shapes
 
-Phase 1 preserves the proven box shape. Sphere and capsule enter with the USD
-vertical slice; mesh and compound shapes enter only with explicit validation
-and lifetime rules.
+Phase 1 preserves the proven box shape. The local Phase 4 primitive slice adds
+sphere and capsule; mesh and compound shapes still require explicit validation
+and lifetime rules. `ShapeType` selects the active geometry fields: box uses
+`halfExtents`, sphere uses `radius`, and capsule uses `radius` and `halfHeight`.
+Radius must be finite and positive. Capsule half-height is finite and
+non-negative, measures the cylinder excluding hemispheres, and follows local
+Y. Zero half-height has sphere geometry. Inactive geometry fields are ignored.
 
 A shape descriptor carries geometry, not backend cooking options.
 

@@ -9,6 +9,8 @@ namespace usd_physics::core {
 
 enum class ShapeType {
   box,
+  sphere,
+  capsule,
 };
 
 struct ShapeDescriptor {
@@ -16,6 +18,10 @@ struct ShapeDescriptor {
   Vector3 halfExtents{0.5, 0.5, 0.5};
   // Geometry frame relative to the body origin. Scale is baked into dimensions.
   Transform localTransform;
+  double radius{0.5};
+  // Capsule cylinder half-height, excluding hemispheres; axis is local Y.
+  // Zero represents a sphere with the same radius.
+  double halfHeight{0.5};
 };
 
 enum class MotionType {

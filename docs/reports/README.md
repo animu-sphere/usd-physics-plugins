@@ -13,3 +13,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-10-04 Phase 4 local USD artifact preparation](2026-10-04-phase4-usd-artifacts.md)
 - [2026-10-18 Phase 4 child Box and composed transforms](2026-10-18-phase4-child-box.md)
 - [2026-10-18 Phase 4 collider-local Box pose](2026-10-18-phase4-collider-local-pose.md)
+- [2026-10-18 Phase 4 Sphere and Capsule snapshots](2026-10-18-phase4-primitives.md)

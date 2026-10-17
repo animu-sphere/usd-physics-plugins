@@ -17,9 +17,11 @@
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/RayCast.h>
-#include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
@@ -279,17 +281,36 @@ public:
   core::ShapeHandle
   createShape(const core::ShapeDescriptor& descriptor) override {
     core::validateShapeDescriptor(descriptor);
-    const JPH::Vec3 halfExtents =
-        toJoltVector(descriptor.halfExtents, "box half extents");
-    const float minimumExtent =
-        std::min({halfExtents.GetX(), halfExtents.GetY(), halfExtents.GetZ()});
-    if (minimumExtent <= 0.0f) {
-      throw std::invalid_argument(
-          "box half extents must remain positive in the Jolt scalar range");
+    JPH::ShapeRefC shape;
+    if (descriptor.type == core::ShapeType::box) {
+      const JPH::Vec3 halfExtents =
+          toJoltVector(descriptor.halfExtents, "box half extents");
+      const float minimumExtent = std::min(
+          {halfExtents.GetX(), halfExtents.GetY(), halfExtents.GetZ()});
+      if (minimumExtent <= 0.0f) {
+        throw std::invalid_argument(
+            "box half extents must remain positive in the Jolt scalar range");
+      }
+      const float convexRadius =
+          std::min(JPH::cDefaultConvexRadius, minimumExtent * 0.5f);
+      shape = new JPH::BoxShape(halfExtents, convexRadius);
+    } else {
+      const float radius = toJoltFloat(descriptor.radius, "shape radius");
+      if (radius <= 0.0f)
+        throw std::invalid_argument(
+            "radius must remain positive in the Jolt scalar range");
+      if (descriptor.type == core::ShapeType::sphere ||
+          descriptor.halfHeight == 0.0) {
+        shape = new JPH::SphereShape(radius);
+      } else {
+        const float halfHeight =
+            toJoltFloat(descriptor.halfHeight, "capsule half height");
+        if (halfHeight <= 0.0f)
+          throw std::invalid_argument(
+              "half height must remain positive in the Jolt scalar range");
+        shape = new JPH::CapsuleShape(halfHeight, radius);
+      }
     }
-    const float convexRadius =
-        std::min(JPH::cDefaultConvexRadius, minimumExtent * 0.5f);
-    JPH::ShapeRefC shape = new JPH::BoxShape(halfExtents, convexRadius);
     if (descriptor.localTransform != core::Transform{}) {
       shape = new JPH::RotatedTranslatedShape(
           toJoltVector(descriptor.localTransform.translation, "shape position"),

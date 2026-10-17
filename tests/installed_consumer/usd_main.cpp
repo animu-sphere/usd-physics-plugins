@@ -1,5 +1,6 @@
 #include "usd_physics/usd/box_scene.h"
 #include <pxr/base/gf/vec3d.h>
+#include <pxr/usd/usdGeom/capsule.h>
 #include <pxr/usd/usdGeom/cube.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/xform.h>
@@ -28,6 +29,17 @@ int main() {
   child.AddRotateZOp().Set(90.0f);
   pxr::UsdPhysicsCollisionAPI::Apply(child.GetPrim());
   const auto combined = usd_physics::usd::readBoxScene(stage);
+  const auto capsule =
+      pxr::UsdGeomCapsule::Define(stage, pxr::SdfPath("/Capsule"));
+  capsule.CreateRadiusAttr().Set(.25);
+  capsule.CreateHeightAttr().Set(2.0);
+  capsule.CreateAxisAttr().Set(pxr::UsdGeomTokens->z);
+  pxr::UsdPhysicsCollisionAPI::Apply(capsule.GetPrim());
+  const auto primitives = usd_physics::usd::readPrimitiveScene(stage);
+  if (primitives.size() != 3 || primitives[1].path != "/Capsule" ||
+      primitives[1].shape.type != usd_physics::core::ShapeType::capsule ||
+      primitives[1].shape.radius != .25 || primitives[1].shape.halfHeight != 1)
+    return 3;
   return combined.size() == 2 && combined[1].path == "/Rig" &&
                  combined[1].mass == 2 &&
                  combined[1].transform.translation.y == 2 &&

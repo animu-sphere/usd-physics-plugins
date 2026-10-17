@@ -3,11 +3,14 @@
 #include <algorithm>
 #include <cmath>
 #include <pxr/base/gf/matrix4d.h>
+#include <pxr/base/gf/rotation.h>
 #include <pxr/base/gf/vec3d.h>
 #include <pxr/usd/usd/primRange.h>
+#include <pxr/usd/usdGeom/capsule.h>
 #include <pxr/usd/usdGeom/cube.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/pointInstancer.h>
+#include <pxr/usd/usdGeom/sphere.h>
 #include <pxr/usd/usdGeom/xform.h>
 #include <pxr/usd/usdGeom/xformable.h>
 #include <pxr/usd/usdPhysics/collisionAPI.h>
@@ -185,19 +188,65 @@ void readTransform(const pxr::UsdPrim &body, const pxr::UsdPrim &collider,
     validateMatrix(relative, collider);
     scale = decompose(relative, collider, result.shape.localTransform, true);
   }
-  const auto size =
-      read<double>(pxr::UsdGeomCube(collider).GetSizeAttr(), collider);
-  if (!std::isfinite(size) || size <= 0.0) {
-    reject(Code::invalidValue, collider,
-           "cube size must be positive and finite");
+  if (pxr::UsdGeomCube(collider)) {
+    const auto size =
+        read<double>(pxr::UsdGeomCube(collider).GetSizeAttr(), collider);
+    if (!std::isfinite(size) || size <= 0.0) {
+      reject(Code::invalidValue, collider,
+             "cube size must be positive and finite");
+    }
+    result.shape.halfExtents = {std::abs(scale[0]) * size / 2.0,
+                                std::abs(scale[1]) * size / 2.0,
+                                std::abs(scale[2]) * size / 2.0};
+  } else {
+    const double largest = std::max({scale[0], scale[1], scale[2]});
+    if (std::abs(scale[0] - scale[1]) > 1e-9 * largest ||
+        std::abs(scale[0] - scale[2]) > 1e-9 * largest) {
+      reject(Code::unsupportedTransform, collider,
+             "sphere and capsule require uniform scale");
+    }
+    const pxr::UsdGeomCapsule capsule(collider);
+    result.shape.type =
+        capsule ? core::ShapeType::capsule : core::ShapeType::sphere;
+    const auto radius =
+        read<double>(capsule ? capsule.GetRadiusAttr()
+                             : pxr::UsdGeomSphere(collider).GetRadiusAttr(),
+                     collider);
+    if (!std::isfinite(radius) || radius <= 0)
+      reject(Code::invalidValue, collider,
+             "radius must be positive and finite");
+    result.shape.radius = radius * scale[0];
+    if (capsule) {
+      const auto height = read<double>(capsule.GetHeightAttr(), collider);
+      if (!std::isfinite(height) || height < 0)
+        reject(Code::invalidValue, collider,
+               "height must be non-negative and finite");
+      result.shape.halfHeight = height * scale[0] / 2.0;
+      const auto axis = read<pxr::TfToken>(capsule.GetAxisAttr(), collider);
+      pxr::GfVec3d direction;
+      if (axis == pxr::UsdGeomTokens->x)
+        direction = pxr::GfVec3d(1, 0, 0);
+      else if (axis == pxr::UsdGeomTokens->y)
+        direction = pxr::GfVec3d(0, 1, 0);
+      else if (axis == pxr::UsdGeomTokens->z)
+        direction = pxr::GfVec3d(0, 0, 1);
+      else
+        reject(Code::invalidValue, collider, "invalid capsule axis");
+      const auto q = result.shape.localTransform.rotation;
+      pxr::GfMatrix4d rotation(1.0), alignment(1.0);
+      rotation.SetRotate(pxr::GfQuatd(q.w, q.x, q.y, q.z));
+      alignment.SetRotate(pxr::GfRotation(pxr::GfVec3d(0, 1, 0), direction));
+      const auto composed =
+          (alignment * rotation).ExtractRotationQuat().GetNormalized();
+      const auto imaginary = composed.GetImaginary();
+      result.shape.localTransform.rotation = {composed.GetReal(), imaginary[0],
+                                              imaginary[1], imaginary[2]};
+    }
   }
-  result.shape.halfExtents = {std::abs(scale[0]) * size / 2.0,
-                              std::abs(scale[1]) * size / 2.0,
-                              std::abs(scale[2]) * size / 2.0};
   try {
     core::validateShapeDescriptor(result.shape);
   } catch (const std::exception &) {
-    reject(Code::invalidValue, collider, "invalid scaled cube dimensions");
+    reject(Code::invalidValue, collider, "invalid scaled shape dimensions");
   }
 }
 
@@ -216,7 +265,8 @@ ImportError::ImportError(ImportErrorCode code, std::string path,
     : std::runtime_error("physicsUsd: " + path + ": " + detail), code_(code),
       path_(std::move(path)) {}
 
-std::vector<BoxBody> readBoxScene(const pxr::UsdStageRefPtr &stage) {
+static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
+                                      bool boxesOnly) {
   if (!stage)
     throw ImportError(Code::invalidStage, {}, "expected an open Stage");
   std::vector<BoxBody> result;
@@ -282,10 +332,14 @@ std::vector<BoxBody> readBoxScene(const pxr::UsdStageRefPtr &stage) {
                "compound colliders are unsupported");
       collider = child;
     }
-    if (!collider || !pxr::UsdGeomCube(collider) ||
+    if (!collider ||
+        !(pxr::UsdGeomCube(collider) ||
+          (!boxesOnly &&
+           (pxr::UsdGeomSphere(collider) || pxr::UsdGeomCapsule(collider)))) ||
         (prim != collider && !pxr::UsdGeomXform(prim))) {
       reject(Code::unsupportedDeclaration, collider ? collider : prim,
-             "expected a collision Cube on the body or beneath a body Xform");
+             "expected supported collision geometry on the body or beneath a "
+             "body Xform");
     }
     const bool enabled = read<bool>(
         pxr::UsdPhysicsCollisionAPI(collider).GetCollisionEnabledAttr(),
@@ -346,5 +400,14 @@ std::vector<BoxBody> readBoxScene(const pxr::UsdStageRefPtr &stage) {
   std::sort(result.begin(), result.end(),
             [](const auto &a, const auto &b) { return a.path < b.path; });
   return result;
+}
+
+std::vector<BoxBody> readBoxScene(const pxr::UsdStageRefPtr &stage) {
+  return readScene(stage, true);
+}
+
+std::vector<PrimitiveBody>
+readPrimitiveScene(const pxr::UsdStageRefPtr &stage) {
+  return readScene(stage, false);
 }
 } // namespace usd_physics::usd

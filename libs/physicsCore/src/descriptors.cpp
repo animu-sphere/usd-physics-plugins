@@ -32,6 +32,19 @@ void validateShapeDescriptor(const ShapeDescriptor& descriptor) {
   if (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0) {
     throw std::invalid_argument("shape rotation must have non-zero magnitude");
   }
+  if (descriptor.type == ShapeType::sphere ||
+      descriptor.type == ShapeType::capsule) {
+    if (!std::isfinite(descriptor.radius) || descriptor.radius <= 0.0) {
+      throw std::invalid_argument("shape radius must be positive and finite");
+    }
+    if (descriptor.type == ShapeType::capsule &&
+        (!std::isfinite(descriptor.halfHeight) ||
+         descriptor.halfHeight < 0.0)) {
+      throw std::invalid_argument(
+          "capsule half height must be non-negative and finite");
+    }
+    return;
+  }
   if (descriptor.type != ShapeType::box) {
     throw std::invalid_argument("shape type is unsupported");
   }
@@ -62,7 +75,8 @@ void validateBodyDescriptor(const BodyDescriptor& descriptor) {
       (descriptor.motionType == MotionType::dynamicBody && descriptor.mass <= 0.0) ||
       (descriptor.motionType == MotionType::staticBody && descriptor.mass < 0.0)) {
     throw std::invalid_argument(
-        "body mass must be finite, non-negative for static bodies, and positive for dynamic bodies");
+        "body mass must be finite, non-negative for static bodies, and "
+        "positive for dynamic bodies");
   }
   if (descriptor.collisionFilter.categories == 0) {
     throw std::invalid_argument("a physics body requires at least one collision category");
