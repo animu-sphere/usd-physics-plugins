@@ -4,7 +4,7 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-10-04): Phase 2 complete; Phase 3 release follow-up and Phase 4 Box foundation in progress.**
+> **Tree status (2026-10-18): Phase 2 complete; Phase 3 release follow-up and Phase 4 Box foundation in progress.**
 > Buildable and installable `physicsCore` and `physicsJolt` package boundaries
 > exist.
 > `physicsCore` provides neutral rigid-transform values, typed handles, and
@@ -77,9 +77,10 @@ capability on this page.
 | `physicsUsd` package | partial | Optional installed `physicsUsd::physicsUsd`; `physicsUsd.box_scene` and clean-prefix USD consumer test |
 | Box artifact validation | partial | `usd-jolt` CI cells configure Windows/Linux builds and isolated packaging of core/backend/USD; [local Windows evidence](../reports/2026-10-04-phase4-usd-artifacts.md). Hosted execution and public USD artifacts pending |
 | `UsdPhysicsScene` gravity | planned | No implementation |
-| Box collision | partial | Cube size and ordered scales; `physicsUsd.box_scene` covers conversion, disabled static colliders, and invalid dimensions |
+| Box collision | partial | Cube size and composed scales, on the body Cube or one centered axis-aligned descendant Cube of a rigid body Xform; `physicsUsd.box_scene` checks all eight transformed corners, disabled static colliders, and invalid dimensions |
+| Composed transforms | partial | Time-independent translate/rotate/orient/scale/matrix ops, ancestors, identity stacks and reset stacks; shear, perspective, inverse ops and child offsets/rotations rejected. [Windows evidence](../reports/2026-10-18-phase4-child-box.md) |
 | Sphere/capsule collision | planned | No implementation |
-| `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic or disabled static body on the collision Cube; kinematic, collider-free, nested, and compound bodies rejected |
+| `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic or disabled static body on a collision Cube or parent Xform; kinematic, collider-free, nested, and compound bodies rejected |
 | `UsdPhysicsMassAPI` | partial | Explicit positive dynamic mass in kg; density inference, inherited mass, inertia and center-of-mass overrides rejected |
 | Fixed joints | planned | No implementation |
 | Other standard joints, limits, and drives | planned | Phase 5 expands from consumer fixtures |
@@ -89,8 +90,9 @@ capability on this page.
 | USD state synchronization records | planned | `USD-O3` unresolved |
 
 The [Box contract](../design/USD_BRIDGE_CONTRACT.md) documents the bounded
-subset. It requires Y-up meters/kg, translate then scale, and identity
-ancestors or resetXformStack. Animated values, instances, other standard
+subset. It requires Y-up meters/kg and explicit positive dynamic mass;
+separate body Xforms must compose to a rigid world frame. Animated values,
+instances, other standard
 physics APIs/properties, scenes, and joints fail with typed code/path diagnostics.
 Tests live in [box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp).
 The parser never edits USD or creates resources; returned paths are snapshot
