@@ -16,7 +16,7 @@ are not complete. The
 claim implementation status.
 
 Latest local bridge evidence:
-[collider-local Box poses](reports/2026-10-18-phase4-collider-local-pose.md).
+[Sphere and Capsule snapshots](reports/2026-10-18-phase4-primitives.md).
 
 | Category | Answers | Start here |
 | --- | --- | --- |

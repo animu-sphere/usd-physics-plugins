@@ -66,6 +66,71 @@ int main() {
     return fail("local collider pose must preserve geometry and body state");
   }
 
+  // Query the distinct axial/radial extents and settle rounded shapes with
+  // displaced geometry. State continues to report the body origin.
+  for (const auto type : {core::ShapeType::sphere, core::ShapeType::capsule}) {
+    for (const double halfHeight : {0.0, 1.0}) {
+      auto roundedWorld = jolt::createWorld();
+      auto* query = dynamic_cast<core::SegmentQuery*>(roundedWorld.get());
+      core::ShapeDescriptor descriptor;
+      descriptor.type = type;
+      descriptor.radius = 0.5;
+      descriptor.halfHeight = halfHeight;
+      descriptor.localTransform.translation = {2, 0, 0};
+      const auto shape = roundedWorld->createShape(descriptor);
+      // Backend precision failures reject before allocating native geometry.
+      for (const double invalid : {std::numeric_limits<double>::max(),
+                                   std::numeric_limits<double>::min()}) {
+        auto bad = descriptor;
+        bad.radius = invalid;
+        try {
+          roundedWorld->createShape(bad);
+          return fail("rounded radius outside backend scalar range accepted");
+        } catch (const std::invalid_argument&) {
+        }
+      }
+      const auto target = roundedWorld->createBody(
+          {shape, core::MotionType::staticBody, {{0, 3, 0}, {}}, 0, {}});
+      const double extent =
+          0.5 + (type == core::ShapeType::capsule ? halfHeight : 0);
+      const auto axial = query->segmentHit({2, 6, 0}, {2, 0, 0});
+      const auto radial = query->segmentHit({0, 3, 0}, {4, 3, 0});
+      if (!axial || axial->body != target || !radial ||
+          radial->body != target ||
+          std::abs(axial->fraction - (3 - extent) / 6) > 0.001 ||
+          std::abs(radial->fraction - 0.375) > 0.001 ||
+          query->segmentHit({0, 6, 0}, {0, 0, 0}))
+        return fail("rounded geometry query extents");
+      roundedWorld->destroyBody(target);
+      if (type == core::ShapeType::capsule && halfHeight > 0) {
+        auto rotated = descriptor;
+        const double s = std::sqrt(0.5);
+        rotated.localTransform.rotation = {s, 0, 0, s};
+        const auto rotatedShape = roundedWorld->createShape(rotated);
+        const auto rotatedBody = roundedWorld->createBody(
+            {rotatedShape, core::MotionType::staticBody, {{0, 3, 0}, {}}, 0, {}});
+        const auto hit = query->segmentHit({0, 3, 0}, {4, 3, 0});
+        if (!hit || hit->body != rotatedBody ||
+            std::abs(hit->fraction - .125) > .001)
+          return fail("capsule local rotation must rotate its spine");
+        roundedWorld->destroyBody(rotatedBody);
+        roundedWorld->destroyShape(rotatedShape);
+      }
+      const auto floor =
+          roundedWorld->createShape({core::ShapeType::box, {5, .5, 5}});
+      roundedWorld->createBody(
+          {floor, core::MotionType::staticBody, {{0, -.5, 0}, {}}, 0, {}});
+      const auto falling = roundedWorld->createBody(
+          {shape, core::MotionType::dynamicBody, {{0, 3, 0}, {}}, 2, {}});
+      for (int i = 0; i < 240; ++i)
+        roundedWorld->step(core::PhysicsWorld::Duration{1.0 / 60});
+      if (std::abs(roundedWorld->bodyState(falling).transform.translation.y -
+                   extent) > .04 ||
+          roundedWorld->takeChangedBodyStates().size() != 1)
+        return fail("rounded shapes settle and report body state");
+    }
+  }
+
   auto world = jolt::createWorld();
   auto* groundQuery = dynamic_cast<core::GroundQuery*>(world.get());
   auto* segmentQuery = dynamic_cast<core::SegmentQuery*>(world.get());

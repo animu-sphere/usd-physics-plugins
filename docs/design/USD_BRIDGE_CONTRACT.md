@@ -1,32 +1,43 @@
 # OpenUSD physics bridge contract
 
-> **Status: proposed, updated 2026-10-18.** A bounded Box snapshot reader is
+> **Status: proposed, updated 2026-10-18.** A bounded primitive snapshot reader is
 > implemented; the wider bridge remains planned. See the
 > [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
-The initial implementation exposes `usd_physics::usd::readBoxScene()` and
-`BoxBody` in `usd_physics/usd/box_scene.h`. It returns validated neutral shape,
+The implementation exposes `usd_physics::usd::readPrimitiveScene()` and
+`PrimitiveBody` in `usd_physics/usd/box_scene.h`. The existing `readBoxScene()`
+remains Cube-only, and `PrimitiveBody` aliases `BoxBody`. Both return validated
+neutral shape,
 motion, transform, and mass values sorted by absolute prim path. It owns no
 world, handles, persistent mapping, or USD edits. Callers must keep the result
 associated with its source Stage and discard it at reload; stage-generation
 identities and synchronization records remain future work.
 
-The Box subset requires Y-up meters/kg and explicit positive mass for dynamic
-bodies. Collision may be on the body Cube or on one descendant Cube of a body
-Xform. In the latter case the body's composed world frame must be rigid.
+The subset requires Y-up meters/kg and explicit positive mass for dynamic
+bodies. Collision may be on the body geometry or on one descendant geometry of
+a body Xform. In the latter case the body's composed world frame must be rigid.
 The collider's composed relative translation and rotation become
 `ShapeDescriptor::localTransform`; reset stacks below the body are rejected.
 The returned path and transform always identify the body frame. Shape dimensions absorb
 Cube size and scale, including reflections. A direct collision Cube may have
 composed scale and rotation if the resulting axes are orthogonal.
 
+`readPrimitiveScene()` admits Cube, Sphere and Capsule. Sphere and Capsule
+require uniform composed collider scale, within `1e-9` relative to the largest
+axis scale. Nonuniform scale rejects rather than approximating ellipsoids or
+distorted caps. Uniform reflections preserve geometry. Radius must be positive
+and finite; capsule height is finite and non-negative and excludes the caps.
+The X/Y/Z capsule axis is converted to the core's local Y through the shape
+rotation without changing the body frame. Zero height yields sphere geometry.
+Time-sampled radius, height and axis reject, as do invalid axis tokens.
+
 Time-independent translate, rotate, orient, scale and matrix ops compose
 through ancestors until `resetXformStack`; an empty stack is identity.
 Unreadable, non-finite, singular, sheared, perspective and inverse-op
 transforms are rejected. Rigid-frame scale and normalized-axis orthogonality
 checks use a tolerance of `1e-9`.
-Animated ancestors beyond a reset do not participate. Static collision-only
-Cubes and disabled rigid bodies are static; disabled collision-only Cubes are
+Animated ancestors beyond a reset do not participate. Collision-only geometry
+and disabled rigid bodies are static; disabled collision-only geometry is
 skipped. A rigid body with disabled collision is rejected until collider-free
 bodies are supported. Kinematic bodies, animated declarations, scenes, joints,
 instances, nested or compound bodies, collider mass overrides,

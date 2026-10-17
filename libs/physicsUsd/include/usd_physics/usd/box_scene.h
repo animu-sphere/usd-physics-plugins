@@ -38,6 +38,15 @@ struct BoxBody {
   double mass{1.0};
 };
 
+using PrimitiveBody = BoxBody;
+
+// Cube, Sphere and Capsule variant of the snapshot reader below. Sphere and
+// Capsule require uniform composed collider scale (relative tolerance 1e-9).
+// Capsule axis X/Y/Z maps to the core's local Y via shape.localTransform;
+// height excludes the hemispheres, and zero height is a sphere.
+[[nodiscard]] std::vector<PrimitiveBody>
+readPrimitiveScene(const pxr::UsdStageRefPtr &stage);
+
 // Validates the complete supported subset before returning any declarations.
 // Requires Y-up meters/kg and explicit positive dynamic mass. Supports a
 // collision Cube on the body, or one translated/rotated child Cube of a

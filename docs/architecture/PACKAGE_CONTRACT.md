@@ -45,6 +45,12 @@ retain their meaning. Rebuild core, backend, bridge and consumers together:
 this descriptor layout addition is not binary-compatible with older static
 packages. It is a local package increment, not a new published artifact pin.
 
+The local primitive increment also appends `radius` and `halfHeight` and adds
+`ShapeType::sphere` and `ShapeType::capsule`. Existing box source initializers
+retain their meaning; rebuild all packages and consumers together for this
+layout as well. `physicsUsd` adds `readPrimitiveScene()` in `box_scene.h`,
+retaining the Cube-only `readBoxScene()` surface. No artifact pin is updated.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;

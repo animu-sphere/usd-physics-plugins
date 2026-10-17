@@ -1,5 +1,7 @@
 # Phase 4 collider-local Box pose (2026-10-18)
 
+Follow-up: [Sphere and Capsule snapshots](2026-10-18-phase4-primitives.md).
+
 Dated local Windows evidence, following the
 [centered child Box increment](2026-10-18-phase4-child-box.md).
 
