@@ -1,5 +1,7 @@
 # Phase 4 child Box and composed transforms (2026-10-18)
 
+Follow-up: [collider-local pose evidence](2026-10-18-phase4-collider-local-pose.md).
+
 Dated local Windows evidence; append-only. No simulation acceptance is
 claimed for an MMD stage.
 

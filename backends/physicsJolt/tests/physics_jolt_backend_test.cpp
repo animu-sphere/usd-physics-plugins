@@ -14,6 +14,46 @@ int fail(const char* message) {
   return 1;
 }
 
+bool checkLocalShapeFrame() {
+  using namespace usd_physics;
+  auto world = jolt::createWorld();
+  auto *query = dynamic_cast<core::SegmentQuery *>(world.get());
+  const double s = std::sqrt(0.5);
+  const auto shape = world->createShape({core::ShapeType::box,
+                                         {1, 0.25, 0.5},
+                                         {{2, 0, 0}, {2 * s, 0, 0, 2 * s}}});
+  const auto body = world->createBody(
+      {shape, core::MotionType::staticBody, {{10, 3, 0}, {s, 0, 0, s}}, 0, {}});
+  const auto state = world->bodyState(body);
+  const auto hit = query->segmentHit({8, 5, 0}, {12, 5, 0});
+  if (!hit || hit->body != body || std::abs(hit->fraction - 0.25) > 0.001 ||
+      query->segmentHit({8, 3, 0}, {12, 3, 0}) ||
+      std::abs(state.transform.translation.x - 10) > 0.001 ||
+      std::abs(state.transform.translation.y - 3) > 0.001 ||
+      std::abs(state.transform.rotation.z - s) > 0.001) {
+    return false;
+  }
+  // The offset shape's center of mass differs from the reported body origin.
+  // Contact and changed-state reporting must preserve that distinction.
+  const auto floorShape =
+      world->createShape({core::ShapeType::box, {5, 0.5, 5}});
+  world->createBody(
+      {floorShape, core::MotionType::staticBody, {{20, -0.5, 0}, {}}, 0, {}});
+  const auto falling = world->createBody({shape,
+                                          core::MotionType::dynamicBody,
+                                          {{20, 3, 0}, {s, 0, 0, s}},
+                                          2,
+                                          {}});
+  for (int i = 0; i < 240; ++i)
+    world->step(core::PhysicsWorld::Duration{1.0 / 60.0});
+  const auto settled = world->bodyState(falling);
+  const auto changes = world->takeChangedBodyStates();
+  return std::abs(settled.transform.translation.y + 1.75) < 0.03 &&
+         std::abs(settled.transform.rotation.z - s) < 0.01 &&
+         changes.size() == 1 && changes[0].body == falling &&
+         changes[0].transform == settled.transform;
+}
+
 } // namespace
 
 int main() {
@@ -21,6 +61,9 @@ int main() {
 
   if (!jolt::backendAvailable()) {
     return fail("the Jolt backend test requires an available backend");
+  }
+  if (!checkLocalShapeFrame()) {
+    return fail("local collider pose must preserve geometry and body state");
   }
 
   auto world = jolt::createWorld();

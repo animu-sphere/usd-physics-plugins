@@ -13,18 +13,18 @@ identities and synchronization records remain future work.
 
 The Box subset requires Y-up meters/kg and explicit positive mass for dynamic
 bodies. Collision may be on the body Cube or on one descendant Cube of a body
-Xform. In the latter case the body's composed world frame must be rigid and
-the collider's composed relative transform must be diagonal scale only;
-offsets, rotations and reset stacks below the body are rejected. The returned
-path and transform always identify the body frame. Shape dimensions absorb
+Xform. In the latter case the body's composed world frame must be rigid.
+The collider's composed relative translation and rotation become
+`ShapeDescriptor::localTransform`; reset stacks below the body are rejected.
+The returned path and transform always identify the body frame. Shape dimensions absorb
 Cube size and scale, including reflections. A direct collision Cube may have
 composed scale and rotation if the resulting axes are orthogonal.
 
 Time-independent translate, rotate, orient, scale and matrix ops compose
 through ancestors until `resetXformStack`; an empty stack is identity.
 Unreadable, non-finite, singular, sheared, perspective and inverse-op
-transforms are rejected. Rigid-frame scale, normalized-axis orthogonality,
-and child-frame off-diagonal/translation checks use a tolerance of `1e-9`.
+transforms are rejected. Rigid-frame scale and normalized-axis orthogonality
+checks use a tolerance of `1e-9`.
 Animated ancestors beyond a reset do not participate. Static collision-only
 Cubes and disabled rigid bodies are static; disabled collision-only Cubes are
 skipped. A rigid body with disabled collision is rejected until collider-free

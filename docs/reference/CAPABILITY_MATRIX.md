@@ -48,7 +48,8 @@ capability on this page.
 | `physicsCore` package | supported | Installable `physicsCore::physicsCore` provides the complete Phase 1 version, value, handle, descriptor, error, world, segment-query, and ground-query surfaces; the installed-consumer test exercises every public header |
 | Neutral vector, quaternion, and transform values | supported | `physicsCore.values_handles` and the installed-consumer test cover the public headers and identity defaults |
 | Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
-| Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers the validated box descriptor; sphere/capsule remain Phase 4 |
+| Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers box dimensions and identity/finite/nonzero local pose validation; sphere/capsule remain Phase 4 |
+| Collider-local pose in Jolt | supported | [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) checks translated/rotated geometry by ray queries, contact settling, and body-origin state/changed-state reporting |
 | Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) covers backend lifecycle and filtering |
 | Fixed-constraint descriptors | supported | Core tests cover two distinct valid body handles; the Jolt backend test covers creation and dependent cleanup |
 | Force and velocity operations | supported | Core tests cover validation and dynamic/static/stale/cross-world outcomes; the focused Jolt test covers admitted dynamic commands, static and cross-world rejection, and finite-vector validation |
@@ -77,8 +78,8 @@ capability on this page.
 | `physicsUsd` package | partial | Optional installed `physicsUsd::physicsUsd`; `physicsUsd.box_scene` and clean-prefix USD consumer test |
 | Box artifact validation | partial | `usd-jolt` CI cells configure Windows/Linux builds and isolated packaging of core/backend/USD; [local Windows evidence](../reports/2026-10-04-phase4-usd-artifacts.md). Hosted execution and public USD artifacts pending |
 | `UsdPhysicsScene` gravity | planned | No implementation |
-| Box collision | partial | Cube size and composed scales, on the body Cube or one centered axis-aligned descendant Cube of a rigid body Xform; `physicsUsd.box_scene` checks all eight transformed corners, disabled static colliders, and invalid dimensions |
-| Composed transforms | partial | Time-independent translate/rotate/orient/scale/matrix ops, ancestors, identity stacks and reset stacks; shear, perspective, inverse ops and child offsets/rotations rejected. [Windows evidence](../reports/2026-10-18-phase4-child-box.md) |
+| Box collision | partial | Cube size and composed scales, on the body Cube or one translated/rotated descendant Cube of a rigid body Xform; `physicsUsd.box_scene` checks all eight transformed corners, disabled static colliders, and invalid dimensions |
+| Composed transforms | partial | Time-independent translate/rotate/orient/scale/matrix ops, ancestors, identity/body reset stacks and collider-local poses; shear, perspective, inverse ops and child reset stacks rejected. `physicsUsd.box_scene` checks intermediate Xforms and reflected scales |
 | Sphere/capsule collision | planned | No implementation |
 | `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic or disabled static body on a collision Cube or parent Xform; kinematic, collider-free, nested, and compound bodies rejected |
 | `UsdPhysicsMassAPI` | partial | Explicit positive dynamic mass in kg; density inference, inherited mass, inertia and center-of-mass overrides rejected |
@@ -95,6 +96,8 @@ separate body Xforms must compose to a rigid world frame. Animated values,
 instances, other standard
 physics APIs/properties, scenes, and joints fail with typed code/path diagnostics.
 Tests live in [box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp).
+Local Windows validation is recorded in the
+[collider-pose report](../reports/2026-10-18-phase4-collider-local-pose.md).
 The parser never edits USD or creates resources; returned paths are snapshot
 identities belonging to the caller's Stage, not persistent runtime mappings.
 
