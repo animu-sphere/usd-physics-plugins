@@ -17,16 +17,21 @@ bool isFinite(Quaternion value) noexcept {
 
 void validateTransform(Transform value) {
   if (!isFinite(value.translation)) {
-    throw std::invalid_argument("body translation must be finite");
+    throw std::invalid_argument("transform translation must be finite");
   }
   if (!isFinite(value.rotation)) {
-    throw std::invalid_argument("body rotation must be finite");
+    throw std::invalid_argument("transform rotation must be finite");
   }
 }
 
 } // namespace
 
 void validateShapeDescriptor(const ShapeDescriptor& descriptor) {
+  validateTransform(descriptor.localTransform);
+  const auto q = descriptor.localTransform.rotation;
+  if (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0) {
+    throw std::invalid_argument("shape rotation must have non-zero magnitude");
+  }
   if (descriptor.type != ShapeType::box) {
     throw std::invalid_argument("shape type is unsupported");
   }

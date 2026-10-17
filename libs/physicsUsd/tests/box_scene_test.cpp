@@ -76,6 +76,13 @@ void checkGeometry(const pxr::UsdStageRefPtr &stage,
   runtime.SetTranslateOnly(pxr::GfVec3d(box.transform.translation.x,
                                         box.transform.translation.y,
                                         box.transform.translation.z));
+  const auto local = box.shape.localTransform;
+  pxr::GfMatrix4d geometry(1.0);
+  geometry.SetRotate(pxr::GfQuatd(local.rotation.w, local.rotation.x,
+                                  local.rotation.y, local.rotation.z));
+  geometry.SetTranslateOnly(pxr::GfVec3d(
+      local.translation.x, local.translation.y, local.translation.z));
+  runtime = geometry * runtime;
   const pxr::UsdGeomCube collider(stage->GetPrimAtPath(colliderPath));
   double size = 0;
   collider.GetSizeAttr().Get(&size);
@@ -113,6 +120,34 @@ void checkHierarchy() {
             std::abs(boxes[0].transform.translation.y - 2) < 1e-9,
         "body identity, mass, child scale and composed translation");
   checkGeometry(stage, shapePath);
+  // Keep the body origin while composing an offset, rotation and reflection.
+  auto shape = pxr::UsdGeomXformable(stage->GetPrimAtPath(shapePath));
+  shape.ClearXformOpOrder();
+  shape.AddTranslateOp().Set(pxr::GfVec3d(1, -2, 3));
+  shape.AddRotateXYZOp().Set(pxr::GfVec3f(17, 31, -23));
+  shape.AddScaleOp(pxr::UsdGeomXformOp::PrecisionFloat, pxr::TfToken("local"))
+      .Set(pxr::GfVec3f(-0.5f, 1, 2));
+  checkGeometry(stage, shapePath);
+  const auto offset = usd::readBoxScene(stage)[0];
+  check(offset.path == boxes[0].path &&
+            offset.transform == boxes[0].transform &&
+            offset.shape.localTransform.translation == core::Vector3{1, -2, 3},
+        "collider pose must not move the body frame");
+  // Local transforms also compose across intermediate Xforms.
+  stage = childFixture();
+  stage->RemovePrim(shapePath);
+  auto intermediate =
+      pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/World/Body/Offset"));
+  intermediate.AddTranslateOp().Set(pxr::GfVec3d(2, 3, 4));
+  intermediate.AddRotateXOp().Set(41.0f);
+  auto nested =
+      pxr::UsdGeomCube::Define(stage, pxr::SdfPath("/World/Body/Offset/Shape"));
+  nested.AddTranslateOp().Set(pxr::GfVec3d(-1, 2, 0));
+  nested.AddRotateYOp().Set(29.0f);
+  nested.AddScaleOp().Set(pxr::GfVec3f(0.5f, 1, 2));
+  pxr::UsdPhysicsCollisionAPI::Apply(nested.GetPrim());
+  checkGeometry(stage, nested.GetPath());
+  stage = childFixture();
   pxr::UsdPhysicsRigidBodyAPI(stage->GetPrimAtPath(bodyPath))
       .CreateRigidBodyEnabledAttr()
       .Set(false);
@@ -133,10 +168,7 @@ void checkHierarchy() {
   using Edit = std::function<void(const pxr::UsdStageRefPtr &,
                                   const pxr::UsdPrim &, const pxr::UsdPrim &)>;
   const std::vector<std::pair<Code, Edit>> invalid{
-      {Code::unsupportedTransform,
-       [](auto, auto, auto p) {
-         pxr::UsdGeomXformable(p).AddTranslateOp().Set(pxr::GfVec3d(1, 0, 0));
-       }},
+      // Rotation before an existing nonuniform scale introduces shear.
       {Code::unsupportedTransform,
        [](auto, auto, auto p) {
          pxr::UsdGeomXformable(p).AddRotateYOp().Set(30.0f);

@@ -19,6 +19,7 @@
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
@@ -289,6 +290,11 @@ public:
     const float convexRadius =
         std::min(JPH::cDefaultConvexRadius, minimumExtent * 0.5f);
     JPH::ShapeRefC shape = new JPH::BoxShape(halfExtents, convexRadius);
+    if (descriptor.localTransform != core::Transform{}) {
+      shape = new JPH::RotatedTranslatedShape(
+          toJoltVector(descriptor.localTransform.translation, "shape position"),
+          toJoltRotation(descriptor.localTransform.rotation), shape.GetPtr());
+    }
     const core::ShapeHandle handle = nextHandle<core::ShapeHandle>(nextShape_);
     shapes_.emplace(handle, ShapeRecord{std::move(shape)});
     return handle;

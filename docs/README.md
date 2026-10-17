@@ -15,6 +15,9 @@ are not complete. The
 [capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
 claim implementation status.
 
+Latest local bridge evidence:
+[collider-local Box poses](reports/2026-10-18-phase4-collider-local-pose.md).
+
 | Category | Answers | Start here |
 | --- | --- | --- |
 | [architecture/](architecture/) | How the workspace is structured: identities, dependency directions, external dependencies, installed packages, and release schema. | [WORKSPACE.md](architecture/WORKSPACE.md) · [DEPENDENCIES.md](architecture/DEPENDENCIES.md) · [PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md) · [RELEASE_SCHEMA.md](architecture/RELEASE_SCHEMA.md) |

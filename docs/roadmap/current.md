@@ -23,7 +23,7 @@ than a full release.
   Stage Runner's OpenStrata requirements before enabling standard import by default.
 - Run hosted standard/compatibility parity including standalone and usdview.
 - Extend through working fixtures for scene gravity, additional shapes,
-  mass inference, fixed joints, collider-local offsets/rotations, scaled
+  mass inference, fixed joints, scaled
   separate body frames and compound colliders.
 - Resolve stage-generation identity and synchronization contracts before
   introducing retained resource mappings in the package.

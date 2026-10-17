@@ -183,16 +183,7 @@ void readTransform(const pxr::UsdPrim &body, const pxr::UsdPrim &collider,
                "collider cannot reset its body frame");
     }
     validateMatrix(relative, collider);
-    for (int row = 0; row != 4; ++row) {
-      for (int column = 0; column != 3; ++column) {
-        if (row != column && std::abs(relative[row][column]) > 1e-9) {
-          reject(Code::unsupportedTransform, collider,
-                 "collider offsets and rotations are unsupported");
-        }
-      }
-    }
-    scale = pxr::GfVec3d(std::abs(relative[0][0]), std::abs(relative[1][1]),
-                         std::abs(relative[2][2]));
+    scale = decompose(relative, collider, result.shape.localTransform, true);
   }
   const auto size =
       read<double>(pxr::UsdGeomCube(collider).GetSizeAttr(), collider);

@@ -24,11 +24,15 @@ int main() {
   pxr::UsdPhysicsMassAPI::Apply(body.GetPrim()).CreateMassAttr().Set(2.0f);
   const auto child =
       pxr::UsdGeomCube::Define(stage, pxr::SdfPath("/Rig/Shape"));
+  child.AddTranslateOp().Set(pxr::GfVec3d(3, 4, 5));
+  child.AddRotateZOp().Set(90.0f);
   pxr::UsdPhysicsCollisionAPI::Apply(child.GetPrim());
   const auto combined = usd_physics::usd::readBoxScene(stage);
   return combined.size() == 2 && combined[1].path == "/Rig" &&
                  combined[1].mass == 2 &&
                  combined[1].transform.translation.y == 2 &&
+                 combined[1].shape.localTransform.translation ==
+                     usd_physics::core::Vector3{3, 4, 5} &&
                  combined[1].motionType ==
                      usd_physics::core::MotionType::dynamicBody
              ? 0

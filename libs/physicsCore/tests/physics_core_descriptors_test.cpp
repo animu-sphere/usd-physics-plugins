@@ -22,10 +22,13 @@ template <typename Function> bool rejectsInvalidArgument(Function&& function) {
 int main() {
   const ShapeDescriptor defaultBox;
   if (defaultBox.type != ShapeType::box ||
-      defaultBox.halfExtents != Vector3{0.5, 0.5, 0.5}) {
+      defaultBox.halfExtents != Vector3{0.5, 0.5, 0.5} ||
+      defaultBox.localTransform != Transform{}) {
     return 1;
   }
   validateShapeDescriptor(defaultBox);
+  validateShapeDescriptor(
+      {ShapeType::box, {1, 2, 3}, {{1, -2, 3}, {2, 0, 0, 0}}});
 
   const BodyDescriptor staticBody{ShapeHandle{1}, MotionType::staticBody,
                                   Transform{}, 0.0,
@@ -51,6 +54,15 @@ int main() {
 
   const auto infinity = std::numeric_limits<double>::infinity();
   const auto nan = std::numeric_limits<double>::quiet_NaN();
+  for (const auto &transform :
+       {Transform{{nan, 0, 0}, {}}, Transform{{}, {1, infinity, 0, 0}},
+        Transform{{}, {0, 0, 0, 0}}}) {
+    if (!rejectsInvalidArgument([&] {
+          validateShapeDescriptor({ShapeType::box, {1, 1, 1}, transform});
+        })) {
+      return 4;
+    }
+  }
   if (!rejectsInvalidArgument([] {
         validateShapeDescriptor(
             {static_cast<ShapeType>(-1), Vector3{0.5, 0.5, 0.5}});

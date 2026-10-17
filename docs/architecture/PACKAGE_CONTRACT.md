@@ -39,6 +39,12 @@ The bounded transform and geometry contract is defined by the
 [USD bridge contract](../design/USD_BRIDGE_CONTRACT.md). Its OpenStrata member is
 declared but has not entered the published release/artifact set.
 
+The local collider-pose increment appends `localTransform` to
+`ShapeDescriptor`, defaulting to identity so existing source initializers
+retain their meaning. Rebuild core, backend, bridge and consumers together:
+this descriptor layout addition is not binary-compatible with older static
+packages. It is a local package increment, not a new published artifact pin.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;

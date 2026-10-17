@@ -65,6 +65,14 @@ and lifetime rules.
 
 A shape descriptor carries geometry, not backend cooking options.
 
+`ShapeDescriptor::localTransform` places that geometry relative to the body
+origin, defaulting to identity. Its translation is in meters; rotation uses
+the core quaternion convention. Translation and rotation must be finite,
+and rotation must be nonzero; the backend normalizes it. Scale belongs in
+the geometry dimensions. A shape handle includes this local pose, so bodies
+sharing the handle share it. Body creation and state reporting continue to
+use the body origin, even when it differs from the shape's center of mass.
+
 ### 5.2 Bodies
 
 A body descriptor identifies its shape, motion type, initial transform, mass,

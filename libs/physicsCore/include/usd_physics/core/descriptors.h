@@ -14,6 +14,8 @@ enum class ShapeType {
 struct ShapeDescriptor {
   ShapeType type{ShapeType::box};
   Vector3 halfExtents{0.5, 0.5, 0.5};
+  // Geometry frame relative to the body origin. Scale is baked into dimensions.
+  Transform localTransform;
 };
 
 enum class MotionType {
