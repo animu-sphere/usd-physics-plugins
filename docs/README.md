@@ -4,12 +4,14 @@ Documentation is organized by responsibility. The taxonomy follows
 `usd-mmd-plugins`: design says what is intended, architecture fixes structure,
 reference reports what exists, and the roadmap contains incomplete work.
 
-**Current tree (2026-09-23): Phase 2 complete; Phase 3 migration in progress.**
+**Current tree (2026-10-18): Phase 2 complete; Phase 3 release follow-up and Phase 4 in progress.**
 The root build, packages, boundary checks, and installed-consumer test exist.
 Neutral rigid transform values, typed handles, validated descriptors, the
 single-owner world contract, optional segment and ground queries, and the Jolt
 backend are implemented and pass local and hosted Windows/Linux evidence.
-Stage Runner migration, an OpenUSD bridge, and a release are not complete. The
+Stage Runner has migrated to installed core/backend packages. A bounded
+OpenUSD Box reader exists; its wider bridge, artifact rollout and a release
+are not complete. The
 [capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
 claim implementation status.
 

@@ -34,7 +34,9 @@ root or as a standalone `libs/physicsUsd` project. It exports public headers
 under `usd_physics/usd/`, links only `physicsCore` and OpenUSD `usd`, `usdGeom`,
 and `usdPhysics` targets (also accepting `pxr::` names), and resolves those
 dependencies from its installed config. The clean-prefix consumer includes a
-standard Cube import when this option is enabled. Its OpenStrata member is
+standard Cube and parent-body/child-Cube imports when this option is enabled.
+The bounded transform and geometry contract is defined by the
+[USD bridge contract](../design/USD_BRIDGE_CONTRACT.md). Its OpenStrata member is
 declared but has not entered the published release/artifact set.
 
 Every library package must:

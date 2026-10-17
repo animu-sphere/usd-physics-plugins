@@ -1,6 +1,6 @@
 # Current roadmap — release follow-up and Phase 4
 
-Status: in progress, 2026-09-27. The installed core/backend consumer migration
+Status: in progress, 2026-10-18. The installed core/backend consumer migration
 has passed hosted Windows/Linux verification. An optional standard Box reader
 is implemented; the [capability matrix](../reference/CAPABILITY_MATRIX.md)
 records the supported subset and tests.
@@ -23,7 +23,8 @@ than a full release.
   Stage Runner's OpenStrata requirements before enabling standard import by default.
 - Run hosted standard/compatibility parity including standalone and usdview.
 - Extend through working fixtures for scene gravity, additional shapes,
-  mass inference, fixed joints, and composed transforms.
+  mass inference, fixed joints, collider-local offsets/rotations, scaled
+  separate body frames and compound colliders.
 - Resolve stage-generation identity and synchronization contracts before
   introducing retained resource mappings in the package.
 

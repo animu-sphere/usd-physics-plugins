@@ -1,6 +1,6 @@
 # OpenUSD physics bridge contract
 
-> **Status: proposed, updated 2026-09-27.** A bounded Box snapshot reader is
+> **Status: proposed, updated 2026-10-18.** A bounded Box snapshot reader is
 > implemented; the wider bridge remains planned. See the
 > [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
@@ -11,15 +11,28 @@ world, handles, persistent mapping, or USD edits. Callers must keep the result
 associated with its source Stage and discard it at reload; stage-generation
 identities and synchronization records remain future work.
 
-The Box subset requires collision and body on the same Cube, Y-up meters/kg,
-explicit positive mass for dynamic bodies, one translate op then scale ops,
-and identity ancestors or resetXformStack. Static collision-only Cubes and
-disabled rigid bodies are static; disabled collision-only Cubes are skipped.
-A rigid body with disabled collision is rejected until collider-free bodies
-are supported. Kinematic bodies, animated declarations, scenes, joints,
-instances, nested bodies, inherited/density-based mass, materials, and all
-other authored `physics:*` properties are rejected. No default mass is
-substituted for unsupported USD mass inference.
+The Box subset requires Y-up meters/kg and explicit positive mass for dynamic
+bodies. Collision may be on the body Cube or on one descendant Cube of a body
+Xform. In the latter case the body's composed world frame must be rigid and
+the collider's composed relative transform must be diagonal scale only;
+offsets, rotations and reset stacks below the body are rejected. The returned
+path and transform always identify the body frame. Shape dimensions absorb
+Cube size and scale, including reflections. A direct collision Cube may have
+composed scale and rotation if the resulting axes are orthogonal.
+
+Time-independent translate, rotate, orient, scale and matrix ops compose
+through ancestors until `resetXformStack`; an empty stack is identity.
+Unreadable, non-finite, singular, sheared, perspective and inverse-op
+transforms are rejected. Rigid-frame scale, normalized-axis orthogonality,
+and child-frame off-diagonal/translation checks use a tolerance of `1e-9`.
+Animated ancestors beyond a reset do not participate. Static collision-only
+Cubes and disabled rigid bodies are static; disabled collision-only Cubes are
+skipped. A rigid body with disabled collision is rejected until collider-free
+bodies are supported. Kinematic bodies, animated declarations, scenes, joints,
+instances, nested or compound bodies, collider mass overrides,
+inherited/density-based mass, materials, and all other authored `physics:*`
+properties are rejected. No default mass is substituted for unsupported USD
+mass inference.
 
 For this surface, `USD-O2` uses typed `ImportErrorCode` plus the offending path
 on `ImportError`: `invalidStage`, `unsupportedUnits`, `unsupportedDeclaration`,

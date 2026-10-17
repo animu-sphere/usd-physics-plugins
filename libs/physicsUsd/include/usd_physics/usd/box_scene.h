@@ -18,9 +18,11 @@ enum class ImportErrorCode {
 
 class ImportError : public std::runtime_error {
 public:
-  ImportError(ImportErrorCode code, std::string path, const std::string& detail);
+  ImportError(ImportErrorCode code, std::string path,
+              const std::string &detail);
   [[nodiscard]] ImportErrorCode code() const noexcept { return code_; }
-  [[nodiscard]] const std::string& path() const noexcept { return path_; }
+  [[nodiscard]] const std::string &path() const noexcept { return path_; }
+
 private:
   ImportErrorCode code_;
   std::string path_;
@@ -37,9 +39,15 @@ struct BoxBody {
 };
 
 // Validates the complete supported subset before returning any declarations.
-// Requires Y-up meters/kg, Cube collision on the body prim, explicit positive
-// dynamic mass, translate then scale, and identity ancestors (or reset stack).
+// Requires Y-up meters/kg and explicit positive dynamic mass. Supports a
+// collision Cube on the body, or one centered, axis-aligned child Cube of a
+// rigid body Xform. Composes time-independent affine transforms and reset
+// stacks. Cube scales are baked into dimensions; shear and inverse ops fail.
+// Separate body frames must be rigid; child offsets/rotations, compounds and
+// kinematic bodies remain unsupported. The path and transform identify the
+// body frame, never a displaced collider frame.
 // No USD edits or runtime resources are created. Results are sorted by path.
-[[nodiscard]] std::vector<BoxBody> readBoxScene(const pxr::UsdStageRefPtr& stage);
+[[nodiscard]] std::vector<BoxBody>
+readBoxScene(const pxr::UsdStageRefPtr &stage);
 
 } // namespace usd_physics::usd
