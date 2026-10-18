@@ -76,6 +76,15 @@ the stateless `toSixDofConstraint()` conversion. The mandatory world interface,
 legacy fixed descriptors and dependency graph are unchanged. Rebuild packages
 and consumers together; public versions and artifact pins remain unchanged.
 
+The local contact-material increment appends `ContactMaterial contactMaterial`
+to `BodyDescriptor` in `descriptors.h`, plus `validateContactMaterial()`.
+Old source initializers retain their default contact behavior. This changes
+the descriptor's binary layout: rebuild core, backend, bridge and every
+consumer together. Pair mixing and numeric domains are defined by
+[the rigid-body contract](../design/RIGID_BODY_CONTRACT.md#52-bodies).
+There is no new published version or artifact pin. The USD reader gains no
+format-specific metadata interpretation or standard material binding support.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;

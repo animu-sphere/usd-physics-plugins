@@ -348,6 +348,16 @@ public:
 
     const bool dynamic = descriptor.motionType == core::MotionType::dynamicBody;
     const bool kinematic = descriptor.motionType == core::MotionType::kinematicBody;
+    const auto material = descriptor.contactMaterial;
+    const float friction = toJoltFloat(material.friction, "contact friction");
+    const float restitution = toJoltFloat(material.restitution, "contact restitution");
+    // Jolt's default pair friction is sqrt(f1 * f2). Keep any pair product
+    // finite, and never silently turn a positive coefficient into zero.
+    if (friction > std::sqrt(std::numeric_limits<float>::max()) ||
+        (material.friction > 0 && friction == 0) ||
+        (material.restitution > 0 && restitution == 0)) {
+      throw std::invalid_argument("contact coefficients exceed Jolt mixing/scalar range");
+    }
     const JPH::ObjectLayer objectLayer =
         layers_.layerFor(descriptor.motionType, descriptor.collisionFilter);
     JPH::BodyCreationSettings settings(
@@ -357,6 +367,8 @@ public:
         dynamic ? JPH::EMotionType::Dynamic
                 : kinematic ? JPH::EMotionType::Kinematic : JPH::EMotionType::Static,
         objectLayer);
+    settings.mFriction = friction;
+    settings.mRestitution = restitution;
     if (dynamic) {
       const float mass = toJoltFloat(descriptor.mass, "body mass");
       if (mass <= 0.0f || !std::isfinite(1.0f / mass)) {

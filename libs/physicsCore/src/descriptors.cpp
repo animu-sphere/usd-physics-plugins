@@ -57,7 +57,18 @@ void validateShapeDescriptor(const ShapeDescriptor& descriptor) {
   }
 }
 
+void validateContactMaterial(const ContactMaterial& material) {
+  if (!std::isfinite(material.friction) || material.friction < 0.0) {
+    throw std::invalid_argument("contact friction must be finite and non-negative");
+  }
+  if (!std::isfinite(material.restitution) || material.restitution < 0.0 ||
+      material.restitution > 1.0) {
+    throw std::invalid_argument("contact restitution must be finite and in [0,1]");
+  }
+}
+
 void validateBodyDescriptor(const BodyDescriptor& descriptor) {
+  validateContactMaterial(descriptor.contactMaterial);
   if (!descriptor.shape) {
     throw std::invalid_argument("a physics body requires a valid shape handle");
   }

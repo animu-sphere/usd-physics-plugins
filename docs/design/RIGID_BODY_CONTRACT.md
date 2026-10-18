@@ -80,9 +80,17 @@ use the body origin, even when it differs from the shape's center of mass.
 ### 5.2 Bodies
 
 A body descriptor identifies its shape, motion type, initial transform, mass,
-and collision-filter semantics. Damping, friction, restitution, angular
-velocity and continuous-collision behavior are added only
-when a phase requires them.
+and collision-filter semantics. `BodyDescriptor::contactMaterial` carries
+dimensionless friction (finite, non-negative) and restitution (finite, in
+`[0,1]`). `ContactMaterial` defaults to friction `0.2` and restitution `0`,
+preserving the previous Jolt defaults. Validation applies to every motion type.
+`validateContactMaterial()` also validates a material without a body handle.
+Pair mixing is backend-defined: Jolt uses the geometric mean of friction and
+the maximum restitution, so copying source coefficients does not establish
+source-solver equivalence. Jolt rejects positive values rounded to zero, and
+friction above `sqrt(FLT_MAX)` before body creation to keep any pair product
+finite. These backend limits do not narrow the core's double-valued contract.
+Damping, angular velocity and continuous-collision behavior remain deferred.
 
 The local Phase 4 increment adds `MotionType::kinematicBody`. It is driven by
 explicit pose commands rather than gravity, forces or impulses from contacts.
