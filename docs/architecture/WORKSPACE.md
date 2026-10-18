@@ -37,6 +37,9 @@ The local body-damping increment adds neutral per-body linear/angular decay
 rates, validated by `physicsCore` and consumed by `physicsJolt`. Source-format
 coefficient conversion stays in the consumer; `physicsUsd` reads no such
 metadata. Component identities and dependency directions are unchanged.
+The contact-mixing increment adds neutral immutable world pair settings in
+`physicsCore`, selected through a `physicsJolt::createWorld()` overload. Source
+policy selection stays in the consumer; the backend owns contact callbacks.
 `physicsCore` has supported value, handle, descriptor, and world-contract
 slices. `physicsJolt` implements the initial backend slice and retains a typed
 unavailable fallback for builds that do not provide Jolt.

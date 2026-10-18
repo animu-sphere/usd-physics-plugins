@@ -4,6 +4,7 @@
 #include "usd_physics/core/value_types.h"
 
 #include <cstdint>
+#include <optional>
 
 namespace usd_physics::core {
 
@@ -44,10 +45,24 @@ collisionFiltersAllowPair(CollisionFilter first,
          (second.categories & first.collidesWith) != 0;
 }
 
-// Dimensionless body contact coefficients. Pair mixing is backend-defined.
+// Dimensionless body contact coefficients.
 struct ContactMaterial {
   double friction{0.2};
   double restitution{0.0};
+};
+
+enum class ContactCombineRule {
+  geometricMean,
+  maximum,
+  product,
+};
+
+// Immutable world-wide pair policy. Defaults preserve the original backend
+// behavior; a source adapter may request products and a friction ceiling.
+struct ContactMixing {
+  ContactCombineRule friction{ContactCombineRule::geometricMean};
+  ContactCombineRule restitution{ContactCombineRule::maximum};
+  std::optional<double> maxFriction;
 };
 
 // Non-negative decay rates in inverse seconds: dv/dt = -linear * v,
@@ -79,6 +94,7 @@ struct ConstraintDescriptor {
 
 void validateShapeDescriptor(const ShapeDescriptor &descriptor);
 void validateContactMaterial(const ContactMaterial &material);
+void validateContactMixing(const ContactMixing &mixing);
 void validateBodyDamping(const BodyDamping &damping);
 void validateBodyDescriptor(const BodyDescriptor &descriptor);
 void validateConstraintDescriptor(const ConstraintDescriptor &descriptor);

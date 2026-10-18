@@ -92,6 +92,15 @@ and consumers together in a separate prefix. Rates use inverse seconds, not
 source-format retention fractions. Versions and published pins are unchanged;
 the generic USD reader gains no format metadata interpretation.
 
+The contact-mixing increment adds `ContactCombineRule`, `ContactMixing` and
+`validateContactMixing()` to the existing core descriptor header, plus
+`physicsJolt::createWorld(const ContactMixing&)`. The no-argument factory and
+body descriptor layout are unchanged. The no-Jolt package validates the policy
+then reports typed backend unavailability. The installed consumer exercises
+the overload in both builds. Use rebuilt packages in a separate prefix;
+public versions and artifact pins remain unchanged. Format-specific policy
+selection stays in the caller, outside `physicsUsd`.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;

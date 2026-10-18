@@ -3,6 +3,9 @@ target_link_libraries(physics_jolt_scaffold_test PRIVATE physicsJolt::physicsJol
 add_test(NAME physicsJolt.scaffold COMMAND physics_jolt_scaffold_test)
 
 if(PHYSICSJOLT_BACKEND_AVAILABLE)
+  add_executable(physics_jolt_mixing_test physics_jolt_mixing_test.cpp)
+  target_link_libraries(physics_jolt_mixing_test PRIVATE physicsJolt::physicsJolt)
+  add_test(NAME physicsJolt.mixing COMMAND physics_jolt_mixing_test)
   add_executable(physics_jolt_damping_test physics_jolt_damping_test.cpp)
   target_link_libraries(physics_jolt_damping_test PRIVATE physicsJolt::physicsJolt)
   add_test(NAME physicsJolt.damping COMMAND physics_jolt_damping_test)
