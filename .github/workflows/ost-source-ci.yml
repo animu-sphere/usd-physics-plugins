@@ -15,7 +15,9 @@
 #
 # Repository additions retained after regeneration: build pinned Jolt beside
 # the workspace and expose its install prefix to the generated `usd-jolt` intent;
-# test and package all three physics libraries on Windows and Linux.
+# test and package all three physics libraries on Windows and Linux. The
+# `usd-jolt-six-dof` cells skip packaging: they are hosted acceptance for the
+# experimental six-DOF capability, not compatible package inputs.
 name: ost source ci
 
 on:
@@ -193,6 +195,48 @@ jobs:
             runner_profile: linux-hosted
             verify: test
             intent_flags: "--intent usd-jolt"
+            runtime_remote: "oci://ghcr.io/animu-sphere/openstrata-runtime-cy2026-usd@sha256:8d2d599489ee623044f4360ad3a2b979e2966e6ad2f949e5aa9083570e59cc4f"
+            host_python: "3.13"
+            host_packages_apt: "libx11-dev libxt-dev"
+            host_packages_brew: ""
+          - name: workspace-pr-windows-six-dof
+            lane: pull_request
+            runtime_artifact: sha256:ebb0c7da509ee14ada19ee5b461de6996aad0024b5c9640f12dde76912e849b5
+            require_openusd: ""
+            require_openusd_version: ""
+            openusd_flags: ""
+            target_trust: local
+            minimum_trust: local
+            require_evidence: all
+            evidence_flags: "--require-sbom --require-provenance"
+            platform: cy2026
+            profile: usd
+            runs_on: ["windows-2022"]
+            hosted: true
+            runner_profile: windows-hosted
+            verify: test
+            intent_flags: "--intent usd-jolt-six-dof"
+            runtime_remote: "oci://ghcr.io/animu-sphere/openstrata-runtime-cy2026-usd@sha256:d3ff79a6f330558c3b9a427a927d340fe3dcab1fe89107faa0ea9f66a104b7bf"
+            host_python: "3.13"
+            host_packages_apt: ""
+            host_packages_brew: ""
+          - name: workspace-pr-linux-six-dof
+            lane: pull_request
+            runtime_artifact: sha256:3bf31789daa60ef650df35ab276bd67d0c0ee44a960311f78835cc0962efe261
+            require_openusd: ""
+            require_openusd_version: ""
+            openusd_flags: ""
+            target_trust: local
+            minimum_trust: local
+            require_evidence: all
+            evidence_flags: "--require-sbom --require-provenance"
+            platform: cy2026
+            profile: usd
+            runs_on: ["ubuntu-24.04"]
+            hosted: true
+            runner_profile: linux-hosted
+            verify: test
+            intent_flags: "--intent usd-jolt-six-dof"
             runtime_remote: "oci://ghcr.io/animu-sphere/openstrata-runtime-cy2026-usd@sha256:8d2d599489ee623044f4360ad3a2b979e2966e6ad2f949e5aa9083570e59cc4f"
             host_python: "3.13"
             host_packages_apt: "libx11-dev libxt-dev"
@@ -443,6 +487,7 @@ jobs:
           CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
         run: ost test --target ${{ matrix.platform }} --profile ${{ matrix.profile }} ${{ matrix.intent_flags }}
       - name: Verify and package physics libraries on both platforms
+        if: ${{ matrix.intent_flags != '--intent usd-jolt-six-dof' }}
         shell: bash
         env:
           CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
