@@ -19,3 +19,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-10-18 Phase 4 primitive mass inference](2026-10-18-phase4-mass-inference.md)
 - [2026-10-18 Phase 4 experimental six-DOF execution](2026-10-18-phase4-six-dof-execution.md)
 - [2026-10-18 Phase 4 six-DOF SDK configuration cause](2026-10-18-phase4-six-dof-sdk-cause.md)
+- [2026-10-18 Phase 4 hosted six-DOF acceptance](2026-10-18-phase4-six-dof-hosted.md)
