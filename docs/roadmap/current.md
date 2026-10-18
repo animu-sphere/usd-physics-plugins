@@ -36,8 +36,11 @@ than a full release.
   controls ([damping evidence](../reports/2026-10-18-phase4-body-damping.md)).
   Pair-rule selection now has local 60/240 Hz evidence
   ([mixing evidence](../reports/2026-10-18-phase4-contact-mixing.md)).
+  Neutral translation springs now pass local analytic response, reduced-mass
+  and hard-limit controls; numerical damping remains timestep-dependent
+  ([spring evidence](../reports/2026-10-18-phase4-translation-springs.md)).
   Standard USD material bindings, instantaneous source damping, timestep and source-solver trajectory fidelity,
-  springs, source-only
+  angular springs, source spring-response equivalence, source-only
   semantics and full MMD fidelity remain open
   ([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md),
   [execution evidence](../reports/2026-10-18-phase4-six-dof-execution.md),

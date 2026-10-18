@@ -89,11 +89,15 @@ int main() {
     descriptor.firstFrame.translation = {10, 5, 0};
     for (auto &axis : descriptor.limits)
       axis.motion = usd_physics::core::AxisMotion::locked;
+    descriptor.limits[0].motion = usd_physics::core::AxisMotion::free;
+    descriptor.translationSprings[0] = {25, 10, .25};
     const auto constraint = constraints->createSixDofConstraint(descriptor);
     for (int i = 0; i != 60; ++i)
       world->step(usd_physics::core::PhysicsWorld::Duration{1.0 / 60});
     const auto heldY = world->bodyState(held).transform.translation.y;
-    if (heldY < 4.999 || heldY > 5.001 || !world->destroyConstraint(constraint))
+    const auto heldX = world->bodyState(held).transform.translation.x;
+    if (heldY < 4.999 || heldY > 5.001 || heldX < 10.2 || heldX > 10.26 ||
+        !world->destroyConstraint(constraint))
       return 10;
 #endif
     return position.x > .999 && position.x < 1.001 && position.y > 1.999 &&

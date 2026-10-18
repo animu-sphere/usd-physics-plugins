@@ -33,6 +33,10 @@ The local six-DOF increment adds optional `SixDofConstraints` in `physicsCore`,
 implemented by `physicsJolt`, and a stateless snapshot-to-descriptor conversion
 in `physicsUsd`. No dependency direction or component identity changes; resource
 mapping and runtime scheduling remain consumer-owned.
+The local translation-spring increment extends that neutral descriptor and
+the opt-in backend implementation with three Hookean translation axes.
+`physicsUsd` still interprets no source spring metadata or drive declarations;
+no component or dependency edge changes.
 The local body-damping increment adds neutral per-body linear/angular decay
 rates, validated by `physicsCore` and consumed by `physicsJolt`. Source-format
 coefficient conversion stays in the consumer; `physicsUsd` reads no such

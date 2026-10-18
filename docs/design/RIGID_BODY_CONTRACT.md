@@ -167,7 +167,7 @@ frame's axes. Rotation uses X twist and Y/Z pyramid swing of the second frame
 relative to the first, rather than three independently composed Euler angles.
 `AxisMotion` is free, locked at zero, or limited by finite `low < high` bounds.
 Angular bounds lie strictly inside `(-pi, pi)`. Inactive bounds are ignored.
-Springs, drives and nonzero equal-bound locks are outside this slice. Backend
+Angular springs, general drives and nonzero equal-bound locks are outside this slice. Backend
 scalar range or collapsed-precision bounds reject before resource creation.
 
 `collisionEnabled=false` suppresses contacts between the two body endpoints
@@ -176,6 +176,26 @@ one; removing the last suppressing constraint restores ordinary category/mask
 filtering. World endpoints have no collider to suppress. Removal wakes dynamic
 endpoints, so a released sleeping body resumes motion. No public wake or sleep
 command is introduced. All operations retain the single-owner scheduling rule.
+
+### 5.5 Translation springs (experimental)
+
+`SixDofConstraintDescriptor::translationSprings` adds three independent
+`TranslationSpring` values in the first joint frame. Stiffness is N/m,
+damping is N*s/m and equilibrium is meters. The continuous force law is
+`F = -k*(x-equilibrium) - c*v`, with relative anchor velocity. Every value
+must be finite; stiffness and damping must be non-negative. Zero stiffness
+disables an axis and requires zero damping; its finite equilibrium is ignored.
+Positive stiffness on a locked
+axis rejects; free and hard-limited axes may have springs, including an
+equilibrium outside their limit range. No angular spring is implied.
+
+Jolt uses position motors with `StiffnessAndDamping` settings and targets in
+the first constraint frame. Active scalar overflow and nonzero values rounded to
+zero reject before resource creation. Hard limits remain hard. The existing
+six-DOF build option gates execution. These are discretized implicit springs:
+analytic response tests at 60/240 Hz measure timestep-dependent numerical
+damping, even with zero configured damping. Source solver equivalence requires
+separate evidence; source-format conversion belongs outside this package.
 
 ## 6. World lifecycle
 
