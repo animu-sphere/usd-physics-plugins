@@ -1,6 +1,7 @@
 #include "usd_physics/core/descriptors.h"
 
 #include <cmath>
+#include <initializer_list>
 #include <stdexcept>
 
 namespace usd_physics::core {
@@ -67,6 +68,24 @@ void validateContactMaterial(const ContactMaterial &material) {
       material.restitution > 1.0) {
     throw std::invalid_argument(
         "contact restitution must be finite and in [0,1]");
+  }
+}
+
+void validateContactMixing(const ContactMixing &mixing) {
+  for (const auto rule : {mixing.friction, mixing.restitution}) {
+    switch (rule) {
+    case ContactCombineRule::geometricMean:
+    case ContactCombineRule::maximum:
+    case ContactCombineRule::product:
+      break;
+    default:
+      throw std::invalid_argument("unsupported contact combine rule");
+    }
+  }
+  if (mixing.maxFriction &&
+      (!std::isfinite(*mixing.maxFriction) || *mixing.maxFriction < 0)) {
+    throw std::invalid_argument(
+        "contact friction ceiling must be finite and non-negative");
   }
 }
 

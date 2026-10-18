@@ -60,12 +60,13 @@ int main() {
 
   auto world = jolt::createWorld();
   const auto shape = world->createShape({});
-  for (const auto material : {core::ContactMaterial{-1, 0},
-                              core::ContactMaterial{0, 1.1},
-                              core::ContactMaterial{std::numeric_limits<double>::max(), 0},
-                              core::ContactMaterial{std::numeric_limits<double>::min(), 0},
-                              core::ContactMaterial{0, std::numeric_limits<double>::min()},
-                              core::ContactMaterial{1e20, 0}}) {
+  for (const auto material :
+       {core::ContactMaterial{-1, 0}, core::ContactMaterial{0, 1.1},
+        core::ContactMaterial{std::numeric_limits<double>::max(), 0},
+        core::ContactMaterial{std::numeric_limits<double>::min(), 0},
+        core::ContactMaterial{0, std::numeric_limits<double>::min()},
+        core::ContactMaterial{1e20, 0},
+        core::ContactMaterial{std::ldexp(1.0, 64), 0}}) {
     try {
       world->createBody({shape, core::MotionType::staticBody, {}, 0, {}, material});
       return 3;

@@ -16,7 +16,7 @@ are not complete. The
 claim implementation status.
 
 Latest bridge evidence:
-[Body damping rates](reports/2026-10-18-phase4-body-damping.md).
+[Contact pair mixing](reports/2026-10-18-phase4-contact-mixing.md).
 
 | Category | Answers | Start here |
 | --- | --- | --- |

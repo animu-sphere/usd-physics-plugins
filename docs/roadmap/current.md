@@ -34,7 +34,9 @@ than a full release.
   response controls ([contact evidence](../reports/2026-10-18-phase4-contact-material.md));
   neutral damping rates also have local 60/240 Hz linear/angular response
   controls ([damping evidence](../reports/2026-10-18-phase4-body-damping.md)).
-  Standard USD material bindings, instantaneous source damping, timestep and source-solver mixing fidelity,
+  Pair-rule selection now has local 60/240 Hz evidence
+  ([mixing evidence](../reports/2026-10-18-phase4-contact-mixing.md)).
+  Standard USD material bindings, instantaneous source damping, timestep and source-solver trajectory fidelity,
   springs, source-only
   semantics and full MMD fidelity remain open
   ([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md),

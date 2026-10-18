@@ -251,6 +251,58 @@ bool stateChanged(const core::BodyState& previous,
          previous.linearVelocity != current.linearVelocity;
 }
 
+// Immutable settings are safe to read from Jolt's parallel contact callbacks.
+// Both new and persistent manifolds must receive the same pair coefficients.
+class ContactMixer final : public JPH::ContactListener {
+public:
+  explicit ContactMixer(core::ContactMixing mixing)
+      : mixing_(std::move(mixing)) {}
+
+  void OnContactAdded(const JPH::Body &first, const JPH::Body &second,
+                      const JPH::ContactManifold &,
+                      JPH::ContactSettings &settings) override {
+    mix(first, second, settings);
+  }
+
+  void OnContactPersisted(const JPH::Body &first, const JPH::Body &second,
+                          const JPH::ContactManifold &,
+                          JPH::ContactSettings &settings) override {
+    mix(first, second, settings);
+  }
+
+private:
+  static double combine(double first, double second,
+                        core::ContactCombineRule rule) {
+    switch (rule) {
+    case core::ContactCombineRule::geometricMean:
+      return std::sqrt(first * second);
+    case core::ContactCombineRule::maximum:
+      return std::max(first, second);
+    case core::ContactCombineRule::product:
+      return first * second;
+    }
+    return 0; // Rules are validated before constructing a world.
+  }
+
+  void mix(const JPH::Body &first, const JPH::Body &second,
+           JPH::ContactSettings &settings) const {
+    if (mixing_.friction != core::ContactCombineRule::geometricMean ||
+        mixing_.maxFriction) {
+      auto friction =
+          combine(first.GetFriction(), second.GetFriction(), mixing_.friction);
+      if (mixing_.maxFriction)
+        friction = std::min(friction, *mixing_.maxFriction);
+      settings.mCombinedFriction = static_cast<float>(friction);
+    }
+    if (mixing_.restitution != core::ContactCombineRule::maximum)
+      settings.mCombinedRestitution = static_cast<float>(
+          combine(first.GetRestitution(), second.GetRestitution(),
+                  mixing_.restitution));
+  }
+
+  const core::ContactMixing mixing_;
+};
+
 class JoltWorld final : public core::PhysicsWorld,
 #ifdef USDPHYSICS_JOLT_SIX_DOF
                         public core::SixDofConstraints,
@@ -259,12 +311,13 @@ class JoltWorld final : public core::PhysicsWorld,
                         public core::GroundQuery,
                         public core::SegmentQuery {
 public:
-  JoltWorld()
+  explicit JoltWorld(const core::ContactMixing &mixing)
       : worldId_(nextWorldId.fetch_add(1, std::memory_order_relaxed)),
         pairFilter_(layers_), broadPhaseInterface_(layers_),
         objectVsBroadPhaseFilter_(layers_),
         jobSystem_(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
-                   workerThreadCount()) {
+                   workerThreadCount()),
+        contactMixer_(mixing) {
     if (worldId_ == 0 || worldId_ > std::numeric_limits<std::uint32_t>::max()) {
       throw core::PhysicsError{core::PhysicsErrorCode::resourceExhausted,
                                "physics world handle capacity was exhausted"};
@@ -272,6 +325,10 @@ public:
     physicsSystem_.Init(maxBodies, 0, maxBodyPairs, maxContactConstraints,
                         broadPhaseInterface_, objectVsBroadPhaseFilter_,
                         pairFilter_);
+    if (mixing.friction != core::ContactCombineRule::geometricMean ||
+        mixing.restitution != core::ContactCombineRule::maximum ||
+        mixing.maxFriction)
+      physicsSystem_.SetContactListener(&contactMixer_);
   }
 
   ~JoltWorld() override {
@@ -353,7 +410,8 @@ public:
     const float restitution = toJoltFloat(material.restitution, "contact restitution");
     // Jolt's default pair friction is sqrt(f1 * f2). Keep any pair product
     // finite, and never silently turn a positive coefficient into zero.
-    if (friction > std::sqrt(std::numeric_limits<float>::max()) ||
+    if (double(friction) * friction >
+            double(std::numeric_limits<float>::max()) ||
         (material.friction > 0 && friction == 0) ||
         (material.restitution > 0 && restitution == 0)) {
       throw std::invalid_argument("contact coefficients exceed Jolt mixing/scalar range");
@@ -819,6 +877,7 @@ private:
   ObjectVsBroadPhaseLayerFilter objectVsBroadPhaseFilter_;
   JPH::TempAllocatorImpl tempAllocator_{tempAllocatorBytes};
   JPH::JobSystemThreadPool jobSystem_;
+  ContactMixer contactMixer_;
   JPH::PhysicsSystem physicsSystem_;
   std::uint64_t nextShape_{1};
   std::uint64_t nextBody_{1};
@@ -837,7 +896,20 @@ bool backendAvailable() noexcept {
 }
 
 std::unique_ptr<core::PhysicsWorld> createWorld() {
-  return std::make_unique<JoltWorld>();
+  return createWorld(core::ContactMixing{});
+}
+
+std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing) {
+  core::validateContactMixing(mixing);
+  if (mixing.maxFriction) {
+    const auto ceiling =
+        toJoltFloat(*mixing.maxFriction, "contact friction ceiling");
+    if (*mixing.maxFriction > 0 && ceiling == 0)
+      throw std::invalid_argument(
+          "contact friction ceiling underflows the Jolt scalar range");
+  }
+  return std::make_unique<JoltWorld>(mixing);
 }
 
 } // namespace usd_physics::jolt

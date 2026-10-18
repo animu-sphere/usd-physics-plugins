@@ -13,4 +13,10 @@ std::unique_ptr<core::PhysicsWorld> createWorld() {
                            "physicsJolt was built without Jolt Physics"};
 }
 
+std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing) {
+  core::validateContactMixing(mixing);
+  return createWorld();
+}
+
 } // namespace usd_physics::jolt

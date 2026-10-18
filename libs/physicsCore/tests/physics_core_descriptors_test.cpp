@@ -63,6 +63,36 @@ int main() {
 
   const auto infinity = std::numeric_limits<double>::infinity();
   const auto nan = std::numeric_limits<double>::quiet_NaN();
+  const ContactMixing defaultMixing;
+  if (defaultMixing.friction != ContactCombineRule::geometricMean ||
+      defaultMixing.restitution != ContactCombineRule::maximum ||
+      defaultMixing.maxFriction)
+    return 14;
+  for (const auto friction :
+       {ContactCombineRule::geometricMean, ContactCombineRule::maximum,
+        ContactCombineRule::product}) {
+    for (const auto restitution :
+         {ContactCombineRule::geometricMean, ContactCombineRule::maximum,
+          ContactCombineRule::product}) {
+      validateContactMixing({friction, restitution, {}});
+      validateContactMixing({friction, restitution, 0});
+      validateContactMixing({friction, restitution, 10});
+    }
+  }
+  for (const auto invalid : {-1.0, infinity, nan}) {
+    auto mixing = defaultMixing;
+    mixing.maxFriction = invalid;
+    if (!rejectsInvalidArgument([&] { validateContactMixing(mixing); }))
+      return 15;
+  }
+  auto mixing = defaultMixing;
+  mixing.friction = static_cast<ContactCombineRule>(-1);
+  if (!rejectsInvalidArgument([&] { validateContactMixing(mixing); }))
+    return 16;
+  mixing = defaultMixing;
+  mixing.restitution = static_cast<ContactCombineRule>(-1);
+  if (!rejectsInvalidArgument([&] { validateContactMixing(mixing); }))
+    return 16;
   if (BodyDamping{}.linear != .05 || BodyDamping{}.angular != .05)
     return 12;
   for (const auto type : {MotionType::staticBody, MotionType::dynamicBody,

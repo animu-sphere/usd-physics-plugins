@@ -85,11 +85,24 @@ dimensionless friction (finite, non-negative) and restitution (finite, in
 `[0,1]`). `ContactMaterial` defaults to friction `0.2` and restitution `0`,
 preserving the previous Jolt defaults. Validation applies to every motion type.
 `validateContactMaterial()` also validates a material without a body handle.
-Pair mixing is backend-defined: Jolt uses the geometric mean of friction and
-the maximum restitution, so copying source coefficients does not establish
-source-solver equivalence. Jolt rejects positive values rounded to zero, and
-friction above `sqrt(FLT_MAX)` before body creation to keep any pair product
-finite. These backend limits do not narrow the core's double-valued contract.
+`ContactMixing` selects an immutable world-wide pair policy: friction and
+restitution each use `ContactCombineRule::geometricMean`, `maximum`, or
+`product`. The defaults are geometric-mean friction and maximum restitution,
+preserving the original Jolt behavior. Optional `maxFriction` caps the combined
+friction after mixing; absent means no ceiling, and zero disables friction.
+A ceiling must be finite and non-negative. Unknown rules reject through
+`validateContactMixing()`. No source-format profile is defined in the core.
+`physicsJolt::createWorld(const ContactMixing&)` copies the validated policy;
+`createWorld()` retains its existing default contract. Settings are independent
+between simultaneously alive worlds and cannot change during their lifetime.
+Jolt applies the policy to both added and persistent contacts. Selecting the
+same scalar rule as a source solver does not establish trajectory equivalence.
+
+Jolt rejects positive coefficients rounded to zero and friction whose rounded
+scalar squared exceeds `FLT_MAX` before body creation, keeping any pair product
+finite. A supplied ceiling must also fit Jolt's scalar range without positive
+underflow. Combined coefficients retain backend scalar precision. These backend
+limits do not narrow the core's double-valued contract.
 
 `BodyDescriptor::damping` carries `BodyDamping` with independent `linear` and
 `angular` decay rates in inverse seconds: `dv/dt = -linear * v` and

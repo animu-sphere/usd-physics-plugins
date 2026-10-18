@@ -13,4 +13,8 @@ namespace usd_physics::jolt {
 // built without Jolt throws PhysicsErrorCode::backendUnavailable here.
 [[nodiscard]] std::unique_ptr<core::PhysicsWorld> createWorld();
 
+// Select an immutable, solver-neutral pair policy for this world only.
+[[nodiscard]] std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing);
+
 } // namespace usd_physics::jolt

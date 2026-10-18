@@ -24,6 +24,10 @@ int main() {
   const usd_physics::core::ShapeDescriptor box;
   const usd_physics::core::ContactMaterial material{0.75, 0.5};
   usd_physics::core::validateContactMaterial(material);
+  const usd_physics::core::ContactMixing mixing{
+      usd_physics::core::ContactCombineRule::product,
+      usd_physics::core::ContactCombineRule::product, 10};
+  usd_physics::core::validateContactMixing(mixing);
   const usd_physics::core::BodyDamping damping{.7, .3};
   usd_physics::core::validateBodyDamping(damping);
   usd_physics::core::validateShapeDescriptor(box);
@@ -49,7 +53,7 @@ int main() {
     return 3;
   }
   if (usd_physics::jolt::backendAvailable()) {
-    auto world = usd_physics::jolt::createWorld();
+    auto world = usd_physics::jolt::createWorld(mixing);
     auto *motion =
         dynamic_cast<usd_physics::core::KinematicMotion *>(world.get());
     if (!motion)
@@ -98,7 +102,7 @@ int main() {
                : 8;
   }
   try {
-    static_cast<void>(usd_physics::jolt::createWorld());
+    static_cast<void>(usd_physics::jolt::createWorld(mixing));
   } catch (const usd_physics::core::PhysicsError &unavailable) {
     return unavailable.code() ==
                    usd_physics::core::PhysicsErrorCode::backendUnavailable

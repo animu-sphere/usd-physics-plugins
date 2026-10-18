@@ -1,5 +1,7 @@
 # Phase 4 body damping rates (2026-10-18)
 
+Later evidence: [contact pair mixing](2026-10-18-phase4-contact-mixing.md) adds per-world rule selection and friction ceilings.
+
 Local Windows follow-up to [contact coefficients](2026-10-18-phase4-contact-material.md).
 The neutral `BodyDamping` descriptor carries independent finite non-negative
 linear/angular decay rates in inverse seconds. `BodyDescriptor` appends it;
