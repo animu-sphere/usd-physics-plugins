@@ -32,7 +32,9 @@ than a full release.
   test but never package. The option stays OFF by default and no six-DOF
   package is published. Body friction/restitution now pass local backend
   response controls ([contact evidence](../reports/2026-10-18-phase4-contact-material.md));
-  standard USD material bindings, damping, source-solver mixing fidelity,
+  neutral damping rates also have local 60/240 Hz linear/angular response
+  controls ([damping evidence](../reports/2026-10-18-phase4-body-damping.md)).
+  Standard USD material bindings, instantaneous source damping, timestep and source-solver mixing fidelity,
   springs, source-only
   semantics and full MMD fidelity remain open
   ([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md),

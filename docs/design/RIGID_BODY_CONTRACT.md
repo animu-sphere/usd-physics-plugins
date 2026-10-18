@@ -90,7 +90,20 @@ the maximum restitution, so copying source coefficients does not establish
 source-solver equivalence. Jolt rejects positive values rounded to zero, and
 friction above `sqrt(FLT_MAX)` before body creation to keep any pair product
 finite. These backend limits do not narrow the core's double-valued contract.
-Damping, angular velocity and continuous-collision behavior remain deferred.
+
+`BodyDescriptor::damping` carries `BodyDamping` with independent `linear` and
+`angular` decay rates in inverse seconds: `dv/dt = -linear * v` and
+`dw/dt = -angular * w`. Both must be finite and non-negative for every motion
+type; `validateBodyDamping()` also validates them independently. Zero disables
+that damping channel; rates above one are valid. Defaults are `0.05` for both,
+preserving previous Jolt behavior. Damping affects dynamic motion only.
+The backend may approximate exponential decay at each substep: Jolt multiplies
+each velocity by `max(0, 1-rate*dt)` after force/gravity integration. Finite-step
+trajectories therefore depend on the backend and timestep. Jolt rejects rates
+outside its scalar range or positive rates rounded to zero before creating a
+native body. Source retention fractions must be converted by their adapter,
+not copied into these rate fields. Angular-velocity commands and
+continuous-collision behavior remain deferred.
 
 The local Phase 4 increment adds `MotionType::kinematicBody`. It is driven by
 explicit pose commands rather than gravity, forces or impulses from contacts.

@@ -38,7 +38,8 @@ struct CollisionFilter {
 };
 
 [[nodiscard]] constexpr bool
-collisionFiltersAllowPair(CollisionFilter first, CollisionFilter second) noexcept {
+collisionFiltersAllowPair(CollisionFilter first,
+                          CollisionFilter second) noexcept {
   return (first.categories & second.collidesWith) != 0 &&
          (second.categories & first.collidesWith) != 0;
 }
@@ -49,6 +50,13 @@ struct ContactMaterial {
   double restitution{0.0};
 };
 
+// Non-negative decay rates in inverse seconds: dv/dt = -linear * v,
+// dw/dt = -angular * w. Backends may approximate the exponential per step.
+struct BodyDamping {
+  double linear{0.05};
+  double angular{0.05};
+};
+
 struct BodyDescriptor {
   ShapeHandle shape;
   MotionType motionType{MotionType::staticBody};
@@ -56,6 +64,7 @@ struct BodyDescriptor {
   double mass{1.0};
   CollisionFilter collisionFilter;
   ContactMaterial contactMaterial;
+  BodyDamping damping;
 };
 
 enum class ConstraintType {
@@ -68,9 +77,10 @@ struct ConstraintDescriptor {
   BodyHandle secondBody;
 };
 
-void validateShapeDescriptor(const ShapeDescriptor& descriptor);
-void validateContactMaterial(const ContactMaterial& material);
-void validateBodyDescriptor(const BodyDescriptor& descriptor);
-void validateConstraintDescriptor(const ConstraintDescriptor& descriptor);
+void validateShapeDescriptor(const ShapeDescriptor &descriptor);
+void validateContactMaterial(const ContactMaterial &material);
+void validateBodyDamping(const BodyDamping &damping);
+void validateBodyDescriptor(const BodyDescriptor &descriptor);
+void validateConstraintDescriptor(const ConstraintDescriptor &descriptor);
 
 } // namespace usd_physics::core

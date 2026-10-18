@@ -7,7 +7,8 @@ namespace usd_physics::core {
 namespace {
 
 bool isFinite(Vector3 value) noexcept {
-  return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z);
+  return std::isfinite(value.x) && std::isfinite(value.y) &&
+         std::isfinite(value.z);
 }
 
 bool isFinite(Quaternion value) noexcept {
@@ -26,7 +27,7 @@ void validateTransform(Transform value) {
 
 } // namespace
 
-void validateShapeDescriptor(const ShapeDescriptor& descriptor) {
+void validateShapeDescriptor(const ShapeDescriptor &descriptor) {
   validateTransform(descriptor.localTransform);
   const auto q = descriptor.localTransform.rotation;
   if (q.w == 0 && q.x == 0 && q.y == 0 && q.z == 0) {
@@ -57,18 +58,29 @@ void validateShapeDescriptor(const ShapeDescriptor& descriptor) {
   }
 }
 
-void validateContactMaterial(const ContactMaterial& material) {
+void validateContactMaterial(const ContactMaterial &material) {
   if (!std::isfinite(material.friction) || material.friction < 0.0) {
-    throw std::invalid_argument("contact friction must be finite and non-negative");
+    throw std::invalid_argument(
+        "contact friction must be finite and non-negative");
   }
   if (!std::isfinite(material.restitution) || material.restitution < 0.0 ||
       material.restitution > 1.0) {
-    throw std::invalid_argument("contact restitution must be finite and in [0,1]");
+    throw std::invalid_argument(
+        "contact restitution must be finite and in [0,1]");
   }
 }
 
-void validateBodyDescriptor(const BodyDescriptor& descriptor) {
+void validateBodyDamping(const BodyDamping &damping) {
+  if (!std::isfinite(damping.linear) || damping.linear < 0.0 ||
+      !std::isfinite(damping.angular) || damping.angular < 0.0) {
+    throw std::invalid_argument(
+        "body damping rates must be finite and non-negative");
+  }
+}
+
+void validateBodyDescriptor(const BodyDescriptor &descriptor) {
   validateContactMaterial(descriptor.contactMaterial);
+  validateBodyDamping(descriptor.damping);
   if (!descriptor.shape) {
     throw std::invalid_argument("a physics body requires a valid shape handle");
   }
@@ -84,26 +96,31 @@ void validateBodyDescriptor(const BodyDescriptor& descriptor) {
   }
 
   if (!std::isfinite(descriptor.mass) ||
-      (descriptor.motionType == MotionType::dynamicBody && descriptor.mass <= 0.0) ||
-      (descriptor.motionType != MotionType::dynamicBody && descriptor.mass < 0.0)) {
-    throw std::invalid_argument(
-        "body mass must be finite, non-negative for static/kinematic bodies, and "
-        "positive for dynamic bodies");
+      (descriptor.motionType == MotionType::dynamicBody &&
+       descriptor.mass <= 0.0) ||
+      (descriptor.motionType != MotionType::dynamicBody &&
+       descriptor.mass < 0.0)) {
+    throw std::invalid_argument("body mass must be finite, non-negative for "
+                                "static/kinematic bodies, and "
+                                "positive for dynamic bodies");
   }
   if (descriptor.collisionFilter.categories == 0) {
-    throw std::invalid_argument("a physics body requires at least one collision category");
+    throw std::invalid_argument(
+        "a physics body requires at least one collision category");
   }
 }
 
-void validateConstraintDescriptor(const ConstraintDescriptor& descriptor) {
+void validateConstraintDescriptor(const ConstraintDescriptor &descriptor) {
   if (descriptor.type != ConstraintType::fixed) {
     throw std::invalid_argument("constraint type is unsupported");
   }
   if (!descriptor.firstBody || !descriptor.secondBody) {
-    throw std::invalid_argument("a physics constraint requires two valid body handles");
+    throw std::invalid_argument(
+        "a physics constraint requires two valid body handles");
   }
   if (descriptor.firstBody == descriptor.secondBody) {
-    throw std::invalid_argument("a physics constraint requires two distinct bodies");
+    throw std::invalid_argument(
+        "a physics constraint requires two distinct bodies");
   }
 }
 

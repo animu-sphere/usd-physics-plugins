@@ -16,7 +16,7 @@ are not complete. The
 claim implementation status.
 
 Latest bridge evidence:
-[Body contact coefficients](reports/2026-10-18-phase4-contact-material.md).
+[Body damping rates](reports/2026-10-18-phase4-body-damping.md).
 
 | Category | Answers | Start here |
 | --- | --- | --- |

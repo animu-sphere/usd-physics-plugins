@@ -369,6 +369,15 @@ public:
         objectLayer);
     settings.mFriction = friction;
     settings.mRestitution = restitution;
+    settings.mLinearDamping =
+        toJoltFloat(descriptor.damping.linear, "linear damping");
+    settings.mAngularDamping =
+        toJoltFloat(descriptor.damping.angular, "angular damping");
+    if ((descriptor.damping.linear > 0 && settings.mLinearDamping == 0) ||
+        (descriptor.damping.angular > 0 && settings.mAngularDamping == 0)) {
+      throw std::invalid_argument(
+          "positive damping must remain positive in the Jolt scalar range");
+    }
     if (dynamic) {
       const float mass = toJoltFloat(descriptor.mass, "body mass");
       if (mass <= 0.0f || !std::isfinite(1.0f / mass)) {
