@@ -40,6 +40,10 @@ int main() {
       primitives[1].shape.type != usd_physics::core::ShapeType::capsule ||
       primitives[1].shape.radius != .25 || primitives[1].shape.halfHeight != 1)
     return 3;
+  pxr::UsdPhysicsRigidBodyAPI::Apply(capsule.GetPrim())
+      .CreateKinematicEnabledAttr().Set(true);
+  if (usd_physics::usd::readPrimitiveScene(stage)[1].motionType !=
+      usd_physics::core::MotionType::kinematicBody) return 4;
   return combined.size() == 2 && combined[1].path == "/Rig" &&
                  combined[1].mass == 2 &&
                  combined[1].transform.translation.y == 2 &&

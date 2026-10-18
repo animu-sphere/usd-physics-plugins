@@ -1,4 +1,5 @@
 #include "usd_physics/core/descriptors.h"
+#include "usd_physics/core/kinematic_motion.h"
 
 #include <limits>
 #include <stdexcept>
@@ -40,6 +41,8 @@ int main() {
        (CollisionCategories{1} << 2) | (CollisionCategories{1} << 3)}};
   validateBodyDescriptor(staticBody);
   validateBodyDescriptor(dynamicBody);
+  validateBodyDescriptor({ShapeHandle{1}, MotionType::kinematicBody, {}, 0, {}});
+  validateKinematicTarget({{1, 2, 3}, {2, 0, 0, 0}}, PhysicsWorld::Duration{.1});
   if (collisionFiltersAllowPair(staticBody.collisionFilter,
                                 dynamicBody.collisionFilter) ||
       !collisionFiltersAllowPair(dynamicBody.collisionFilter,
@@ -54,6 +57,16 @@ int main() {
 
   const auto infinity = std::numeric_limits<double>::infinity();
   const auto nan = std::numeric_limits<double>::quiet_NaN();
+  for (const double mass : {-1.0, nan, infinity}) {
+    if (!rejectsInvalidArgument([&] {
+          validateBodyDescriptor({ShapeHandle{1}, MotionType::kinematicBody, {}, mass, {}});
+        })) return 7;
+  }
+  for (const double seconds : {0.0, -1.0, nan, infinity}) {
+    if (!rejectsInvalidArgument([&] {
+          validateKinematicTarget({}, PhysicsWorld::Duration{seconds});
+        })) return 8;
+  }
   for (const auto type : {ShapeType::sphere, ShapeType::capsule}) {
     ShapeDescriptor shape;
     shape.type = type;
@@ -77,6 +90,8 @@ int main() {
        {Transform{{nan, 0, 0}, {}}, Transform{{}, {1, infinity, 0, 0}},
         Transform{{}, {0, 0, 0, 0}}}) {
     if (!rejectsInvalidArgument([&] {
+          validateKinematicTarget(transform, PhysicsWorld::Duration{.1});
+        }) || !rejectsInvalidArgument([&] {
           validateShapeDescriptor({ShapeType::box, {1, 1, 1}, transform});
         })) {
       return 4;

@@ -354,12 +354,11 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
     body.path = prim.GetPath().GetString();
     if (rigid) {
       const pxr::UsdPhysicsRigidBodyAPI api(prim);
-      if (read<bool>(api.GetKinematicEnabledAttr(), prim)) {
-        reject(Code::unsupportedDeclaration, prim,
-               "kinematic bodies are not supported");
+      const bool kinematic = read<bool>(api.GetKinematicEnabledAttr(), prim);
+      if (read<bool>(api.GetRigidBodyEnabledAttr(), prim)) {
+        body.motionType = kinematic ? core::MotionType::kinematicBody
+                                    : core::MotionType::dynamicBody;
       }
-      if (read<bool>(api.GetRigidBodyEnabledAttr(), prim))
-        body.motionType = core::MotionType::dynamicBody;
     }
     if (body.motionType == core::MotionType::dynamicBody) {
       if (!mass)

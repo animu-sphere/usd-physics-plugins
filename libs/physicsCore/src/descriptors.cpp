@@ -66,6 +66,7 @@ void validateBodyDescriptor(const BodyDescriptor& descriptor) {
   switch (descriptor.motionType) {
   case MotionType::staticBody:
   case MotionType::dynamicBody:
+  case MotionType::kinematicBody:
     break;
   default:
     throw std::invalid_argument("body motion type is unsupported");
@@ -73,9 +74,9 @@ void validateBodyDescriptor(const BodyDescriptor& descriptor) {
 
   if (!std::isfinite(descriptor.mass) ||
       (descriptor.motionType == MotionType::dynamicBody && descriptor.mass <= 0.0) ||
-      (descriptor.motionType == MotionType::staticBody && descriptor.mass < 0.0)) {
+      (descriptor.motionType != MotionType::dynamicBody && descriptor.mass < 0.0)) {
     throw std::invalid_argument(
-        "body mass must be finite, non-negative for static bodies, and "
+        "body mass must be finite, non-negative for static/kinematic bodies, and "
         "positive for dynamic bodies");
   }
   if (descriptor.collisionFilter.categories == 0) {

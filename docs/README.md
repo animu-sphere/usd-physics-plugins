@@ -16,7 +16,7 @@ are not complete. The
 claim implementation status.
 
 Latest local bridge evidence:
-[Sphere and Capsule snapshots](reports/2026-10-18-phase4-primitives.md).
+[Kinematic motion and snapshots](reports/2026-10-18-phase4-kinematic.md).
 
 | Category | Answers | Start here |
 | --- | --- | --- |

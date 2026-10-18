@@ -1,6 +1,7 @@
 #include "usd_physics/core/descriptors.h"
 #include "usd_physics/core/errors.h"
 #include "usd_physics/core/ground_query.h"
+#include "usd_physics/core/kinematic_motion.h"
 #include "usd_physics/core/handles.h"
 #include "usd_physics/core/segment_query.h"
 #include "usd_physics/core/value_types.h"
@@ -39,7 +40,18 @@ int main() {
     return 3;
   }
   if (usd_physics::jolt::backendAvailable()) {
-    return usd_physics::jolt::createWorld() ? 0 : 4;
+    auto world = usd_physics::jolt::createWorld();
+    auto* motion = dynamic_cast<usd_physics::core::KinematicMotion*>(world.get());
+    if (!motion) return 4;
+    const auto shape = world->createShape({});
+    const auto moving = world->createBody(
+        {shape, usd_physics::core::MotionType::kinematicBody, {}, 0, {}});
+    const usd_physics::core::PhysicsWorld::Duration dt{.1};
+    if (!motion->moveKinematic(moving, {{1, 2, 3}, {}}, dt)) return 7;
+    world->step(dt);
+    const auto position = world->bodyState(moving).transform.translation;
+    return position.x > .999 && position.x < 1.001 &&
+                   position.y > 1.999 && position.y < 2.001 ? 0 : 8;
   }
   try {
     static_cast<void>(usd_physics::jolt::createWorld());

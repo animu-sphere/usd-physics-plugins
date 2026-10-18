@@ -50,7 +50,8 @@ capability on this page.
 | Opaque shape/body/constraint handles | supported | [`physics_core_values_handles_test.cpp`](../../libs/physicsCore/tests/physics_core_values_handles_test.cpp) covers invalid zero, typed identity, comparison, hashing, and representation size |
 | Shape descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers box dimensions, positive sphere/capsule radius, non-negative capsule cylinder half-height, and identity/finite/nonzero local pose validation |
 | Collider-local pose in Jolt | supported | [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) checks translated/rotated geometry by ray queries, contact settling, and body-origin state/changed-state reporting |
-| Static and dynamic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) covers backend lifecycle and filtering |
+| Static, dynamic and kinematic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) covers backend lifecycle and filtering |
+| Kinematic motion capability | supported | Optional `KinematicMotion::moveKinematic`; [`physics_jolt_kinematic_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_kinematic_test.cpp) checks body-origin targets with offset geometry, rotation, holding, dynamic contact, validation, handle rejection and changed-state cleanup; local Windows evidence only |
 | Fixed-constraint descriptors | supported | Core tests cover two distinct valid body handles; the Jolt backend test covers creation and dependent cleanup |
 | Force and velocity operations | supported | Core tests cover validation and dynamic/static/stale/cross-world outcomes; the focused Jolt test covers admitted dynamic commands, static and cross-world rejection, and finite-vector validation |
 | Fixed-step world | supported | Core validation plus the Jolt falling/settling test pass on Windows and Linux; see the Phase 2 backend reports |
@@ -81,7 +82,7 @@ capability on this page.
 | Box collision | partial | Cube size and composed scales, on the body Cube or one translated/rotated descendant Cube of a rigid body Xform; `physicsUsd.box_scene` checks all eight transformed corners, disabled static colliders, and invalid dimensions |
 | Composed transforms | partial | Time-independent translate/rotate/orient/scale/matrix ops, ancestors, identity/body reset stacks and collider-local poses; shear, perspective, inverse ops and child reset stacks rejected. `physicsUsd.box_scene` checks intermediate Xforms and reflected scales |
 | Sphere/capsule collision | partial | `readPrimitiveScene()` accepts direct or single-child Sphere/Capsule with uniform composed scale and local poses; X/Y/Z capsule axes and zero height are covered by `physicsUsd.box_scene`. Nonuniform scale, invalid/animated dimensions and axes reject. Jolt query, local rotation, scalar-range rejection and settling checks run in `physicsJolt.backend`; [local Windows evidence](../reports/2026-10-18-phase4-primitives.md) |
-| `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic or disabled static body on supported collision geometry or parent Xform; kinematic, collider-free, nested, and compound bodies rejected |
+| `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic/kinematic or disabled static body on supported collision geometry or parent Xform; kinematic snapshots need no mass, animated flags, collider-free, nested, and compound bodies rejected |
 | `UsdPhysicsMassAPI` | partial | Explicit positive dynamic mass in kg; density inference, inherited mass, inertia and center-of-mass overrides rejected |
 | Fixed joints | planned | No implementation |
 | Other standard joints, limits, and drives | planned | Phase 5 expands from consumer fixtures |
@@ -97,7 +98,7 @@ instances, other standard
 physics APIs/properties, scenes, and joints fail with typed code/path diagnostics.
 Tests live in [box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp).
 Local Windows validation is recorded in the
-[primitive report](../reports/2026-10-18-phase4-primitives.md).
+[kinematic report](../reports/2026-10-18-phase4-kinematic.md).
 The parser never edits USD or creates resources; returned paths are snapshot
 identities belonging to the caller's Stage, not persistent runtime mappings.
 

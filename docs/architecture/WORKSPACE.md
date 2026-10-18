@@ -21,6 +21,11 @@ that contradicts it updates this document first, in a focused change.
 | `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard Cube/Sphere/Capsule declarations to neutral snapshots, with composed body frames and a single-child collider's local pose; resource mapping and synchronization records remain planned. | Phase 4 | optional installable primitive reader implemented; Cube-only API retained |
 
 The Phase 0 targets established package and dependency boundaries.
+The local Phase 4 kinematic increment adds an optional `KinematicMotion`
+capability to `physicsCore`, implemented by `physicsJolt`. The primitive
+snapshot reader maps enabled standard kinematic declarations to that motion
+type; it owns no pose synchronization or scheduling. Component identities
+and dependency directions are unchanged.
 `physicsCore` has supported value, handle, descriptor, and world-contract
 slices. `physicsJolt` implements the initial backend slice and retains a typed
 unavailable fallback for builds that do not provide Jolt.
