@@ -19,7 +19,7 @@ not need this repository's source tree.
 | --- | --- | --- | --- |
 | `physicsCore` | `physicsCore::physicsCore` | Version surface plus neutral vector, quaternion, transform, typed handles, validated box/body/fixed-constraint descriptors, semantic collision filters, typed errors, world lifecycle/state, and optional segment and ground query interfaces | Phase 1 surface present |
 | `physicsJolt` | `physicsJolt::physicsJolt` | `physicsJolt_BACKEND_AVAILABLE` package metadata, `backendAvailable()`, and `createWorld()`; a Jolt-enabled build provides shapes, bodies, fixed constraints, commands, stepping, changed state, segment queries, and ground queries, while a no-Jolt build reports typed unavailability | Phase 2 complete |
-| `physicsUsd` | `physicsUsd::physicsUsd` | Validated standard Box snapshots; mappings and synchronization records remain planned | Phase 4 subset implemented |
+| `physicsUsd` | `physicsUsd::physicsUsd` | Validated primitive body and generic/fixed joint snapshots; mappings and synchronization records remain planned | Phase 4 subset implemented |
 | `secondaryMotion` | `secondaryMotion::secondaryMotion` | generic secondary-motion contracts | 6, if admitted |
 | `secondaryMotionVerlet` | `secondaryMotionVerlet::secondaryMotionVerlet` | first CPU solver | 6, if admitted |
 | `physicsSchema` | bundle contract to be defined at admission | generated schema library and resources | only if admitted |
@@ -58,6 +58,13 @@ surface and existing enum values retain their meaning. Rebuild packages and
 consumers together to use the new header and implementation. The installed
 consumer exercises capability discovery and a target movement. No published
 version or artifact pin changes.
+
+The local joint increment adds `PhysicsScene`, `Joint`, `JointType`,
+`JointLimit` and `readPhysicsScene()` in `box_scene.h`. It retains both body-only
+APIs and their joint rejection. Generic and fixed joint declarations include
+endpoint paths, body-local frames and six-axis limits in meters/radians. These
+snapshot types do not extend the core constraint or backend solver interface.
+Rebuild the bridge and consumers together; no published artifact pin changes.
 
 Every library package must:
 

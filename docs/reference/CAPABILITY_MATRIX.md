@@ -84,8 +84,9 @@ capability on this page.
 | Sphere/capsule collision | partial | `readPrimitiveScene()` accepts direct or single-child Sphere/Capsule with uniform composed scale and local poses; X/Y/Z capsule axes and zero height are covered by `physicsUsd.box_scene`. Nonuniform scale, invalid/animated dimensions and axes reject. Jolt query, local rotation, scalar-range rejection and settling checks run in `physicsJolt.backend`; [local Windows evidence](../reports/2026-10-18-phase4-primitives.md) |
 | `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic/kinematic or disabled static body on supported collision geometry or parent Xform; kinematic snapshots need no mass, animated flags, collider-free, nested, and compound bodies rejected |
 | `UsdPhysicsMassAPI` | partial | Explicit positive dynamic mass in kg; density inference, inherited mass, inertia and center-of-mass overrides rejected |
-| Fixed joints | planned | No implementation |
-| Other standard joints, limits, and drives | planned | Phase 5 expands from consumer fixtures |
+| Fixed joints | partial | `readPhysicsScene()` snapshots exact body/world endpoints and local frames; no bridge resource creation. `physicsUsd.joint_scene` covers world anchors, defaults, validation and sorting |
+| Generic joints and limits | partial | Standard `PhysicsJoint` plus six-axis `LimitAPI` snapshots; meters/radians, free/locked/equal/infinite bounds, normalized local rotations and flags. `physicsUsd.joint_scene` and the clean-prefix USD consumer cover conversion and typed rejection. Core/backend six-DOF execution remains planned |
+| Other standard joints and drives | planned | Distance limits, specialized joint types, drives and breaking thresholds reject |
 | Prim/resource mappings | planned | No implementation |
 | Stage reset/rebuild | planned | No implementation |
 | Incremental USD change processing | unsupported | Rebuild-first policy; no implementation |
@@ -95,10 +96,12 @@ The [bridge contract](../design/USD_BRIDGE_CONTRACT.md) documents the bounded
 subset. It requires Y-up meters/kg and explicit positive dynamic mass;
 separate body Xforms must compose to a rigid world frame. Animated values,
 instances, other standard
-physics APIs/properties, scenes, and joints fail with typed code/path diagnostics.
-Tests live in [box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp).
+physics APIs/properties and scenes fail with typed code/path diagnostics.
+Body-only readers still reject joints. Tests live in
+[box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp) and
+[joint_scene_test.cpp](../../libs/physicsUsd/tests/joint_scene_test.cpp).
 Local Windows validation is recorded in the
-[kinematic report](../reports/2026-10-18-phase4-kinematic.md).
+[joint snapshot report](../reports/2026-10-18-phase4-joint-snapshots.md).
 The parser never edits USD or creates resources; returned paths are snapshot
 identities belonging to the caller's Stage, not persistent runtime mappings.
 

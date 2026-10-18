@@ -1,6 +1,8 @@
 #pragma once
 
 #include "usd_physics/core/descriptors.h"
+#include <array>
+#include <limits>
 #include <pxr/usd/usd/stage.h>
 #include <stdexcept>
 #include <string>
@@ -39,6 +41,41 @@ struct BoxBody {
 };
 
 using PrimitiveBody = BoxBody;
+
+enum class JointType { sixDof, fixed };
+
+struct JointLimit {
+  bool applied{false};
+  double low{-std::numeric_limits<double>::infinity()};
+  double high{std::numeric_limits<double>::infinity()};
+};
+
+// Standard USD declarations only; these are not executable core constraints.
+struct Joint {
+  std::string path;
+  JointType type{JointType::sixDof};
+  // Empty endpoint means world. Nonempty endpoints name exact rigid bodies.
+  std::string body0, body1;
+  core::Transform localFrame0, localFrame1;
+  bool enabled{true};
+  bool collisionEnabled{false};
+  // transX/Y/Z in meters, rotX/Y/Z in radians. Absent API means free;
+  // low > high means locked, following USD (not a source-format convention).
+  // Fixed joints lock all axes and leave this array unused.
+  std::array<JointLimit, 6> limits;
+};
+
+struct PhysicsScene {
+  std::vector<PrimitiveBody> bodies;
+  std::vector<Joint> joints;
+};
+
+// Adds generic PhysicsJoint frames and six-axis LimitAPI, and FixedJoint.
+// Endpoints must be distinct, rigid, unscaled body frames or one world anchor.
+// Rejects other joint types, distance limits, drives and breaking thresholds.
+// Like the body-only APIs, validates everything and returns sorted snapshots.
+// This does not create constraints, interpret format metadata, or simulate.
+[[nodiscard]] PhysicsScene readPhysicsScene(const pxr::UsdStageRefPtr &stage);
 
 // Cube, Sphere and Capsule variant of the snapshot reader below. Sphere and
 // Capsule require uniform composed collider scale (relative tolerance 1e-9).

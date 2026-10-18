@@ -15,3 +15,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-10-18 Phase 4 collider-local Box pose](2026-10-18-phase4-collider-local-pose.md)
 - [2026-10-18 Phase 4 Sphere and Capsule snapshots](2026-10-18-phase4-primitives.md)
 - [2026-10-18 Phase 4 kinematic motion and snapshots](2026-10-18-phase4-kinematic.md)
+- [2026-10-18 Phase 4 joint frames and limit snapshots](2026-10-18-phase4-joint-snapshots.md)

@@ -18,7 +18,7 @@ that contradicts it updates this document first, in a focused change.
 | --- | --- | --- | --- | --- | --- | --- |
 | `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Solver-neutral value types, handles, descriptors, world lifecycle, state, validation, and optional query contracts. No OpenUSD or backend SDK. | Phase 0 scaffold; Phase 1 runtime | Phase 1 values, handles, descriptors, world contract, and segment/ground queries implemented |
 | `physicsJolt` | plain static CMake library | `backends/physicsJolt/` | `openstrata.library.yaml` | Jolt implementation of `physicsCore`; owns Jolt initialization, filters, jobs, resources, stepping, and queries. | Phase 0 scaffold; Phase 2 backend | backend implemented; Windows and Linux plain-CMake and installed-consumer evidence present |
-| `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard Cube/Sphere/Capsule declarations to neutral snapshots, with composed body frames and a single-child collider's local pose; resource mapping and synchronization records remain planned. | Phase 4 | optional installable primitive reader implemented; Cube-only API retained |
+| `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard Cube/Sphere/Capsule and generic/fixed joint declarations to neutral snapshots, including body/collider frames and six-axis limits; resource mapping and synchronization records remain planned. | Phase 4 | optional installable body/joint snapshot readers; body-only APIs retained |
 
 The Phase 0 targets established package and dependency boundaries.
 The local Phase 4 kinematic increment adds an optional `KinematicMotion`

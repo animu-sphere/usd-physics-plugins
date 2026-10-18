@@ -14,6 +14,9 @@
 #include <pxr/usd/usdGeom/xform.h>
 #include <pxr/usd/usdGeom/xformable.h>
 #include <pxr/usd/usdPhysics/collisionAPI.h>
+#include <pxr/usd/usdPhysics/fixedJoint.h>
+#include <pxr/usd/usdPhysics/joint.h>
+#include <pxr/usd/usdPhysics/limitAPI.h>
 #include <pxr/usd/usdPhysics/massAPI.h>
 #include <pxr/usd/usdPhysics/metrics.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
@@ -37,6 +40,45 @@ T read(const pxr::UsdAttribute &attribute, const pxr::UsdPrim &prim) {
            "expected a readable, time-independent value");
   }
   return value;
+}
+
+const std::array<const char *, 6> jointAxes{"transX", "transY", "transZ",
+                                            "rotX",   "rotY",   "rotZ"};
+
+void validateJointProperties(const pxr::UsdPrim &prim) {
+  const bool fixed = prim.GetTypeName() == pxr::TfToken("PhysicsFixedJoint");
+  if (!fixed && prim.GetTypeName() != pxr::TfToken("PhysicsJoint"))
+    reject(Code::unsupportedDeclaration, prim, "unsupported joint type");
+  if (prim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>() ||
+      prim.HasAPI<pxr::UsdPhysicsCollisionAPI>() ||
+      prim.HasAPI<pxr::UsdPhysicsMassAPI>())
+    reject(Code::unsupportedDeclaration, prim, "joint cannot also be a body");
+  std::vector<std::string> admitted{
+      "physics:body0",        "physics:body1",           "physics:localPos0",
+      "physics:localPos1",    "physics:localRot0",       "physics:localRot1",
+      "physics:jointEnabled", "physics:collisionEnabled"};
+  for (const auto &schema : prim.GetAppliedSchemas()) {
+    const auto &name = schema.GetString();
+    if (name.rfind("Physics", 0) != 0)
+      continue;
+    bool supported = false;
+    for (const auto *axis : jointAxes) {
+      if (!fixed && name == std::string("PhysicsLimitAPI:") + axis) {
+        supported = true;
+        admitted.push_back(std::string("limit:") + axis + ":physics:low");
+        admitted.push_back(std::string("limit:") + axis + ":physics:high");
+      }
+    }
+    if (!supported)
+      reject(Code::unsupportedDeclaration, prim, "unsupported joint API");
+  }
+  for (const auto &property : prim.GetAuthoredProperties()) {
+    const auto &name = property.GetName().GetString();
+    if ((name.rfind("physics:", 0) == 0 || name.rfind("limit:", 0) == 0 ||
+         name.rfind("drive:", 0) == 0) &&
+        std::find(admitted.begin(), admitted.end(), name) == admitted.end())
+      reject(Code::unsupportedDeclaration, prim, "unsupported joint property");
+  }
 }
 
 void validateProperties(const pxr::UsdPrim &prim, bool rigid, bool collision,
@@ -266,7 +308,7 @@ ImportError::ImportError(ImportErrorCode code, std::string path,
       path_(std::move(path)) {}
 
 static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
-                                      bool boxesOnly) {
+                                      bool boxesOnly, bool joints = false) {
   if (!stage)
     throw ImportError(Code::invalidStage, {}, "expected an open Stage");
   std::vector<BoxBody> result;
@@ -276,8 +318,12 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
     const bool rigid = prim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
     const bool collision = prim.HasAPI<pxr::UsdPhysicsCollisionAPI>();
     const bool mass = prim.HasAPI<pxr::UsdPhysicsMassAPI>();
-    validateProperties(prim, rigid, collision, mass);
-    if (!rigid && !collision && !mass)
+    const bool joint = joints && prim.IsA<pxr::UsdPhysicsJoint>();
+    if (joint)
+      validateJointProperties(prim);
+    else
+      validateProperties(prim, rigid, collision, mass);
+    if (!rigid && !collision && !mass && !joint)
       continue;
     if (!unitsChecked) {
       if (pxr::UsdGeomGetStageUpAxis(stage) != pxr::UsdGeomTokens->y ||
@@ -294,6 +340,8 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
       reject(Code::unsupportedDeclaration, prim,
              "instanced physics is not supported");
     }
+    if (joint)
+      continue;
     const auto owner = bodyAncestor(prim);
     if (rigid && owner) {
       reject(Code::unsupportedDeclaration, prim,
@@ -389,7 +437,8 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
         continue;
       for (const auto &descendant : pxr::UsdPrimRange(root)) {
         if (descendant.HasAPI<pxr::UsdPhysicsRigidBodyAPI>() ||
-            descendant.HasAPI<pxr::UsdPhysicsCollisionAPI>()) {
+            descendant.HasAPI<pxr::UsdPhysicsCollisionAPI>() ||
+            (joints && descendant.IsA<pxr::UsdPhysicsJoint>())) {
           reject(Code::unsupportedDeclaration, prim,
                  "point-instanced physics is not supported");
         }
@@ -408,5 +457,81 @@ std::vector<BoxBody> readBoxScene(const pxr::UsdStageRefPtr &stage) {
 std::vector<PrimitiveBody>
 readPrimitiveScene(const pxr::UsdStageRefPtr &stage) {
   return readScene(stage, false);
+}
+
+PhysicsScene readPhysicsScene(const pxr::UsdStageRefPtr &stage) {
+  PhysicsScene result;
+  result.bodies = readScene(stage, false, true);
+  for (const auto &prim : stage->Traverse()) {
+    const pxr::UsdPhysicsJoint api(prim);
+    if (!api)
+      continue;
+    Joint joint;
+    joint.path = prim.GetPath().GetString();
+    joint.type = prim.IsA<pxr::UsdPhysicsFixedJoint>() ? JointType::fixed
+                                                       : JointType::sixDof;
+    joint.enabled = read<bool>(api.GetJointEnabledAttr(), prim);
+    joint.collisionEnabled = read<bool>(api.GetCollisionEnabledAttr(), prim);
+    for (int endpoint = 0; endpoint != 2; ++endpoint) {
+      pxr::SdfPathVector targets;
+      const auto rel = endpoint ? api.GetBody1Rel() : api.GetBody0Rel();
+      if (!rel ||
+          (!rel.GetForwardedTargets(&targets) && rel.HasAuthoredTargets()) ||
+          targets.size() > 1)
+        reject(Code::invalidValue, prim, "expected zero or one joint target");
+      auto &path = endpoint ? joint.body1 : joint.body0;
+      if (!targets.empty()) {
+        const auto target = stage->GetPrimAtPath(targets[0]);
+        if (!targets[0].IsPrimPath() || !target ||
+            !target.HasAPI<pxr::UsdPhysicsRigidBodyAPI>())
+          reject(Code::unsupportedDeclaration, prim,
+                 "joint target must name an exact rigid body");
+        path = targets[0].GetString();
+        if (std::none_of(result.bodies.begin(), result.bodies.end(),
+                         [&](const auto &body) { return body.path == path; }))
+          reject(Code::unsupportedDeclaration, prim,
+                 "joint target has no supported body snapshot");
+        // Body-only readers bake direct geometry scale into dimensions. Joint
+        // coordinates must not silently lose that scale; defer scaled frames.
+        core::Transform frame;
+        (void)decompose(worldTransform(target), target, frame, false);
+      }
+      auto &frame = endpoint ? joint.localFrame1 : joint.localFrame0;
+      const auto p = read<pxr::GfVec3f>(
+          endpoint ? api.GetLocalPos1Attr() : api.GetLocalPos0Attr(), prim);
+      const auto q = read<pxr::GfQuatf>(
+          endpoint ? api.GetLocalRot1Attr() : api.GetLocalRot0Attr(), prim);
+      const auto v = q.GetImaginary();
+      const double length =
+          std::sqrt(double(q.GetReal()) * q.GetReal() + double(v[0]) * v[0] +
+                    double(v[1]) * v[1] + double(v[2]) * v[2]);
+      if (!std::isfinite(p[0]) || !std::isfinite(p[1]) ||
+          !std::isfinite(p[2]) || !std::isfinite(length) || length <= 0)
+        reject(Code::invalidValue, prim, "invalid joint frame");
+      frame.translation = {p[0], p[1], p[2]};
+      frame.rotation = {q.GetReal() / length, v[0] / length, v[1] / length,
+                        v[2] / length};
+    }
+    if (joint.body0 == joint.body1)
+      reject(Code::invalidValue, prim,
+             "joint requires distinct endpoints and at least one body");
+    for (std::size_t axis = 0; axis != jointAxes.size(); ++axis) {
+      const pxr::TfToken name(jointAxes[axis]);
+      if (!prim.HasAPI<pxr::UsdPhysicsLimitAPI>(name))
+        continue;
+      const pxr::UsdPhysicsLimitAPI limit(prim, name);
+      const double low = read<float>(limit.GetLowAttr(), prim);
+      const double high = read<float>(limit.GetHighAttr(), prim);
+      if (std::isnan(low) || std::isnan(high))
+        reject(Code::invalidValue, prim, "joint limits cannot be NaN");
+      constexpr double radiansPerDegree = 0.017453292519943295769;
+      const double scale = axis < 3 ? 1.0 : radiansPerDegree;
+      joint.limits[axis] = {true, low * scale, high * scale};
+    }
+    result.joints.push_back(std::move(joint));
+  }
+  std::sort(result.joints.begin(), result.joints.end(),
+            [](const auto &a, const auto &b) { return a.path < b.path; });
+  return result;
 }
 } // namespace usd_physics::usd

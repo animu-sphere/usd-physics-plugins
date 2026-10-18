@@ -44,11 +44,37 @@ map to `MotionType::kinematicBody` without requiring mass; their snapshot mass
 is the neutral default and is ignored. Disabled rigid bodies remain static
 even with the kinematic flag. The flag must be time-independent. The reader
 does not sample animation or issue runtime movement commands.
-Animated declarations, scenes, joints,
+Animated declarations, scenes,
 instances, nested or compound bodies, collider mass overrides,
 inherited/density-based mass, materials, and all other authored `physics:*`
 properties are rejected. No default mass is substituted for unsupported USD
 mass inference.
+
+`readPhysicsScene()` adds a `PhysicsScene` snapshot with path-sorted `bodies`
+and `joints`; the body-only APIs continue to reject joints. `Joint` represents
+generic `PhysicsJoint` or `PhysicsFixedJoint` declarations, not executable
+`physicsCore` constraints. Endpoints are exact rigid-body paths with supported
+body snapshots, or an empty world anchor. Two world anchors, identical bodies,
+multiple or missing targets, descendant geometry targets and scaled/reflected
+body frames reject. Forwarded relationships are resolved. Joint frames remain
+relative to body origins (world for an empty endpoint); finite nonzero
+quaternions are normalized. Joint-prim ancestor transforms do not alter these
+body-relative attributes.
+
+The snapshot preserves `jointEnabled` and `collisionEnabled`. Generic joints
+accept `PhysicsLimitAPI` on `transX/Y/Z` and `rotX/Y/Z`; translation is meters,
+rotation is converted from USD degrees to radians. Absent API means free;
+infinite bounds are preserved, NaN rejects, equal bounds constrain to that
+value, and inverted bounds retain USD's locked-axis meaning. Fixed joints
+lock every axis and leave the limit array unused. Additional LimitAPI on a
+fixed joint, distance limits, drives, breaking thresholds, other joint types,
+unsupported joint physics properties/APIs and animated values reject, even
+for disabled joints. Non-physics metadata is not interpreted. In particular,
+format-only joints with no standard schema are outside this snapshot.
+
+This reader creates no runtime constraints and supplies no six-DOF solver,
+source-format filtering, coefficient mapping, springs or bone synchronization.
+Snapshot conversion is not a simulation-fidelity claim.
 
 For this surface, `USD-O2` uses typed `ImportErrorCode` plus the offending path
 on `ImportError`: `invalidStage`, `unsupportedUnits`, `unsupportedDeclaration`,

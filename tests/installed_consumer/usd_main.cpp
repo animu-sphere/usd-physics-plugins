@@ -5,6 +5,8 @@
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/xform.h>
 #include <pxr/usd/usdPhysics/collisionAPI.h>
+#include <pxr/usd/usdPhysics/joint.h>
+#include <pxr/usd/usdPhysics/limitAPI.h>
 #include <pxr/usd/usdPhysics/massAPI.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 
@@ -41,9 +43,24 @@ int main() {
       primitives[1].shape.radius != .25 || primitives[1].shape.halfHeight != 1)
     return 3;
   pxr::UsdPhysicsRigidBodyAPI::Apply(capsule.GetPrim())
-      .CreateKinematicEnabledAttr().Set(true);
+      .CreateKinematicEnabledAttr()
+      .Set(true);
   if (usd_physics::usd::readPrimitiveScene(stage)[1].motionType !=
-      usd_physics::core::MotionType::kinematicBody) return 4;
+      usd_physics::core::MotionType::kinematicBody)
+    return 4;
+  const auto joint =
+      pxr::UsdPhysicsJoint::Define(stage, pxr::SdfPath("/Joint"));
+  joint.CreateBody0Rel().SetTargets({body.GetPath()});
+  joint.CreateBody1Rel().SetTargets({capsule.GetPath()});
+  pxr::UsdPhysicsLimitAPI::Apply(joint.GetPrim(), pxr::TfToken("transX"))
+      .CreateHighAttr()
+      .Set(0.5f);
+  const auto scene = usd_physics::usd::readPhysicsScene(stage);
+  if (scene.bodies.size() != 3 || scene.joints.size() != 1 ||
+      scene.joints[0].body0 != "/Rig" || scene.joints[0].body1 != "/Capsule" ||
+      !scene.joints[0].limits[0].applied ||
+      scene.joints[0].limits[0].high != .5)
+    return 5;
   return combined.size() == 2 && combined[1].path == "/Rig" &&
                  combined[1].mass == 2 &&
                  combined[1].transform.translation.y == 2 &&
