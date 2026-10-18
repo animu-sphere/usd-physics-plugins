@@ -1,5 +1,7 @@
 # Phase 4 joint frame and limit snapshots (2026-10-18)
 
+Follow-up: [primitive mass inference](2026-10-18-phase4-mass-inference.md).
+
 Dated local Windows evidence following the
 [kinematic increment](2026-10-18-phase4-kinematic.md).
 

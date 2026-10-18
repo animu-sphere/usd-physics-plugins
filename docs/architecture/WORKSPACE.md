@@ -26,6 +26,9 @@ capability to `physicsCore`, implemented by `physicsJolt`. The primitive
 snapshot reader maps enabled standard kinematic declarations to that motion
 type; it owns no pose synchronization or scheduling. Component identities
 and dependency directions are unchanged.
+The primitive reader also resolves dynamic mass from explicit body mass or
+scaled single-collider volume and body density, with USD's density fallback;
+hierarchical mass properties and physics materials remain outside its subset.
 `physicsCore` has supported value, handle, descriptor, and world-contract
 slices. `physicsJolt` implements the initial backend slice and retains a typed
 unavailable fallback for builds that do not provide Jolt.

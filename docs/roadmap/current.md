@@ -24,13 +24,14 @@ than a full release.
 - Run hosted standard/compatibility parity including standalone and usdview.
 - Extend through working fixtures for scene gravity, additional geometry beyond
   the local Cube/Sphere/Capsule slice,
-  mass inference, runtime creation from fixed-joint snapshots, scaled
+  hierarchical mass properties/material density beyond single-primitive body
+  density, runtime creation from fixed-joint snapshots, scaled
   separate body frames and compound colliders.
 - Add generic six-DOF runtime constraints to consume the joint frame/limit
-  snapshots; the bridge currently creates no constraints. The MMD probe now
-  reaches a missing-mass gate in 21 fixtures, while one fixture yields three
-  bodies/two standard joints and retains a format-only joint outside the
-  snapshot ([local evidence](../reports/2026-10-18-phase4-joint-snapshots.md)).
+  snapshots; the bridge currently creates no constraints. After primitive mass
+  inference, the MMD probe accepts all 22 physics-bearing fixtures with three
+  bodies/two standard joints each; one retains a format-only joint outside the
+  snapshot ([local evidence](../reports/2026-10-18-phase4-mass-inference.md)).
 - Resolve stage-generation identity and synchronization contracts before
   introducing retained resource mappings in the package.
 

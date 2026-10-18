@@ -13,8 +13,17 @@ world, handles, persistent mapping, or USD edits. Callers must keep the result
 associated with its source Stage and discard it at reload; stage-generation
 identities and synchronization records remain future work.
 
-The subset requires Y-up meters/kg and explicit positive mass for dynamic
-bodies. Collision may be on the body geometry or on one descendant geometry of
+The subset requires Y-up meters/kg. Dynamic bodies use positive explicit mass
+or infer mass from their scaled collision volume and body-local density.
+Zero or absent mass requests inference; zero or absent density uses USD's
+fallback of 1000 kg/m³. A positive explicit mass overrides density. Cube volume
+is the product of its full extents, Sphere volume is `4πr³/3`, and Capsule
+volume is `πr²h + 4πr³/3`, where `h` excludes the caps. Collider offsets,
+rotations and capsule axes do not affect volume. Mass/density must be readable,
+time-independent, finite and non-negative; the inferred result must be positive
+and finite. These rules follow the
+[OpenUSD mass specification](https://openusd.org/release/api/usd_physics_page_front.html).
+Collision may be on the body geometry or on one descendant geometry of
 a body Xform. In the latter case the body's composed world frame must be rigid.
 The collider's composed relative translation and rotation become
 `ShapeDescriptor::localTransform`; reset stacks below the body are rejected.
@@ -46,9 +55,11 @@ even with the kinematic flag. The flag must be time-independent. The reader
 does not sample animation or issue runtime movement commands.
 Animated declarations, scenes,
 instances, nested or compound bodies, collider mass overrides,
-inherited/density-based mass, materials, and all other authored `physics:*`
-properties are rejected. No default mass is substituted for unsupported USD
-mass inference.
+inherited mass/density, physics materials and their bindings, and all other
+authored `physics:*` properties are rejected. Collider MassAPI overrides,
+inertia and center-of-mass overrides remain unsupported. Static and kinematic
+snapshots do not consume mass/density. This is a bounded volume-based inference
+slice, not the full hierarchical USD mass-properties algorithm.
 
 `readPhysicsScene()` adds a `PhysicsScene` snapshot with path-sorted `bodies`
 and `joints`; the body-only APIs continue to reject joints. `Joint` represents

@@ -85,16 +85,19 @@ struct PhysicsScene {
 readPrimitiveScene(const pxr::UsdStageRefPtr &stage);
 
 // Validates the complete supported subset before returning any declarations.
-// Requires Y-up meters/kg and explicit positive dynamic mass. Supports a
-// collision Cube on the body, or one translated/rotated child Cube of a
-// rigid body Xform. Composes time-independent affine transforms and reset
-// stacks. Cube scales are baked into dimensions; shear and inverse ops fail.
-// Separate body frames must be rigid; child reset stacks and compounds remain
-// unsupported. Enabled kinematic bodies need no mass (it is ignored); disabled
-// rigid bodies are static. The path and transform identify the
-// body frame, never a displaced collider frame.
-// shape.localTransform carries the collider frame relative to that body.
-// No USD edits or runtime resources are created. Results are sorted by path.
+// Requires Y-up meters/kg. Dynamic mass is explicit or computed from scaled
+// collision volume and body-local density (fallback 1000 kg/m^3). Zero mass
+// and density are ignored per USD; positive mass takes precedence. Inherited
+// and collider MassAPI, physics materials and inertia overrides remain
+// rejected. Supports a collision Cube on the body, or one translated/rotated
+// child Cube of a rigid body Xform. Composes time-independent affine transforms
+// and reset stacks. Cube scales are baked into dimensions; shear and inverse
+// ops fail. Separate body frames must be rigid; child reset stacks and
+// compounds remain unsupported. Enabled kinematic bodies need no mass (it is
+// ignored); disabled rigid bodies are static. The path and transform identify
+// the body frame, never a displaced collider frame. shape.localTransform
+// carries the collider frame relative to that body. No USD edits or runtime
+// resources are created. Results are sorted by path.
 [[nodiscard]] std::vector<BoxBody>
 readBoxScene(const pxr::UsdStageRefPtr &stage);
 

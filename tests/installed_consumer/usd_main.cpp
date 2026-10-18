@@ -1,4 +1,5 @@
 #include "usd_physics/usd/box_scene.h"
+#include <cmath>
 #include <pxr/base/gf/vec3d.h>
 #include <pxr/usd/usdGeom/capsule.h>
 #include <pxr/usd/usdGeom/cube.h>
@@ -61,6 +62,14 @@ int main() {
       !scene.joints[0].limits[0].applied ||
       scene.joints[0].limits[0].high != .5)
     return 5;
+  pxr::UsdPhysicsMassAPI(body.GetPrim()).CreateMassAttr().Set(0.0f);
+  if (std::abs(usd_physics::usd::readPhysicsScene(stage).bodies[2].mass -
+               8000) > 1e-8)
+    return 6;
+  pxr::UsdPhysicsMassAPI(body.GetPrim()).CreateDensityAttr().Set(5.0f);
+  if (std::abs(usd_physics::usd::readPhysicsScene(stage).bodies[2].mass - 40) >
+      1e-10)
+    return 7;
   return combined.size() == 2 && combined[1].path == "/Rig" &&
                  combined[1].mass == 2 &&
                  combined[1].transform.translation.y == 2 &&

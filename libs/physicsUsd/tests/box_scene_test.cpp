@@ -405,7 +405,8 @@ void checkKinematic() {
               bodies[0].transform.translation == core::Vector3{0, 3, 0},
           "kinematic snapshot needs no mass and does not edit USD");
     api.CreateRigidBodyEnabledAttr().Set(false);
-    check(usd::readPrimitiveScene(stage)[0].motionType == core::MotionType::staticBody,
+    check(usd::readPrimitiveScene(stage)[0].motionType ==
+              core::MotionType::staticBody,
           "disabled body is static even with kinematic flag");
   }
 }
@@ -487,7 +488,8 @@ int main() {
          }},
         {Code::invalidValue,
          [](auto, auto p) {
-           pxr::UsdPhysicsMassAPI(p).CreateMassAttr().Set(0.0f);
+           pxr::UsdPhysicsMassAPI(p).CreateMassAttr().Set(
+               std::numeric_limits<float>::quiet_NaN());
          }},
         {Code::invalidValue,
          [](auto, auto p) {
@@ -509,17 +511,17 @@ int main() {
          }},
         {Code::invalidValue,
          [](auto, auto p) {
-           pxr::UsdPhysicsRigidBodyAPI(p).CreateKinematicEnabledAttr().Set(
-               true, 1);
+           pxr::UsdPhysicsRigidBodyAPI(p).CreateKinematicEnabledAttr().Set(true,
+                                                                           1);
          }},
         {Code::unsupportedDeclaration,
          [](auto, auto p) {
            pxr::UsdPhysicsRigidBodyAPI(p).CreateVelocityAttr().Set(
                pxr::GfVec3f(1));
          }},
-        {Code::unsupportedDeclaration,
+        {Code::invalidValue,
          [](auto, auto p) {
-           pxr::UsdPhysicsMassAPI(p).CreateDensityAttr().Set(1000.0f);
+           pxr::UsdPhysicsMassAPI(p).CreateDensityAttr().Set(-1.0f);
          }},
         {Code::unsupportedDeclaration,
          [](auto, auto p) { p.template RemoveAPI<pxr::UsdPhysicsMassAPI>(); }},
