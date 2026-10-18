@@ -79,7 +79,9 @@ the source CI builds pinned Jolt that way on both OSes. Its exported
 definitions add `JPH_CROSS_PLATFORM_DETERMINISTIC` and drop `JPH_USE_FMADD`,
 so it is a different ABI set from the artifact above and does not replace that
 artifact or public pins. Keep `PHYSICSJOLT_ENABLE_SIX_DOF` OFF unless the
-selected SDK passes the enabled six-axis tests.
+selected SDK passes the enabled six-axis tests. The `usd-jolt-six-dof` CI
+cells run those tests on hosted Windows and Linux against that SDK
+([hosted acceptance](../reports/2026-10-18-phase4-six-dof-hosted.md)).
 
 ## 4. OpenStrata
 

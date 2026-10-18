@@ -15,8 +15,8 @@ are not complete. The
 [capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
 claim implementation status.
 
-Latest local bridge evidence:
-[Experimental six-DOF execution and SDK gate](reports/2026-10-18-phase4-six-dof-execution.md).
+Latest bridge evidence:
+[Hosted six-DOF acceptance](reports/2026-10-18-phase4-six-dof-hosted.md).
 
 | Category | Answers | Start here |
 | --- | --- | --- |
