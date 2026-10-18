@@ -11,7 +11,7 @@ status and ordering.
 | --- | --- | --- |
 | 3 — Stage Runner migration | in progress | Consumer migration verified; versioned release workflow remains. |
 | 4 — `physicsUsd` foundation | in progress | Box snapshot parser exists; artifact rollout and wider declarations remain. |
-| 5 — MMD validation | in progress | Generated standard-USD fixtures create bodies/constraints and step with the experimental candidate SDK; SDK acceptance and full source fidelity remain open. |
+| 5 — MMD validation | in progress | Generated standard-USD fixtures create bodies/constraints and step with the experimental deterministic SDK; hosted SDK acceptance and full source fidelity remain open. |
 | 6 — secondary-motion core | not started | Deferred until rigid-body extraction is stable and a VRM slice validates the descriptor. |
 | 7 — VRM validation | not started | Waits for Phase 6 and a format-owned adapter. |
 | 8 — vehicle primitives | not started | Waits for lower-level contracts to stabilize. |

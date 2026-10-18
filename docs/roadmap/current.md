@@ -27,12 +27,14 @@ than a full release.
   hierarchical mass properties/material density beyond single-primitive body
   density, scaled
   separate body frames and compound colliders.
-- Resolve the SDK configuration cause and hosted acceptance for experimental
-  six-DOF execution before enabling it by default or publishing compatible
-  packages. The candidate SDK passes each axis; the baseline scalar SDK fails
-  the Z-axis gate. Coefficients/filtering, springs, source-only semantics and
-  full MMD fidelity remain open
-  ([local evidence](../reports/2026-10-18-phase4-six-dof-execution.md)).
+- Run hosted acceptance for experimental six-DOF execution on the selected
+  deterministic SDK before enabling it by default or publishing compatible
+  packages. The baseline's failed Z-axis gate is MSVC `/fp:fast` in Jolt's
+  non-deterministic Release build; the source CI now builds deterministic Jolt
+  but does not yet enable the capability. Coefficients/filtering, springs,
+  source-only semantics and full MMD fidelity remain open
+  ([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md),
+  [execution evidence](../reports/2026-10-18-phase4-six-dof-execution.md)).
 - Resolve stage-generation identity and synchronization contracts before
   introducing retained resource mappings in the package.
 
