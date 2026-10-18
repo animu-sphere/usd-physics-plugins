@@ -171,3 +171,31 @@ A package changes from `not present` to `supported` only when a clean consumer:
 3. links its imported target;
 4. runs a minimal behavior test;
 5. proves no source-tree or build-tree path leaked into the export.
+
+## 8. Static package compatibility
+
+Rebuilt packages expose `<package>_PACKAGE_CONTRACT_VERSION=1`. The installed
+core config checks a conservative identity of its public headers (normalized
+line endings), compiler ID/version, system/processor, pointer size and MSVC
+runtime selection. It exports `USDPHYSICS_ABI_ID` on its CMake target. Backend
+and USD bridge configs compare the core identity they were built against;
+missing or different metadata rejects with a rebuild diagnostic. Source
+version compatibility alone does not establish descriptor compatibility.
+
+The bridge additionally checks its installed public headers and the selected
+OpenUSD version/header set against its build inputs. Header edits trigger
+CMake regeneration. These checks support root and standalone package builds
+and use no source/build paths in the installation.
+
+Six-DOF builds require the SDK's exported
+`JPH_CROSS_PLATFORM_DETERMINISTIC` definition. The existing installed backend
+check still requires the exact Jolt version and matching interface definitions.
+Execution remains opt-in and no new published artifact pin is implied.
+
+The identity is deliberately conservative: a comment edit may require rebuilding
+dependent packages. It is not a binary checksum or a full compiler-flag,
+standard-library, SDK-binary or custom-macro ABI audit. Keep each package's
+headers, config and static library together, use the validated SDK, and rebuild
+the complete closure after descriptor changes. Installed-consumer tests cover
+matched packages and rejection of mismatched/missing core identity, compiler
+identity and installed core headers, including the bridge without a backend.

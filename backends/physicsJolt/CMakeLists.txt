@@ -32,6 +32,11 @@ option(PHYSICSJOLT_REQUIRE_JOLT
 option(PHYSICSJOLT_ENABLE_SIX_DOF
   "Enable experimental six-DOF capability with a validated Jolt SDK" OFF)
 
+if(NOT COMMAND physics_core_require_abi)
+  message(FATAL_ERROR "physicsJolt requires rebuilt physicsCore package compatibility metadata")
+endif()
+get_target_property(PHYSICSJOLT_CORE_ABI_ID physicsCore::physicsCore USDPHYSICS_ABI_ID)
+
 set(PHYSICSJOLT_BACKEND_TARGET "")
 find_package(Jolt CONFIG QUIET)
 if(TARGET Jolt::Jolt)
@@ -64,6 +69,11 @@ else()
   set(PHYSICSJOLT_BACKEND_AVAILABLE OFF)
   set(PHYSICSJOLT_FIND_JOLT_DEPENDENCY "")
   set(PHYSICSJOLT_JOLT_INTERFACE_COMPILE_DEFINITIONS "")
+endif()
+
+if(PHYSICSJOLT_ENABLE_SIX_DOF AND NOT
+   "JPH_CROSS_PLATFORM_DETERMINISTIC" IN_LIST PHYSICSJOLT_JOLT_INTERFACE_COMPILE_DEFINITIONS)
+  message(FATAL_ERROR "Six-DOF execution requires a deterministic Jolt SDK")
 endif()
 
 add_library(physicsJolt STATIC ${_physics_jolt_source})
