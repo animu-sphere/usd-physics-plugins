@@ -112,6 +112,37 @@ semantics shared with the USD bridge.
 Limits, drives, springs, and damping are explicit data. A descriptor never
 contains a native Jolt constraint settings object.
 
+### 5.4 Optional six-DOF constraints
+
+`SixDofConstraints` in `usd_physics/core/six_dof.h` is an optional capability
+discovered from `PhysicsWorld`. `createSixDofConstraint()` returns the existing
+constraint handle type; destruction and body-dependent cleanup use the existing
+world operations. The mandatory fixed-constraint API is unchanged.
+Jolt exposes this experimental capability only when built with
+`PHYSICSJOLT_ENABLE_SIX_DOF=ON` (default OFF); consumers test capability presence.
+
+`SixDofConstraintDescriptor` names two distinct endpoints; one invalid body
+handle means world, and two invalid handles reject. Frames are relative to body
+origins, or world for the invalid endpoint. Finite nonzero quaternions are
+normalized by the backend. At least one endpoint must be dynamic in Jolt;
+static/kinematic-only pairs reject before mutation.
+
+The six axes are translation X/Y/Z in meters followed by rotation X/Y/Z in
+radians. Translation measures the second anchor minus the first in the first
+frame's axes. Rotation uses X twist and Y/Z pyramid swing of the second frame
+relative to the first, rather than three independently composed Euler angles.
+`AxisMotion` is free, locked at zero, or limited by finite `low < high` bounds.
+Angular bounds lie strictly inside `(-pi, pi)`. Inactive bounds are ignored.
+Springs, drives and nonzero equal-bound locks are outside this slice. Backend
+scalar range or collapsed-precision bounds reject before resource creation.
+
+`collisionEnabled=false` suppresses contacts between the two body endpoints
+while the constraint exists. Any suppressing constraint wins over an enabling
+one; removing the last suppressing constraint restores ordinary category/mask
+filtering. World endpoints have no collider to suppress. Removal wakes dynamic
+endpoints, so a released sleeping body resumes motion. No public wake or sleep
+command is introduced. All operations retain the single-owner scheduling rule.
+
 ## 6. World lifecycle
 
 The world supports deterministic ownership operations:

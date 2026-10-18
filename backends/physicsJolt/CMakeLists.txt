@@ -29,6 +29,8 @@ endif()
 
 option(PHYSICSJOLT_REQUIRE_JOLT
   "Fail configuration when Jolt Physics is unavailable" OFF)
+option(PHYSICSJOLT_ENABLE_SIX_DOF
+  "Enable experimental six-DOF capability with a validated Jolt SDK" OFF)
 
 set(PHYSICSJOLT_BACKEND_TARGET "")
 find_package(Jolt CONFIG QUIET)
@@ -41,6 +43,9 @@ endif()
 if(PHYSICSJOLT_REQUIRE_JOLT AND NOT PHYSICSJOLT_BACKEND_TARGET)
   message(FATAL_ERROR
     "physicsJolt requires Jolt Physics 5.5.0, but no Jolt CMake target was found")
+endif()
+if(PHYSICSJOLT_ENABLE_SIX_DOF AND NOT PHYSICSJOLT_BACKEND_TARGET)
+  message(FATAL_ERROR "Six-DOF execution requires an available Jolt SDK")
 endif()
 
 if(PHYSICSJOLT_BACKEND_TARGET)
@@ -67,6 +72,8 @@ set_target_properties(physicsJolt PROPERTIES
   EXPORT_NAME physicsJolt
   POSITION_INDEPENDENT_CODE ON)
 target_compile_features(physicsJolt PUBLIC cxx_std_17)
+target_compile_definitions(physicsJolt PRIVATE
+  "$<$<BOOL:${PHYSICSJOLT_ENABLE_SIX_DOF}>:USDPHYSICS_JOLT_SIX_DOF>")
 target_include_directories(physicsJolt PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")

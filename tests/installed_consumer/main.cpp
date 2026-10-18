@@ -4,6 +4,7 @@
 #include "usd_physics/core/kinematic_motion.h"
 #include "usd_physics/core/handles.h"
 #include "usd_physics/core/segment_query.h"
+#include "usd_physics/core/six_dof.h"
 #include "usd_physics/core/value_types.h"
 #include "usd_physics/core/version.h"
 #include "usd_physics/core/world.h"
@@ -43,6 +44,12 @@ int main() {
     auto world = usd_physics::jolt::createWorld();
     auto* motion = dynamic_cast<usd_physics::core::KinematicMotion*>(world.get());
     if (!motion) return 4;
+    auto* constraints = dynamic_cast<usd_physics::core::SixDofConstraints*>(world.get());
+#ifdef TEST_SIX_DOF
+    if (!constraints) return 9;
+#else
+    if (constraints) return 9;
+#endif
     const auto shape = world->createShape({});
     const auto moving = world->createBody(
         {shape, usd_physics::core::MotionType::kinematicBody, {}, 0, {}});
@@ -50,6 +57,18 @@ int main() {
     if (!motion->moveKinematic(moving, {{1, 2, 3}, {}}, dt)) return 7;
     world->step(dt);
     const auto position = world->bodyState(moving).transform.translation;
+#ifdef TEST_SIX_DOF
+    const auto held = world->createBody(
+        {shape, usd_physics::core::MotionType::dynamicBody, {{10, 5, 0}, {}}});
+    usd_physics::core::SixDofConstraintDescriptor descriptor;
+    descriptor.secondBody = held;
+    descriptor.firstFrame.translation = {10, 5, 0};
+    for (auto& axis : descriptor.limits) axis.motion = usd_physics::core::AxisMotion::locked;
+    const auto constraint = constraints->createSixDofConstraint(descriptor);
+    for (int i = 0; i != 60; ++i) world->step(usd_physics::core::PhysicsWorld::Duration{1.0/60});
+    const auto heldY = world->bodyState(held).transform.translation.y;
+    if (heldY < 4.999 || heldY > 5.001 || !world->destroyConstraint(constraint)) return 10;
+#endif
     return position.x > .999 && position.x < 1.001 &&
                    position.y > 1.999 && position.y < 2.001 ? 0 : 8;
   }

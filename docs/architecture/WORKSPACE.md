@@ -29,6 +29,10 @@ and dependency directions are unchanged.
 The primitive reader also resolves dynamic mass from explicit body mass or
 scaled single-collider volume and body density, with USD's density fallback;
 hierarchical mass properties and physics materials remain outside its subset.
+The local six-DOF increment adds optional `SixDofConstraints` in `physicsCore`,
+implemented by `physicsJolt`, and a stateless snapshot-to-descriptor conversion
+in `physicsUsd`. No dependency direction or component identity changes; resource
+mapping and runtime scheduling remain consumer-owned.
 `physicsCore` has supported value, handle, descriptor, and world-contract
 slices. `physicsJolt` implements the initial backend slice and retains a typed
 unavailable fallback for builds that do not provide Jolt.

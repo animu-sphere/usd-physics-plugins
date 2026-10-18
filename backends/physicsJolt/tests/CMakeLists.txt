@@ -3,6 +3,11 @@ target_link_libraries(physics_jolt_scaffold_test PRIVATE physicsJolt::physicsJol
 add_test(NAME physicsJolt.scaffold COMMAND physics_jolt_scaffold_test)
 
 if(PHYSICSJOLT_BACKEND_AVAILABLE)
+  if(PHYSICSJOLT_ENABLE_SIX_DOF)
+    add_executable(physics_jolt_six_dof_test physics_jolt_six_dof_test.cpp)
+    target_link_libraries(physics_jolt_six_dof_test PRIVATE physicsJolt::physicsJolt)
+    add_test(NAME physicsJolt.six_dof COMMAND physics_jolt_six_dof_test)
+  endif()
   add_executable(physics_jolt_backend_test physics_jolt_backend_test.cpp)
   target_link_libraries(physics_jolt_backend_test PRIVATE physicsJolt::physicsJolt)
   add_test(NAME physicsJolt.backend COMMAND physics_jolt_backend_test)

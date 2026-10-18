@@ -21,7 +21,7 @@ foreach(component IN ITEMS usd usdGeom usdPhysics)
   endif()
 endforeach()
 
-add_library(physicsUsd STATIC src/box_scene.cpp)
+add_library(physicsUsd STATIC src/box_scene.cpp src/joint_conversion.cpp)
 add_library(physicsUsd::physicsUsd ALIAS physicsUsd)
 set_target_properties(physicsUsd PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_features(physicsUsd PUBLIC cxx_std_17)

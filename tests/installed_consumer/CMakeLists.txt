@@ -20,6 +20,9 @@ endif()
 
 add_executable(usd_physics_installed_consumer main.cpp)
 target_compile_features(usd_physics_installed_consumer PRIVATE cxx_std_17)
+if(physicsJolt_SIX_DOF_AVAILABLE)
+  target_compile_definitions(usd_physics_installed_consumer PRIVATE TEST_SIX_DOF)
+endif()
 target_link_libraries(usd_physics_installed_consumer PRIVATE
   physicsCore::physicsCore
   physicsJolt::physicsJolt)

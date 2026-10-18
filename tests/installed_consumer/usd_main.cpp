@@ -5,6 +5,7 @@
 #include <pxr/usd/usdGeom/cube.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/xform.h>
+#include "usd_physics/usd/joint_conversion.h"
 #include <pxr/usd/usdPhysics/collisionAPI.h>
 #include <pxr/usd/usdPhysics/joint.h>
 #include <pxr/usd/usdPhysics/limitAPI.h>
@@ -62,6 +63,12 @@ int main() {
       !scene.joints[0].limits[0].applied ||
       scene.joints[0].limits[0].high != .5)
     return 5;
+  auto executable = scene.joints[0];
+  executable.limits[0].low = -.25;
+  const auto descriptor = usd_physics::usd::toSixDofConstraint(executable,
+      usd_physics::core::BodyHandle{1}, usd_physics::core::BodyHandle{2});
+  if (!descriptor || descriptor->limits[0].motion != usd_physics::core::AxisMotion::limited ||
+      descriptor->limits[0].low != -.25 || descriptor->limits[0].high != .5) return 8;
   pxr::UsdPhysicsMassAPI(body.GetPrim()).CreateMassAttr().Set(0.0f);
   if (std::abs(usd_physics::usd::readPhysicsScene(stage).bodies[2].mass -
                8000) > 1e-8)

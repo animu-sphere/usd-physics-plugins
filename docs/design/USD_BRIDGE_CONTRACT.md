@@ -83,9 +83,23 @@ unsupported joint physics properties/APIs and animated values reject, even
 for disabled joints. Non-physics metadata is not interpreted. In particular,
 format-only joints with no standard schema are outside this snapshot.
 
-This reader creates no runtime constraints and supplies no six-DOF solver,
-source-format filtering, coefficient mapping, springs or bone synchronization.
-Snapshot conversion is not a simulation-fidelity claim.
+This reader creates no runtime constraints. The separate stateless
+`toSixDofConstraint()` conversion in `usd_physics/usd/joint_conversion.h` maps
+a snapshot and consumer-resolved endpoint handles to an optional neutral
+descriptor. Disabled joints return no descriptor; endpoint path/world-handle
+mismatches reject. Fixed joints lock all six axes. Absent limits or fully
+unbounded `[-infinity, infinity]` limits are free; inverted bounds and zero
+equal bounds are locked. Nonzero equal bounds, one-sided infinite bounds,
+and angular ranges outside the core's open `(-pi, pi)` interval reject with
+`unsupportedDeclaration` at the joint path. Snapshot readers keep their wider
+declaration subset. Conversion edits no USD and creates no resources.
+
+The core's twist/pyramid-swing rotation convention is explicit in the
+[rigid-body contract](RIGID_BODY_CONTRACT.md#54-optional-six-dof-constraints).
+Executing those limits does not establish PMX Euler-limit equivalence.
+Source-format filtering, coefficient mapping, springs and bone synchronization
+remain outside this slice. Consumer code owns creation, rollback, handles and
+lifetimes; no retained stage mapping is added.
 
 For this surface, `USD-O2` uses typed `ImportErrorCode` plus the offending path
 on `ImportError`: `invalidStage`, `unsupportedUnits`, `unsupportedDeclaration`,

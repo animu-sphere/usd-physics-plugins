@@ -28,6 +28,7 @@ add_library(physicsCore STATIC
   src/errors.cpp
   src/ground_query.cpp
   src/segment_query.cpp
+  src/six_dof.cpp
   src/world.cpp
   src/version.cpp)
 add_library(physicsCore::physicsCore ALIAS physicsCore)
