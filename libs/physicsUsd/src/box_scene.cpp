@@ -96,12 +96,18 @@ void validateProperties(const pxr::UsdPrim &prim, bool rigid, bool collision,
   }
   for (const auto &property : prim.GetAuthoredProperties()) {
     const auto &name = property.GetName().GetString();
+    if (name.rfind("material:binding", 0) == 0 &&
+        (name.find(":physics:") != std::string::npos ||
+         name == "material:binding:physics"))
+      reject(Code::unsupportedDeclaration, prim,
+             "physics material bindings are unsupported");
     if (name.rfind("physics:", 0) != 0)
       continue;
-    const bool admitted = (collision && name == "physics:collisionEnabled") ||
-                          (rigid && (name == "physics:rigidBodyEnabled" ||
-                                     name == "physics:kinematicEnabled")) ||
-                          (mass && name == "physics:mass");
+    const bool admitted =
+        (collision && name == "physics:collisionEnabled") ||
+        (rigid && (name == "physics:rigidBodyEnabled" ||
+                   name == "physics:kinematicEnabled")) ||
+        (mass && (name == "physics:mass" || name == "physics:density"));
     if (!admitted) {
       reject(Code::unsupportedDeclaration, prim,
              "unsupported physics property or missing API");
@@ -300,6 +306,42 @@ pxr::UsdPrim bodyAncestor(const pxr::UsdPrim &prim) {
   }
   return {};
 }
+
+// The supported subset has one collider, meters/kg, and no descendant or
+// inherited MassAPI overrides. Compute from the already scaled collision
+// geometry, independent of its offset, orientation or capsule axis.
+double readMass(const pxr::UsdPrim &prim, const core::ShapeDescriptor &shape) {
+  double mass = 0.0, density = 0.0;
+  if (prim.HasAPI<pxr::UsdPhysicsMassAPI>()) {
+    const pxr::UsdPhysicsMassAPI api(prim);
+    mass = read<float>(api.GetMassAttr(), prim);
+    density = read<float>(api.GetDensityAttr(), prim);
+    if (!std::isfinite(mass) || mass < 0 || !std::isfinite(density) ||
+        density < 0)
+      reject(Code::invalidValue, prim,
+             "mass and density must be finite and non-negative");
+  }
+  if (mass > 0)
+    return mass;
+  if (density == 0)
+    density = 1000.0; // USD's fallback density, in kg/m^3.
+  double volume = 0;
+  if (shape.type == core::ShapeType::box) {
+    const auto h = shape.halfExtents;
+    volume = 8.0 * h.x * h.y * h.z;
+  } else {
+    const double r = shape.radius;
+    const double pi = std::acos(-1.0);
+    volume = (4.0 / 3.0) * pi * r * r * r;
+    if (shape.type == core::ShapeType::capsule)
+      volume += pi * r * r * (2.0 * shape.halfHeight);
+  }
+  mass = density * volume;
+  if (!std::isfinite(mass) || mass <= 0)
+    reject(Code::invalidValue, prim,
+           "inferred mass must be positive and finite");
+  return mass;
+}
 } // namespace
 
 ImportError::ImportError(ImportErrorCode code, std::string path,
@@ -368,7 +410,6 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
   }
   for (const auto &prim : candidates) {
     const bool rigid = prim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
-    const bool mass = prim.HasAPI<pxr::UsdPhysicsMassAPI>();
     pxr::UsdPrim collider;
     for (const auto &child : pxr::UsdPrimRange(prim)) {
       if (!child.HasAPI<pxr::UsdPhysicsCollisionAPI>())
@@ -408,18 +449,9 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
                                     : core::MotionType::dynamicBody;
       }
     }
-    if (body.motionType == core::MotionType::dynamicBody) {
-      if (!mass)
-        reject(Code::unsupportedDeclaration, prim,
-               "dynamic boxes require explicit MassAPI mass");
-      body.mass = read<float>(pxr::UsdPhysicsMassAPI(prim).GetMassAttr(), prim);
-      if (!std::isfinite(body.mass) || body.mass <= 0.0) {
-        reject(Code::invalidValue, prim,
-               "mass must be explicit, positive and finite; density inference "
-               "is unsupported");
-      }
-    }
     readTransform(prim, collider, body);
+    if (body.motionType == core::MotionType::dynamicBody)
+      body.mass = readMass(prim, body.shape);
     result.push_back(std::move(body));
   }
   for (const auto &prim : stage->Traverse()) {

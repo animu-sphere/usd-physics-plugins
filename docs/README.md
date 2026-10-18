@@ -16,7 +16,7 @@ are not complete. The
 claim implementation status.
 
 Latest local bridge evidence:
-[Joint frames and limit snapshots](reports/2026-10-18-phase4-joint-snapshots.md).
+[Primitive mass inference](reports/2026-10-18-phase4-mass-inference.md).
 
 | Category | Answers | Start here |
 | --- | --- | --- |

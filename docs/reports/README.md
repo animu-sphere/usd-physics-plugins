@@ -16,3 +16,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-10-18 Phase 4 Sphere and Capsule snapshots](2026-10-18-phase4-primitives.md)
 - [2026-10-18 Phase 4 kinematic motion and snapshots](2026-10-18-phase4-kinematic.md)
 - [2026-10-18 Phase 4 joint frames and limit snapshots](2026-10-18-phase4-joint-snapshots.md)
+- [2026-10-18 Phase 4 primitive mass inference](2026-10-18-phase4-mass-inference.md)
