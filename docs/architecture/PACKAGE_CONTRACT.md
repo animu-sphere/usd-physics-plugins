@@ -66,6 +66,16 @@ endpoint paths, body-local frames and six-axis limits in meters/radians. These
 snapshot types do not extend the core constraint or backend solver interface.
 Rebuild the bridge and consumers together; no published artifact pin changes.
 
+The local six-DOF increment adds `usd_physics/core/six_dof.h` with validated
+axis limits, descriptors and the optional `SixDofConstraints` capability,
+implemented by `physicsJolt` when explicitly built with
+`PHYSICSJOLT_ENABLE_SIX_DOF=ON` (default OFF). Its installed config reports
+`physicsJolt_SIX_DOF_AVAILABLE`; capability discovery agrees with that metadata.
+`physicsUsd` installs `joint_conversion.h` with
+the stateless `toSixDofConstraint()` conversion. The mandatory world interface,
+legacy fixed descriptors and dependency graph are unchanged. Rebuild packages
+and consumers together; public versions and artifact pins remain unchanged.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;

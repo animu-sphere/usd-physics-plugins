@@ -25,13 +25,14 @@ than a full release.
 - Extend through working fixtures for scene gravity, additional geometry beyond
   the local Cube/Sphere/Capsule slice,
   hierarchical mass properties/material density beyond single-primitive body
-  density, runtime creation from fixed-joint snapshots, scaled
+  density, scaled
   separate body frames and compound colliders.
-- Add generic six-DOF runtime constraints to consume the joint frame/limit
-  snapshots; the bridge currently creates no constraints. After primitive mass
-  inference, the MMD probe accepts all 22 physics-bearing fixtures with three
-  bodies/two standard joints each; one retains a format-only joint outside the
-  snapshot ([local evidence](../reports/2026-10-18-phase4-mass-inference.md)).
+- Resolve the SDK configuration cause and hosted acceptance for experimental
+  six-DOF execution before enabling it by default or publishing compatible
+  packages. The candidate SDK passes each axis; the baseline scalar SDK fails
+  the Z-axis gate. Coefficients/filtering, springs, source-only semantics and
+  full MMD fidelity remain open
+  ([local evidence](../reports/2026-10-18-phase4-six-dof-execution.md)).
 - Resolve stage-generation identity and synchronization contracts before
   introducing retained resource mappings in the package.
 

@@ -67,6 +67,14 @@ constraints. Exhausted creation capacity is reported as
 An optional no-Jolt stub may help a workspace configure, but it does not count
 as backend support and cannot make backend tests pass vacuously.
 
+The experimental six-DOF slice has a separate SDK acceptance gate. The scalar
+Windows artifact above fails its new Z-axis load test. A local candidate of the
+same source with deterministic mode and upstream default x86 SIMD flags passes;
+the exact configuration cause remains unresolved. It does not replace the
+baseline artifact or public pins. Keep `PHYSICSJOLT_ENABLE_SIX_DOF` OFF unless
+the selected SDK passes the enabled six-axis tests; see the
+[candidate configuration and evidence](../reports/2026-10-18-phase4-six-dof-execution.md).
+
 ## 4. OpenStrata
 
 OpenStrata composes libraries and runtime dependencies; it is not required by

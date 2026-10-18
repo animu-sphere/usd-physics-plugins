@@ -53,6 +53,8 @@ capability on this page.
 | Static, dynamic and kinematic body descriptors | supported | [`physics_core_descriptors_test.cpp`](../../libs/physicsCore/tests/physics_core_descriptors_test.cpp) covers shape identity, motion type, rigid transform, mass, and collision filter validation; [`physics_jolt_backend_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_backend_test.cpp) covers backend lifecycle and filtering |
 | Kinematic motion capability | supported | Optional `KinematicMotion::moveKinematic`; [`physics_jolt_kinematic_test.cpp`](../../backends/physicsJolt/tests/physics_jolt_kinematic_test.cpp) checks body-origin targets with offset geometry, rotation, holding, dynamic contact, validation, handle rejection and changed-state cleanup; local Windows evidence only |
 | Fixed-constraint descriptors | supported | Core tests cover two distinct valid body handles; the Jolt backend test covers creation and dependent cleanup |
+| Neutral six-DOF descriptors | supported | `physicsCore.six_dof` checks body/world endpoints, local frames, free/locked/limited axes, finite ordered limits and angular range validation |
+| Jolt six-DOF capability | experimental | Explicit `PHYSICSJOLT_ENABLE_SIX_DOF=ON`; per-axis execution, offset COM, rotated frames, world endpoints, pair exclusion/restoration and cleanup pass with the candidate SDK. The baseline scalar SDK fails the Z-axis gate; [configuration and local evidence](../reports/2026-10-18-phase4-six-dof-execution.md) |
 | Force and velocity operations | supported | Core tests cover validation and dynamic/static/stale/cross-world outcomes; the focused Jolt test covers admitted dynamic commands, static and cross-world rejection, and finite-vector validation |
 | Fixed-step world | supported | Core validation plus the Jolt falling/settling test pass on Windows and Linux; see the Phase 2 backend reports |
 | Direct body state | supported | Core contract tests and the Jolt falling, filtering, stale-handle, and cross-world tests pass on Windows and Linux |
@@ -85,7 +87,7 @@ capability on this page.
 | `UsdPhysicsRigidBodyAPI` | partial | Enabled dynamic/kinematic or disabled static body on supported collision geometry or parent Xform; kinematic snapshots need no mass, animated flags, collider-free, nested, and compound bodies rejected |
 | `UsdPhysicsMassAPI` | partial | Explicit positive dynamic mass in kg, or scaled single-primitive volume × body density (fallback 1000 kg/m³); zero mass/density ignored and positive mass wins. `physicsUsd.mass_scene` covers defaults, direct/child geometry, scale/reflection, Capsule caps, precedence, read-only behavior and typed invalid/animated/overflow rejection. Inherited/collider mass overrides, physics materials, inertia and center-of-mass overrides rejected |
 | Fixed joints | partial | `readPhysicsScene()` snapshots exact body/world endpoints and local frames; no bridge resource creation. `physicsUsd.joint_scene` covers world anchors, defaults, validation and sorting |
-| Generic joints and limits | partial | Standard `PhysicsJoint` plus six-axis `LimitAPI` snapshots; meters/radians, free/locked/equal/infinite bounds, normalized local rotations and flags. `physicsUsd.joint_scene` and the clean-prefix USD consumer cover conversion and typed rejection. Core/backend six-DOF execution remains planned |
+| Generic joints and limits | partial | Standard `PhysicsJoint` plus six-axis `LimitAPI` snapshots; meters/radians, free/locked/equal/infinite bounds, normalized local rotations and flags. `physicsUsd.joint_scene` and clean-prefix USD consumer cover snapshots. Stateless `toSixDofConstraint()` adds a bounded executable conversion; `physicsUsd.joint_conversion` covers finite ranges, zero locks, fixed/disabled joints, handles and typed rejection. Wider equal/infinite declarations remain snapshot-only |
 | Other standard joints and drives | planned | Distance limits, specialized joint types, drives and breaking thresholds reject |
 | Prim/resource mappings | planned | No implementation |
 | Stage reset/rebuild | planned | No implementation |
@@ -101,8 +103,8 @@ Body-only readers still reject joints. Tests live in
 [box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp) and
 [joint_scene_test.cpp](../../libs/physicsUsd/tests/joint_scene_test.cpp), plus
 [mass_scene_test.cpp](../../libs/physicsUsd/tests/mass_scene_test.cpp).
-Local Windows validation is recorded in the
-[mass inference report](../reports/2026-10-18-phase4-mass-inference.md).
+Latest local Windows validation is recorded in the
+[six-DOF execution report](../reports/2026-10-18-phase4-six-dof-execution.md).
 The parser never edits USD or creates resources; returned paths are snapshot
 identities belonging to the caller's Stage, not persistent runtime mappings.
 
@@ -129,6 +131,6 @@ identities belonging to the caller's Stage, not persistent runtime mappings.
 | --- | --- | --- |
 | Stage Runner falling body | supported | Installed core/backend migration verified in the [Phase 3 artifact report](../reports/2026-09-23-phase3-linux-artifacts.md); standard Box consumer remains opt-in |
 | Stage Runner character grounding and camera collision | supported | Same installed-package consumer evidence; standard/compatibility parity is covered in Stage Runner's optional `stage_runtime.standard_physics_parity` test |
-| MMD rigid bodies and joints through standard USD | planned | Phase 5 |
+| MMD rigid bodies and joints through standard USD | experimental | Installed consumer creates three bodies/two constraints for all 22 generated physics-bearing fixtures and steps 120 times with finite state using the candidate SDK; format-only joints, coefficients/filtering, springs and bone coupling remain outside this probe. [Local evidence](../reports/2026-10-18-phase4-six-dof-execution.md); full Phase 5 acceptance remains open |
 | VRM-derived secondary motion | planned | Phase 7 |
 | Vehicle primitives | planned | Phase 8 |

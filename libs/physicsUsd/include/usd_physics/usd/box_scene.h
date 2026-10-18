@@ -51,6 +51,7 @@ struct JointLimit {
 };
 
 // Standard USD declarations only; these are not executable core constraints.
+// See joint_conversion.h for the separate, bounded descriptor conversion.
 struct Joint {
   std::string path;
   JointType type{JointType::sixDof};

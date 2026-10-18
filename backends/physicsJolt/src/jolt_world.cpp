@@ -3,6 +3,7 @@
 #include "usd_physics/core/errors.h"
 #include "usd_physics/core/ground_query.h"
 #include "usd_physics/core/kinematic_motion.h"
+#include "usd_physics/core/six_dof.h"
 #include "usd_physics/core/segment_query.h"
 
 #include <Jolt/Jolt.h>
@@ -17,6 +18,7 @@
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/GroupFilterTable.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
@@ -24,6 +26,7 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Constraints/FixedConstraint.h>
+#include <Jolt/Physics/Constraints/SixDOFConstraint.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
 
@@ -249,6 +252,9 @@ bool stateChanged(const core::BodyState& previous,
 }
 
 class JoltWorld final : public core::PhysicsWorld,
+#ifdef USDPHYSICS_JOLT_SIX_DOF
+                        public core::SixDofConstraints,
+#endif
                         public core::KinematicMotion,
                         public core::GroundQuery,
                         public core::SegmentQuery {
@@ -368,6 +374,8 @@ public:
       throw core::PhysicsError{core::PhysicsErrorCode::resourceExhausted,
                                "Jolt body capacity was exhausted"};
     }
+    body->SetCollisionGroup(JPH::CollisionGroup(
+        jointCollisionFilter_, 0, body->GetID().GetIndex()));
     physicsSystem_.GetBodyInterface().AddBody(
         body->GetID(), dynamic ? JPH::EActivation::Activate
                                : JPH::EActivation::DontActivate);
@@ -390,6 +398,7 @@ public:
     for (auto iterator = constraints_.begin(); iterator != constraints_.end();) {
       if (iterator->second.firstBody == body ||
           iterator->second.secondBody == body) {
+        releaseJointCollision(iterator->second);
         physicsSystem_.RemoveConstraint(iterator->second.constraint.GetPtr());
         iterator = constraints_.erase(iterator);
       } else {
@@ -427,11 +436,78 @@ public:
     return handle;
   }
 
+#ifdef USDPHYSICS_JOLT_SIX_DOF
+  core::ConstraintHandle createSixDofConstraint(
+      const core::SixDofConstraintDescriptor& descriptor) override {
+    core::validateSixDofConstraintDescriptor(descriptor);
+    const auto endpoint = [&](core::BodyHandle handle) -> JPH::Body& {
+      if (!handle) return JPH::Body::sFixedToWorld;
+      const auto found = bodies_.find(handle);
+      if (found == bodies_.end())
+        throw std::invalid_argument("six-DOF references an unknown body");
+      return *found->second.body;
+    };
+    auto& first = endpoint(descriptor.firstBody);
+    auto& second = endpoint(descriptor.secondBody);
+    if (!first.IsDynamic() && !second.IsDynamic())
+      throw std::invalid_argument("six-DOF needs at least one dynamic body");
+    JPH::SixDOFConstraintSettings settings;
+    // World-space setup converts body-origin frames without assuming that
+    // the body origin coincides with its shape's center of mass.
+    const auto setFrame = [&](JPH::Body& body, const core::Transform& frame,
+                              JPH::RVec3& position, JPH::Vec3& x, JPH::Vec3& y) {
+      const auto local = toJoltPosition(frame.translation, "joint position");
+      position = body.GetWorldTransform() * local;
+      const auto rotation = body.GetRotation() * toJoltRotation(frame.rotation);
+      x = rotation * JPH::Vec3::sAxisX();
+      y = rotation * JPH::Vec3::sAxisY();
+      if (!std::isfinite(position.GetX()) || !std::isfinite(position.GetY()) ||
+          !std::isfinite(position.GetZ()))
+        throw std::invalid_argument("joint world position exceeds backend range");
+    };
+    setFrame(first, descriptor.firstFrame, settings.mPosition1,
+             settings.mAxisX1, settings.mAxisY1);
+    setFrame(second, descriptor.secondFrame, settings.mPosition2,
+             settings.mAxisX2, settings.mAxisY2);
+    settings.mSwingType = JPH::ESwingType::Pyramid;
+    for (std::size_t index = 0; index < descriptor.limits.size(); ++index) {
+      const auto axis = static_cast<JPH::SixDOFConstraintSettings::EAxis>(index);
+      const auto& limit = descriptor.limits[index];
+      if (limit.motion == core::AxisMotion::locked) settings.MakeFixedAxis(axis);
+      else if (limit.motion == core::AxisMotion::limited) {
+        const float low = toJoltFloat(limit.low, "joint lower bound");
+        const float high = toJoltFloat(limit.high, "joint upper bound");
+        if (low >= high || low == -std::numeric_limits<float>::max() ||
+            high == std::numeric_limits<float>::max())
+          throw std::invalid_argument("joint range loses precision in backend");
+        settings.SetLimitedAxis(axis, low, high);
+      }
+    }
+    JPH::Ref<JPH::Constraint> constraint = settings.Create(first, second);
+    const auto handle = nextHandle<core::ConstraintHandle>(nextConstraint_);
+    const bool suppress = !descriptor.collisionEnabled &&
+                          descriptor.firstBody && descriptor.secondBody;
+    constraints_.emplace(handle, ConstraintRecord{descriptor.firstBody,
+        descriptor.secondBody, constraint, suppress});
+    physicsSystem_.AddConstraint(constraint);
+    if (suppress) {
+      jointCollisionFilter_->DisableCollision(first.GetID().GetIndex(),
+                                               second.GetID().GetIndex());
+      physicsSystem_.GetBodyInterface().InvalidateContactCache(first.GetID());
+      physicsSystem_.GetBodyInterface().InvalidateContactCache(second.GetID());
+    }
+    if (first.IsDynamic()) physicsSystem_.GetBodyInterface().ActivateBody(first.GetID());
+    if (second.IsDynamic()) physicsSystem_.GetBodyInterface().ActivateBody(second.GetID());
+    return handle;
+  }
+
+#endif
   bool destroyConstraint(core::ConstraintHandle constraint) noexcept override {
     const auto found = constraints_.find(constraint);
     if (found == constraints_.end()) {
       return false;
     }
+    releaseJointCollision(found->second);
     physicsSystem_.RemoveConstraint(found->second.constraint.GetPtr());
     constraints_.erase(found);
     return true;
@@ -653,7 +729,32 @@ private:
     core::BodyHandle firstBody;
     core::BodyHandle secondBody;
     JPH::Ref<JPH::Constraint> constraint;
+    bool suppressCollision{false};
   };
+
+  void releaseJointCollision(const ConstraintRecord& record) noexcept {
+    auto& bi = physicsSystem_.GetBodyInterface();
+    for (const auto handle : {record.firstBody, record.secondBody}) {
+      const auto found = bodies_.find(handle);
+      if (found != bodies_.end() && found->second.motionType == core::MotionType::dynamicBody)
+        bi.ActivateBody(found->second.id);
+    }
+    if (!record.suppressCollision) return;
+    for (const auto& entry : constraints_) {
+      const auto& other = entry.second;
+      if (&other != &record && other.suppressCollision &&
+          ((other.firstBody == record.firstBody && other.secondBody == record.secondBody) ||
+           (other.secondBody == record.firstBody && other.firstBody == record.secondBody)))
+        return;
+    }
+    const auto& first = bodies_.at(record.firstBody);
+    const auto& second = bodies_.at(record.secondBody);
+    jointCollisionFilter_->EnableCollision(first.id.GetIndex(), second.id.GetIndex());
+    bi.InvalidateContactCache(first.id);
+    bi.InvalidateContactCache(second.id);
+    if (first.motionType == core::MotionType::dynamicBody) bi.ActivateBody(first.id);
+    if (second.motionType == core::MotionType::dynamicBody) bi.ActivateBody(second.id);
+  }
 
   static int workerThreadCount() {
     const unsigned int concurrency = std::thread::hardware_concurrency();
@@ -704,6 +805,7 @@ private:
   HandleMap<core::ShapeHandle, ShapeRecord> shapes_;
   HandleMap<core::BodyHandle, BodyRecord> bodies_;
   HandleMap<core::ConstraintHandle, ConstraintRecord> constraints_;
+  JPH::Ref<JPH::GroupFilterTable> jointCollisionFilter_{new JPH::GroupFilterTable(maxBodies)};
   HandleMap<core::BodyHandle, core::BodyState> changed_;
 };
 
