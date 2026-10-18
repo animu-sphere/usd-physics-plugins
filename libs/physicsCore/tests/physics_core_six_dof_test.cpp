@@ -42,6 +42,27 @@ int main() {
   d.limits[3] = {AxisMotion::locked, nan, inf};
   validateSixDofConstraintDescriptor(d);
   for (std::size_t axis = 0; axis != 3; ++axis) {
+    for (const auto spring : {RotationSpring{-1, 0},
+                              {inf, 0},
+                              {nan, 0},
+                              {1, -1},
+                              {1, inf},
+                              {1, nan},
+                              {0, 1}}) {
+      auto bad = d;
+      bad.rotationSprings[axis] = spring;
+      if (!rejects([&] { validateSixDofConstraintDescriptor(bad); }))
+        return 9;
+    }
+    auto rotation = d;
+    rotation.limits[axis + 3].motion = AxisMotion::free;
+    rotation.rotationSprings[axis] = {25, 2};
+    validateSixDofConstraintDescriptor(rotation);
+    rotation.limits[axis + 3] = {AxisMotion::limited, -.2, .5};
+    validateSixDofConstraintDescriptor(rotation);
+    rotation.limits[axis + 3].motion = AxisMotion::locked;
+    if (!rejects([&] { validateSixDofConstraintDescriptor(rotation); }))
+      return 10;
     for (const auto spring : {TranslationSpring{-1,0,0}, {inf,0,0}, {nan,0,0},
                               {1,-1,0}, {1,inf,0}, {1,nan,0},
                               {1,0,inf}, {1,0,nan}, {0,1,0}}) {

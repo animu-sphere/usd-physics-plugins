@@ -14,6 +14,15 @@ void validateSixDofConstraintDescriptor(const SixDofConstraintDescriptor& d) {
       throw std::invalid_argument("joint rotation must be finite and nonzero");
   }
   constexpr double pi = 3.14159265358979323846;
+  for (std::size_t axis = 0; axis < d.rotationSprings.size(); ++axis) {
+    const auto &spring = d.rotationSprings[axis];
+    if (!std::isfinite(spring.stiffness) || spring.stiffness < 0 ||
+        !std::isfinite(spring.damping) || spring.damping < 0 ||
+        (spring.stiffness == 0 && spring.damping != 0) ||
+        (spring.stiffness > 0 &&
+         d.limits[axis + 3].motion == AxisMotion::locked))
+      throw std::invalid_argument("invalid six-DOF rotation spring");
+  }
   for (std::size_t axis = 0; axis < d.translationSprings.size(); ++axis) {
     const auto& spring = d.translationSprings[axis];
     if (!std::isfinite(spring.stiffness) || spring.stiffness < 0 ||

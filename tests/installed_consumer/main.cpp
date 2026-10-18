@@ -99,6 +99,29 @@ int main() {
     if (heldY < 4.999 || heldY > 5.001 || heldX < 10.2 || heldX > 10.26 ||
         !world->destroyConstraint(constraint))
       return 10;
+    const auto rotating = world->createBody(
+        {shape,
+         usd_physics::core::MotionType::dynamicBody,
+         {{20, 5, 0}, {.9950041652780258, .09983341664682815, 0, 0}},
+         1,
+         {},
+         {},
+         {0, 0}});
+    descriptor = {};
+    descriptor.secondBody = rotating;
+    descriptor.firstFrame.translation = {20, 5, 0};
+    for (auto &axis : descriptor.limits)
+      axis.motion = usd_physics::core::AxisMotion::locked;
+    descriptor.limits[3].motion = usd_physics::core::AxisMotion::free;
+    descriptor.rotationSprings[0] = {25, 3};
+    const auto rotationConstraint =
+        constraints->createSixDofConstraint(descriptor);
+    for (int i = 0; i != 240; ++i)
+      world->step(usd_physics::core::PhysicsWorld::Duration{1.0 / 240});
+    const auto rotation = world->bodyState(rotating).transform.rotation;
+    if (rotation.x < -.001 || rotation.x > .001 ||
+        !world->destroyConstraint(rotationConstraint))
+      return 11;
 #endif
     return position.x > .999 && position.x < 1.001 && position.y > 1.999 &&
                    position.y < 2.001

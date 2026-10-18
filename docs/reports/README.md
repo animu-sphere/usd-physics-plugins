@@ -24,3 +24,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-10-18 Phase 4 body damping rates](2026-10-18-phase4-body-damping.md)
 - [2026-10-18 Phase 4 contact pair mixing](2026-10-18-phase4-contact-mixing.md)
 - [2026-10-18 Phase 4 experimental translation springs](2026-10-18-phase4-translation-springs.md)
+- [2026-10-18 Phase 4 experimental rotation springs](2026-10-18-phase4-rotation-springs.md)

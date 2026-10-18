@@ -19,6 +19,14 @@ struct TranslationSpring {
   double stiffness{0}, damping{0}, equilibrium{0};
 };
 
+struct RotationSpring {
+  // Small-angle rotational restoring stiffness (N*m/rad) and viscous damping
+  // (N*m*s/rad), about the second joint frame's axes. Identity equilibrium.
+  // Finite-angle response is a quaternion motor approximation, not Euler
+  // springs. Zero stiffness disables an axis and requires zero damping.
+  double stiffness{0}, damping{0};
+};
+
 struct SixDofConstraintDescriptor {
   // One invalid handle denotes world; two invalid or identical handles reject.
   BodyHandle firstBody, secondBody;
@@ -30,8 +38,9 @@ struct SixDofConstraintDescriptor {
   std::array<AxisLimit, 6> limits;
   bool collisionEnabled{false};
   // X/Y/Z springs may coexist with free or limited translation axes.
-  // Active springs on locked axes reject. Angular springs/drives are absent.
+  // Active springs on locked axes reject.
   std::array<TranslationSpring, 3> translationSprings;
+  std::array<RotationSpring, 3> rotationSprings;
 };
 
 void validateSixDofConstraintDescriptor(const SixDofConstraintDescriptor& value);
