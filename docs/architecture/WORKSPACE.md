@@ -37,6 +37,10 @@ The local translation-spring increment extends that neutral descriptor and
 the opt-in backend implementation with three Hookean translation axes.
 `physicsUsd` still interprets no source spring metadata or drive declarations;
 no component or dependency edge changes.
+The local rotation-spring increment extends the same descriptor with three
+small-angle rotational stiffness/damping pairs, identity equilibrium and axes
+in the second joint frame. The backend owns motor execution; source-format
+scaling and activation stay outside shared code. No component identity changes.
 The local body-damping increment adds neutral per-body linear/angular decay
 rates, validated by `physicsCore` and consumed by `physicsJolt`. Source-format
 coefficient conversion stays in the consumer; `physicsUsd` reads no such

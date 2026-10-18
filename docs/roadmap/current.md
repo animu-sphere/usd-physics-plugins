@@ -39,8 +39,11 @@ than a full release.
   Neutral translation springs now pass local analytic response, reduced-mass
   and hard-limit controls; numerical damping remains timestep-dependent
   ([spring evidence](../reports/2026-10-18-phase4-translation-springs.md)).
+  Small-angle rotation springs also pass local inertia, damping, endpoint,
+  rotated-frame and hard-stop controls; finite-angle/source fidelity remains open
+  ([rotation evidence](../reports/2026-10-18-phase4-rotation-springs.md)).
   Standard USD material bindings, instantaneous source damping, timestep and source-solver trajectory fidelity,
-  angular springs, source spring-response equivalence, source-only
+  finite-angle angular spring fidelity, source spring-response equivalence, source-only
   semantics and full MMD fidelity remain open
   ([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md),
   [execution evidence](../reports/2026-10-18-phase4-six-dof-execution.md),

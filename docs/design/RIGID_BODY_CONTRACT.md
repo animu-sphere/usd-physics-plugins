@@ -167,7 +167,7 @@ frame's axes. Rotation uses X twist and Y/Z pyramid swing of the second frame
 relative to the first, rather than three independently composed Euler angles.
 `AxisMotion` is free, locked at zero, or limited by finite `low < high` bounds.
 Angular bounds lie strictly inside `(-pi, pi)`. Inactive bounds are ignored.
-Angular springs, general drives and nonzero equal-bound locks are outside this slice. Backend
+General drives and nonzero equal-bound locks are outside this slice. Backend
 scalar range or collapsed-precision bounds reject before resource creation.
 
 `collisionEnabled=false` suppresses contacts between the two body endpoints
@@ -196,6 +196,29 @@ six-DOF build option gates execution. These are discretized implicit springs:
 analytic response tests at 60/240 Hz measure timestep-dependent numerical
 damping, even with zero configured damping. Source solver equivalence requires
 separate evidence; source-format conversion belongs outside this package.
+
+### 5.6 Rotation springs (experimental)
+
+`SixDofConstraintDescriptor::rotationSprings` contains three `RotationSpring`
+stiffness/damping pairs in N*m/rad and N*m*s/rad. Equilibrium is identity:
+the two joint frames align. The restoring response is defined for small
+relative rotations about the second joint frame's axes, with viscous damping
+of relative angular velocity. No independent Euler-angle spring law is promised
+for finite coupled rotations. General orientation targets are outside this slice.
+
+Every coefficient must be finite and non-negative. Zero stiffness disables an
+axis and requires zero damping. Positive stiffness on a locked angular axis
+rejects; free or limited angular axes may have springs. Backend overflow and
+nonzero values rounded to zero reject before creating resources. Hard limits
+remain hard even when identity equilibrium lies outside their range.
+
+Jolt uses position motors with stiffness/damping settings, identity orientation
+target and axes in the second constraint frame. Its quaternion error and
+projection onto enabled axes approximate small angular displacements; at finite
+angles or with coupled anisotropic axes, this differs from independent Euler
+springs. The existing experimental six-DOF option gates execution. Analytic
+60/240 Hz tests measure small-angle and timestep approximation, including
+numerical damping. Source-format units and activation rules remain consumer-owned.
 
 ## 6. World lifecycle
 
