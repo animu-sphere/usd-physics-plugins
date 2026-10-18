@@ -97,6 +97,53 @@ if(_configure_result)
   message(FATAL_ERROR "installed consumer configure failed: ${_configure_result}")
 endif()
 
+set(_negative_cases CORE MISSING_CORE_METADATA TOOLCHAIN)
+if(TEST_USD)
+  list(APPEND _negative_cases CORE_USD)
+endif()
+foreach(_case IN LISTS _negative_cases)
+  set(_negative_args ${_configure_args})
+  list(FIND _negative_args "${_build}" _negative_build_index)
+  list(REMOVE_AT _negative_args ${_negative_build_index})
+  list(INSERT _negative_args ${_negative_build_index} "${_build}-reject-${_case}")
+  list(APPEND _negative_args "--fresh")
+  if(_case STREQUAL "MISSING_CORE_METADATA")
+    list(APPEND _negative_args "-DTEST_FAKE_MISSING_CORE_METADATA=ON")
+  elseif(_case STREQUAL "CORE_USD")
+    list(APPEND _negative_args "-DTEST_FAKE_INCOMPATIBLE_CORE=ON" "-DTEST_ONLY_USD=ON")
+  else()
+    list(APPEND _negative_args "-DTEST_FAKE_INCOMPATIBLE_${_case}=ON")
+  endif()
+  execute_process(COMMAND "${CMAKE_COMMAND}" ${_negative_args}
+    RESULT_VARIABLE _negative_result
+    OUTPUT_VARIABLE _negative_output ERROR_VARIABLE _negative_error)
+  if(_case STREQUAL "TOOLCHAIN")
+    set(_expected_error "incompatible compiler/platform/MSVC runtime")
+  else()
+    set(_expected_error "incompatible physicsCore descriptor/build identity")
+  endif()
+  if(NOT _negative_result OR NOT "${_negative_output}\n${_negative_error}" MATCHES "${_expected_error}")
+    message(FATAL_ERROR "installed package did not reject ${_case}: ${_negative_output}\n${_negative_error}")
+  endif()
+endforeach()
+
+# The prefix belongs to this test. Restore the header before either asserting
+# the rejection or building the positive consumer.
+set(_descriptor "${_prefix}/include/usd_physics/core/descriptors.h")
+file(READ "${_descriptor}" _original_descriptor)
+file(APPEND "${_descriptor}" "\n// mismatched installed header test\n")
+set(_header_args ${_configure_args})
+list(FIND _header_args "${_build}" _header_build_index)
+list(REMOVE_AT _header_args ${_header_build_index})
+list(INSERT _header_args ${_header_build_index} "${_build}-reject-HEADERS")
+execute_process(COMMAND "${CMAKE_COMMAND}" ${_header_args} --fresh
+  RESULT_VARIABLE _header_result OUTPUT_VARIABLE _header_output ERROR_VARIABLE _header_error)
+file(WRITE "${_descriptor}" "${_original_descriptor}")
+if(NOT _header_result OR NOT "${_header_output}\n${_header_error}" MATCHES
+    "installed headers do not match")
+  message(FATAL_ERROR "installed package did not reject mismatched headers")
+endif()
+
 execute_process(
   COMMAND "${CMAKE_COMMAND}" --build "${_build}" --config "${TEST_CONFIG}"
   RESULT_VARIABLE _build_result)

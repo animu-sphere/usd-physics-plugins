@@ -54,10 +54,16 @@ install(TARGETS physicsCore
 install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 include(CMakePackageConfigHelpers)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/physicsCoreCompatibility.cmake")
+physics_core_toolchain_id(PHYSICSCORE_TOOLCHAIN_ID)
+physics_core_header_id("${CMAKE_CURRENT_SOURCE_DIR}/include/usd_physics/core" PHYSICSCORE_HEADER_ID)
+string(SHA256 PHYSICSCORE_ABI_ID "${PHYSICSCORE_HEADER_ID}|${PHYSICSCORE_TOOLCHAIN_ID}")
+set_property(TARGET physicsCore PROPERTY USDPHYSICS_ABI_ID "${PHYSICSCORE_ABI_ID}")
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/physicsCoreConfig.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/physicsCoreConfig.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/physicsCore")
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/physicsCore"
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/physicsCoreConfigVersion.cmake"
   VERSION ${PROJECT_VERSION}
@@ -67,6 +73,7 @@ install(EXPORT physicsCoreTargets
   NAMESPACE physicsCore::
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/physicsCore")
 install(FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/physicsCoreCompatibility.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/physicsCoreConfig.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/physicsCoreConfigVersion.cmake"
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/physicsCore")

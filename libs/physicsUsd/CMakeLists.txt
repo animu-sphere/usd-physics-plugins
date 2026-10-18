@@ -11,6 +11,12 @@ if(NOT TARGET physicsCore::physicsCore)
   find_package(physicsCore 0.1 CONFIG REQUIRED)
 endif()
 find_package(pxr CONFIG REQUIRED)
+if(NOT COMMAND physics_core_require_abi)
+  message(FATAL_ERROR "physicsUsd requires rebuilt physicsCore package compatibility metadata")
+endif()
+get_target_property(PHYSICSUSD_CORE_ABI_ID physicsCore::physicsCore USDPHYSICS_ABI_ID)
+set(PHYSICSUSD_PXR_VERSION "${PXR_VERSION}")
+physics_core_header_id("${PXR_INCLUDE_DIRS}/pxr" PHYSICSUSD_PXR_HEADER_ID)
 foreach(component IN ITEMS usd usdGeom usdPhysics)
   if(TARGET pxr::${component})
     list(APPEND _physics_usd_targets pxr::${component})
@@ -32,11 +38,13 @@ target_link_libraries(physicsUsd PUBLIC physicsCore::physicsCore ${_physics_usd_
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+physics_core_header_id("${CMAKE_CURRENT_SOURCE_DIR}/include/usd_physics/usd" PHYSICSUSD_HEADER_ID)
 install(TARGETS physicsUsd EXPORT physicsUsdTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 configure_package_config_file(cmake/physicsUsdConfig.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/physicsUsdConfig.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/physicsUsd)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/physicsUsd
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/physicsUsdConfigVersion.cmake"
   VERSION ${PROJECT_VERSION} COMPATIBILITY SameMinorVersion)
 install(EXPORT physicsUsdTargets FILE physicsUsdTargets.cmake NAMESPACE physicsUsd::
