@@ -33,6 +33,10 @@ The local six-DOF increment adds optional `SixDofConstraints` in `physicsCore`,
 implemented by `physicsJolt`, and a stateless snapshot-to-descriptor conversion
 in `physicsUsd`. No dependency direction or component identity changes; resource
 mapping and runtime scheduling remain consumer-owned.
+The local body-damping increment adds neutral per-body linear/angular decay
+rates, validated by `physicsCore` and consumed by `physicsJolt`. Source-format
+coefficient conversion stays in the consumer; `physicsUsd` reads no such
+metadata. Component identities and dependency directions are unchanged.
 `physicsCore` has supported value, handle, descriptor, and world-contract
 slices. `physicsJolt` implements the initial backend slice and retains a typed
 unavailable fallback for builds that do not provide Jolt.

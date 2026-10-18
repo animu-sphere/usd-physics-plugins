@@ -21,3 +21,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-10-18 Phase 4 six-DOF SDK configuration cause](2026-10-18-phase4-six-dof-sdk-cause.md)
 - [2026-10-18 Phase 4 hosted six-DOF acceptance](2026-10-18-phase4-six-dof-hosted.md)
 - [2026-10-18 Phase 4 body contact coefficients](2026-10-18-phase4-contact-material.md)
+- [2026-10-18 Phase 4 body damping rates](2026-10-18-phase4-body-damping.md)

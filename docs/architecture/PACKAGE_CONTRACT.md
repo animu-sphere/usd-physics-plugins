@@ -85,6 +85,13 @@ consumer together. Pair mixing and numeric domains are defined by
 There is no new published version or artifact pin. The USD reader gains no
 format-specific metadata interpretation or standard material binding support.
 
+The local damping increment appends `BodyDamping damping` to `BodyDescriptor`
+and adds `validateBodyDamping()`. It preserves old source initializers and
+Jolt defaults, but changes binary layout again: rebuild all three packages
+and consumers together in a separate prefix. Rates use inverse seconds, not
+source-format retention fractions. Versions and published pins are unchanged;
+the generic USD reader gains no format metadata interpretation.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;

@@ -1,5 +1,7 @@
 # Phase 4 body contact coefficients (2026-10-18)
 
+Later evidence: [body damping rates](2026-10-18-phase4-body-damping.md) add independent linear/angular decay and response controls.
+
 Local Windows evidence following the six-DOF execution work. The neutral core
 now accepts `ContactMaterial` on `BodyDescriptor`, with non-negative finite
 friction and restitution in `[0,1]`. Defaults preserve Jolt's previous `0.2` / `0`
