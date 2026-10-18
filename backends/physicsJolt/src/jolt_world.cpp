@@ -562,7 +562,28 @@ public:
         settings.SetLimitedAxis(axis, low, high);
       }
     }
-    JPH::Ref<JPH::Constraint> constraint = settings.Create(first, second);
+    JPH::Vec3 target = JPH::Vec3::sZero();
+    for (std::size_t index = 0; index < descriptor.translationSprings.size(); ++index) {
+      const auto& spring = descriptor.translationSprings[index];
+      if (spring.stiffness == 0) continue;
+      const float stiffness = toJoltFloat(spring.stiffness, "spring stiffness");
+      const float damping = toJoltFloat(spring.damping, "spring damping");
+      const float equilibrium = toJoltFloat(spring.equilibrium, "spring equilibrium");
+      if (stiffness == 0 || (spring.damping > 0 && damping == 0) ||
+          (spring.equilibrium != 0 && equilibrium == 0))
+        throw std::invalid_argument("spring loses precision in backend");
+      settings.mMotorSettings[index].mSpringSettings =
+          JPH::SpringSettings(JPH::ESpringMode::StiffnessAndDamping, stiffness, damping);
+      target.SetComponent(static_cast<JPH::uint>(index), equilibrium);
+    }
+    JPH::Ref<JPH::SixDOFConstraint> springConstraint =
+        static_cast<JPH::SixDOFConstraint*>(settings.Create(first, second));
+    springConstraint->SetTargetPositionCS(target);
+    for (std::size_t index = 0; index < descriptor.translationSprings.size(); ++index)
+      if (descriptor.translationSprings[index].stiffness > 0)
+        springConstraint->SetMotorState(
+            static_cast<JPH::SixDOFConstraintSettings::EAxis>(index), JPH::EMotorState::Position);
+    JPH::Ref<JPH::Constraint> constraint = springConstraint.GetPtr();
     const auto handle = nextHandle<core::ConstraintHandle>(nextConstraint_);
     const bool suppress = !descriptor.collisionEnabled &&
                           descriptor.firstBody && descriptor.secondBody;

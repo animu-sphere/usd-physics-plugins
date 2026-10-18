@@ -76,6 +76,13 @@ the stateless `toSixDofConstraint()` conversion. The mandatory world interface,
 legacy fixed descriptors and dependency graph are unchanged. Rebuild packages
 and consumers together; public versions and artifact pins remain unchanged.
 
+The local translation-spring increment appends three neutral
+`TranslationSpring` values to `SixDofConstraintDescriptor` (N/m, N*s/m, meters).
+Its layout changes; rebuild core, backend, bridge and consumers together into
+a separate prefix. Source initializers retain disabled springs. The existing
+six-DOF option gates execution; versions, public pins and dependencies stay
+unchanged. The installed consumer exercises a nonzero equilibrium spring.
+
 The local contact-material increment appends `ContactMaterial contactMaterial`
 to `BodyDescriptor` in `descriptors.h`, plus `validateContactMaterial()`.
 Old source initializers retain their default contact behavior. This changes
