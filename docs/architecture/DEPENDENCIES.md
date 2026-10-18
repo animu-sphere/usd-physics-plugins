@@ -68,12 +68,18 @@ An optional no-Jolt stub may help a workspace configure, but it does not count
 as backend support and cannot make backend tests pass vacuously.
 
 The experimental six-DOF slice has a separate SDK acceptance gate. The scalar
-Windows artifact above fails its new Z-axis load test. A local candidate of the
-same source with deterministic mode and upstream default x86 SIMD flags passes;
-the exact configuration cause remains unresolved. It does not replace the
-baseline artifact or public pins. Keep `PHYSICSJOLT_ENABLE_SIX_DOF` OFF unless
-the selected SDK passes the enabled six-axis tests; see the
-[candidate configuration and evidence](../reports/2026-10-18-phase4-six-dof-execution.md).
+Windows artifact above fails its new Z-axis load test
+([first evidence](../reports/2026-10-18-phase4-six-dof-execution.md)). The
+cause is MSVC `/fp:fast`, which Jolt applies to its Release build whenever
+`CROSS_PLATFORM_DETERMINISTIC` is OFF; x86 SIMD options do not matter, and
+GCC builds pass either way
+([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md)). The selected
+six-DOF SDK configuration is therefore `CROSS_PLATFORM_DETERMINISTIC=ON`, and
+the source CI builds pinned Jolt that way on both OSes. Its exported
+definitions add `JPH_CROSS_PLATFORM_DETERMINISTIC` and drop `JPH_USE_FMADD`,
+so it is a different ABI set from the artifact above and does not replace that
+artifact or public pins. Keep `PHYSICSJOLT_ENABLE_SIX_DOF` OFF unless the
+selected SDK passes the enabled six-axis tests.
 
 ## 4. OpenStrata
 
