@@ -30,7 +30,10 @@ than a full release.
 - Experimental six-DOF execution passes hosted Windows/Linux acceptance on
   the selected deterministic SDK through the `usd-jolt-six-dof` cells, which
   test but never package. The option stays OFF by default and no six-DOF
-  package is published. Coefficients/filtering, springs, source-only
+  package is published. Body friction/restitution now pass local backend
+  response controls ([contact evidence](../reports/2026-10-18-phase4-contact-material.md));
+  standard USD material bindings, damping, source-solver mixing fidelity,
+  springs, source-only
   semantics and full MMD fidelity remain open
   ([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md),
   [execution evidence](../reports/2026-10-18-phase4-six-dof-execution.md),

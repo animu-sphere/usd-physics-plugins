@@ -43,12 +43,19 @@ collisionFiltersAllowPair(CollisionFilter first, CollisionFilter second) noexcep
          (second.categories & first.collidesWith) != 0;
 }
 
+// Dimensionless body contact coefficients. Pair mixing is backend-defined.
+struct ContactMaterial {
+  double friction{0.2};
+  double restitution{0.0};
+};
+
 struct BodyDescriptor {
   ShapeHandle shape;
   MotionType motionType{MotionType::staticBody};
   Transform initialTransform;
   double mass{1.0};
   CollisionFilter collisionFilter;
+  ContactMaterial contactMaterial;
 };
 
 enum class ConstraintType {
@@ -62,6 +69,7 @@ struct ConstraintDescriptor {
 };
 
 void validateShapeDescriptor(const ShapeDescriptor& descriptor);
+void validateContactMaterial(const ContactMaterial& material);
 void validateBodyDescriptor(const BodyDescriptor& descriptor);
 void validateConstraintDescriptor(const ConstraintDescriptor& descriptor);
 

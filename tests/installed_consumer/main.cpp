@@ -22,10 +22,12 @@ int main() {
     return 2;
   }
   const usd_physics::core::ShapeDescriptor box;
+  const usd_physics::core::ContactMaterial material{0.75, 0.5};
+  usd_physics::core::validateContactMaterial(material);
   usd_physics::core::validateShapeDescriptor(box);
   usd_physics::core::validateBodyDescriptor(
       {usd_physics::core::ShapeHandle{1}, usd_physics::core::MotionType::dynamicBody,
-       transform, 1.0, {}});
+       transform, 1.0, {}, material});
   usd_physics::core::validatePhysicsStep(
       usd_physics::core::PhysicsWorld::Duration{1.0 / 60.0});
   usd_physics::core::validateSegmentEndpoints({}, {0.0, 0.0, 1.0});
@@ -52,7 +54,7 @@ int main() {
 #endif
     const auto shape = world->createShape({});
     const auto moving = world->createBody(
-        {shape, usd_physics::core::MotionType::kinematicBody, {}, 0, {}});
+        {shape, usd_physics::core::MotionType::kinematicBody, {}, 0, {}, material});
     const usd_physics::core::PhysicsWorld::Duration dt{.1};
     if (!motion->moveKinematic(moving, {{1, 2, 3}, {}}, dt)) return 7;
     world->step(dt);

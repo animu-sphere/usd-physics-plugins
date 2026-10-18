@@ -16,7 +16,7 @@ are not complete. The
 claim implementation status.
 
 Latest bridge evidence:
-[Hosted six-DOF acceptance](reports/2026-10-18-phase4-six-dof-hosted.md).
+[Body contact coefficients](reports/2026-10-18-phase4-contact-material.md).
 
 | Category | Answers | Start here |
 | --- | --- | --- |

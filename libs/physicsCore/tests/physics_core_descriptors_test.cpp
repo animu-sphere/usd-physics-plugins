@@ -57,6 +57,24 @@ int main() {
 
   const auto infinity = std::numeric_limits<double>::infinity();
   const auto nan = std::numeric_limits<double>::quiet_NaN();
+  if (ContactMaterial{}.friction != 0.2 || ContactMaterial{}.restitution != 0)
+    return 9;
+  for (const double friction : {0.0, 0.2, 1.0, 4.0}) {
+    for (const double restitution : {0.0, 0.5, 1.0}) {
+      auto body = dynamicBody;
+      body.contactMaterial = {friction, restitution};
+      validateBodyDescriptor(body);
+    }
+  }
+  for (const double invalid : {-1.0, nan, infinity}) {
+    if (!rejectsInvalidArgument([&] { validateContactMaterial({invalid, 0}); }) ||
+        !rejectsInvalidArgument([&] { validateContactMaterial({0, invalid}); }))
+      return 10;
+  }
+  auto invalidMaterialBody = staticBody;
+  invalidMaterialBody.contactMaterial.restitution = 1.01;
+  if (!rejectsInvalidArgument([&] { validateBodyDescriptor(invalidMaterialBody); }))
+    return 11;
   for (const double mass : {-1.0, nan, infinity}) {
     if (!rejectsInvalidArgument([&] {
           validateBodyDescriptor({ShapeHandle{1}, MotionType::kinematicBody, {}, mass, {}});

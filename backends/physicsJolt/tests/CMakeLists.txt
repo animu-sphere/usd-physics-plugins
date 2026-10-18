@@ -3,6 +3,9 @@ target_link_libraries(physics_jolt_scaffold_test PRIVATE physicsJolt::physicsJol
 add_test(NAME physicsJolt.scaffold COMMAND physics_jolt_scaffold_test)
 
 if(PHYSICSJOLT_BACKEND_AVAILABLE)
+  add_executable(physics_jolt_material_test physics_jolt_material_test.cpp)
+  target_link_libraries(physics_jolt_material_test PRIVATE physicsJolt::physicsJolt)
+  add_test(NAME physicsJolt.material COMMAND physics_jolt_material_test)
   if(PHYSICSJOLT_ENABLE_SIX_DOF)
     add_executable(physics_jolt_six_dof_test physics_jolt_six_dof_test.cpp)
     target_link_libraries(physics_jolt_six_dof_test PRIVATE physicsJolt::physicsJolt)
