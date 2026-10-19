@@ -3,6 +3,7 @@
 #include "usd_physics/core/descriptors.h"
 #include <array>
 #include <limits>
+#include <optional>
 #include <pxr/usd/usd/stage.h>
 #include <stdexcept>
 #include <string>
@@ -66,15 +67,27 @@ struct Joint {
   std::array<JointLimit, 6> limits;
 };
 
+struct SceneSettings {
+  std::string path;
+  // World-space acceleration in meters/second^2, independent of prim xforms.
+  core::Vector3 gravity{0.0, -9.81, 0.0};
+};
+
 struct PhysicsScene {
   std::vector<PrimitiveBody> bodies;
   std::vector<Joint> joints;
+  // Absent when no active, defined PhysicsScene is present. Consumers choose
+  // their own world defaults in that case. Multiple scenes reject.
+  std::optional<SceneSettings> settings;
 };
 
 // Adds generic PhysicsJoint frames and six-axis LimitAPI, and FixedJoint.
 // Endpoints must be distinct, rigid, unscaled body frames or one world anchor.
 // Rejects other joint types, distance limits, drives and breaking thresholds.
 // Like the body-only APIs, validates everything and returns sorted snapshots.
+// Also reads at most one PhysicsScene in Y-up meters/kg. Zero direction means
+// negative Y; negative magnitude (including USD's -infinity default) means
+// earth gravity, 9.81 m/s^2. Other nonfinite/animated gravity values reject.
 // This does not create constraints, interpret format metadata, or simulate.
 [[nodiscard]] PhysicsScene readPhysicsScene(const pxr::UsdStageRefPtr &stage);
 

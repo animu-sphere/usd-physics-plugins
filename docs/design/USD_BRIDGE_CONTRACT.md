@@ -55,7 +55,7 @@ contract. Enabled bodies with `physics:kinematicEnabled = true` map to
 is the neutral default and is ignored. Disabled rigid bodies remain static
 even with the kinematic flag. The flag must be time-independent. The reader
 does not sample animation or issue runtime movement commands.
-Animated declarations, scenes,
+Animated declarations, scenes in the body-only readers,
 instances, nested or compound bodies, collider mass overrides,
 inherited mass/density, physics materials and their bindings, and all other
 authored `physics:*` properties are rejected. Collider MassAPI overrides,
@@ -64,7 +64,35 @@ kinematic snapshots do not consume mass/density. This is a bounded volume-based 
 slice, not the full hierarchical USD mass-properties algorithm.
 
 `readPhysicsScene()` adds a `PhysicsScene` snapshot with path-sorted `bodies`
-and `joints`; the body-only APIs continue to reject joints. `Joint` represents
+and `joints`, plus optional `SceneSettings`; the body-only APIs continue to
+reject scenes and joints. The settings contain the absolute scene path and a
+plain world-space gravity acceleration in meters/second squared, without USD
+objects or runtime resources. Scene-prim and ancestor transforms do not rotate
+or scale gravity, which USD declares in simulation world space.
+
+Scene selection uses default stage traversal: active, loaded, defined,
+non-abstract `UsdPhysicsScene` prims in the composed stage. No scene produces
+absent settings; the consumer chooses its
+world defaults. Exactly one scene is admitted. Multiple scenes reject with
+`unsupportedDeclaration` at the second scene in lexical path order; there is
+no implicit first/default scene selection or simulation-owner routing. Instances,
+derived scene schemas, physics APIs applied to a scene and authored physics
+properties other than `physics:gravityDirection` and `physics:gravityMagnitude`
+reject at the scene path. Gravity also requires Y-up meters/kg, including in a
+stage with no bodies; incompatible units reject with `unsupportedUnits` at
+the scene path. Unit/axis conversion beyond this subset is not approximated.
+
+Gravity attributes must be readable and time-independent. A finite nonzero
+direction is normalized; a zero direction requests negative Y. A negative
+magnitude, including USD's default negative infinity, requests earth gravity
+of 9.81 m/s². Zero magnitude disables gravity. Non-negative finite magnitude
+is used directly in meters/second squared; positive infinity, NaN and
+non-finite direction components reject with `invalidValue` at the scene path.
+These rules implement the defaults documented by `UsdPhysicsScene`; reading
+does not author defaults. Scene settings and the remaining snapshot must all
+validate before a result is returned.
+
+`Joint` represents
 generic `PhysicsJoint` or `PhysicsFixedJoint` declarations, not executable
 `physicsCore` constraints. Endpoints are exact rigid-body paths with supported
 body snapshots, or an empty world anchor. Two world anchors, identical bodies,
@@ -135,8 +163,8 @@ The minimal end-to-end acceptance scenario is a static floor, dynamic Box,
 scene gravity and the minimum necessary joint. The bounded snapshot contract
 above defines reader admission/rejection independently of this target scenario.
 
-Scene gravity reading must define scene selection, finite acceleration, unit
-and axis handling, and typed rejection before extending the bounded API.
+The bounded snapshot contract above defines scene selection, finite
+acceleration, unit and axis handling, and typed rejection.
 Additional geometry and joints require a real consumer and a minimal fixture,
 rather than breadth for its own sake.
 
@@ -239,5 +267,7 @@ descriptors.
   that convention when extending the reader.
 - **USD-O3:** application-facing synchronization record and feedback-loop
   boundary.
-- **USD-O4:** selection rules when a stage contains multiple physics scenes.
+- **USD-O4 (resolved for bounded snapshots):** zero scenes means absent
+  settings, one scene is selected, and multiple scenes reject. Explicit
+  multi-scene selection and simulation-owner routing require a consumer need.
 - **USD-O5:** material binding and precedence for friction and restitution.

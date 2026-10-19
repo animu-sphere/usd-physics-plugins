@@ -11,6 +11,7 @@
 #include <pxr/usd/usdPhysics/limitAPI.h>
 #include <pxr/usd/usdPhysics/massAPI.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
+#include <pxr/usd/usdPhysics/scene.h>
 
 int main() {
   const auto stage = pxr::UsdStage::CreateInMemory();
@@ -77,6 +78,14 @@ int main() {
   if (std::abs(usd_physics::usd::readPhysicsScene(stage).bodies[2].mass - 40) >
       1e-10)
     return 7;
+  const auto settings = pxr::UsdPhysicsScene::Define(stage, pxr::SdfPath("/Scene"));
+  settings.CreateGravityDirectionAttr().Set(pxr::GfVec3f(0, -2, 0));
+  settings.CreateGravityMagnitudeAttr().Set(10.0f);
+  const auto withGravity = usd_physics::usd::readPhysicsScene(stage);
+  if (!withGravity.settings || withGravity.settings->path != "/Scene" ||
+      withGravity.settings->gravity != usd_physics::core::Vector3{0, -10, 0} ||
+      withGravity.bodies.size() != 3 || withGravity.joints.size() != 1)
+    return 9;
   return combined.size() == 2 && combined[1].path == "/Rig" &&
                  combined[1].mass == 2 &&
                  combined[1].transform.translation.y == 2 &&

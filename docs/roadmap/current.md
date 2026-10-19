@@ -6,26 +6,6 @@ unfinished work only; keep Active to three to five outcomes.
 
 ## Active
 
-### P0-A — Build and package acceptance
-
-- Outcome: Independently installable core/backend/optional USD packages with
-  equivalent plain-CMake and OpenStrata dependency graphs.
-- Acceptance: Verify hosted Windows/Linux CI after the CMake cleanup, including
-  No-Jolt fallback and clean-prefix consumers without SDKs, with Jolt, and with
-  USD. Preserve public targets, headers and compatibility rejection; attach
-  hosted evidence separately from local results.
-- Tracking: [Package acceptance](../architecture/PACKAGE_CONTRACT.md#7-acceptance);
-  Issue/PR to be linked when opened.
-
-### P0-B — Read-only scene gravity
-
-- Outcome: A validated `UsdPhysicsScene` gravity snapshot for the minimal
-  standard-USD execution path, without retaining a runtime world.
-- Acceptance: Define scene selection, units and typed code/path rejection;
-  verify a generated fixture and keep `physicsUsd` independent of Jolt.
-- Tracking: [Bridge contract](../design/USD_BRIDGE_CONTRACT.md);
-  Issue/PR to be linked when opened. Deliver separately from consumer rebuild.
-
 ### P0-B — Consumer rebuild and state presentation
 
 - Outcome: Stage Runner runs a static floor, dynamic Box, gravity and the
@@ -48,13 +28,16 @@ unfinished work only; keep Active to three to five outcomes.
 - Tracking: [Release gates](../architecture/RELEASE_SCHEMA.md#3-promotion-gates);
   Issue/PR to be linked when opened.
 
-## Next
+### P1-A — MMD consumer slice
 
-- P1-A: Validate a small MMD consumer slice with generated fixtures and a few
-  redistributable real models. Format conversion, filtering, damping and bone
-  coupling remain in the source adapter. Require finite state, sound resource
-  lifetime and clear failure; report numerical differences without requiring
-  exact Bullet trajectories. See [MMD ownership](../design/DESIGN_POLICY.md#102-mmd).
+- Outcome: A small MMD consumer slice validated with generated fixtures and a
+  few redistributable real models.
+- Acceptance: Format conversion, filtering, damping and bone coupling remain
+  in the source adapter. Require finite state, sound resource lifetime and
+  clear failure; report numerical differences without requiring exact Bullet
+  trajectories.
+- Tracking: [MMD ownership](../design/DESIGN_POLICY.md#102-mmd);
+  Issue/PR to be linked when opened.
 
 ## Deferred
 
