@@ -1,6 +1,6 @@
 # OpenUSD physics bridge contract
 
-> **Decision: proposed, revised 2026-10-19.** This document owns USD reading,
+> **Decision: proposed, revised 2026-10-20.** This document owns USD reading,
 > conversion and rejection rules, not implementation status. See the
 > [capability matrix](../reference/CAPABILITY_MATRIX.md) for current capabilities
 > and the [roadmap](../roadmap/current.md) for ordered unfinished work.
@@ -155,7 +155,10 @@ Standard schemas are authoritative wherever they express the concept:
 - `UsdPhysicsLimitAPI` and `UsdPhysicsDriveAPI` for limits and drives.
 
 The bridge does not interpret PMX structures, MMD body modes,
-`VrmSpringBoneAPI`, or backend configuration attributes.
+`mmd:physics:*`, `VrmSpringBoneAPI`, or backend configuration attributes.
+MMD coefficients, 16-group/mask conversion and bone bindings belong in the
+`usd-mmd-plugins` adapter, which may compose standard snapshots with neutral
+descriptors. It must not expand the generic reader's standard input contract.
 
 ## 3. Initial planned slice
 
@@ -167,6 +170,16 @@ The bounded snapshot contract above defines scene selection, finite
 acceleration, unit and axis handling, and typed rejection.
 Additional geometry and joints require a real consumer and a minimal fixture,
 rather than breadth for its own sake.
+
+For avatar integration, the MVP input contract targets sphere/box/capsule,
+dynamic and kinematic bodies alongside static collision, mass, friction,
+restitution, linear/angular damping and gravity. Constraint acceptance begins
+with endpoint bodies, local frames and the required linear/angular limits.
+Six-DOF spring mapping follows that bounded slice and must explicitly report
+its approximation; it is not a prerequisite for basic body/joint acceptance.
+The bounded snapshot rules above remain authoritative for each reader's
+admission; unsupported fields must reject or produce a structured diagnostic,
+never silently use a fallback. This target does not widen a reader by itself.
 
 ## 4. Translation pipeline
 
@@ -234,6 +247,13 @@ Stage evaluation time and solver timestep are separate inputs. The consumer
 owns fixed stepping, animation order and presentation of runtime body state.
 Validate unit, scale and coordinate conversion once at the boundary.
 
+Multiple avatar snapshots may be composed into a host-owned shared world.
+`physicsUsd` does not schedule it or infer cross-avatar category allocation.
+The [shared-world contract](RIGID_BODY_CONTRACT.md#73-shared-world-scheduling)
+owns pre-physics submission, one step per world/tick and post-physics reads.
+Seek, loop, reset and presentation history follow the
+[host lifecycle contract](RIGID_BODY_CONTRACT.md#62-host-ownership-and-discontinuities).
+
 Reading must not mutate authored USD. Display transforms may consume solver
 state without automatic USD writeback. Any later authoring integration belongs
 to the consumer, including edit targets, session-layer policy and prevention of
@@ -248,6 +268,13 @@ diagnostic identifiers. Tests assert identifiers rather than prose.
 The bounded snapshot surface uses `ImportErrorCode` and a prim path on
 `ImportError`, as specified above. Future surfaces must retain typed code/path
 diagnostics; callers must not parse prose. This resolves `USD-O2` for snapshots.
+
+When composing snapshots with executable resources, consumers attach the source
+prim path to neutral operation/object diagnostics under the
+[integration diagnostic proposal](RIGID_BODY_CONTRACT.md#91-integration-diagnostics-proposal).
+This preserves typed import failures while making backend creation failures and
+explicitly accepted spring approximations reportable without format-specific
+fields in the reader or core.
 
 ## 11. Custom schema boundary
 

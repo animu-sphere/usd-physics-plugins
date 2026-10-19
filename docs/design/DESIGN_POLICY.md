@@ -1,6 +1,6 @@
 # usd-physics-plugins design policy
 
-> **Decision: accepted, revised 2026-10-19.** This policy defines intended
+> **Decision: accepted, revised 2026-10-20.** This policy defines intended
 > behavior and responsibility boundaries. Implementation claims belong only in
 > the [capability matrix](../reference/CAPABILITY_MATRIX.md); ordered unfinished
 > work belongs only in the [current roadmap](../roadmap/current.md).
@@ -19,6 +19,9 @@
 `usd-physics-plugins` provides reusable simulation mechanics for OpenUSD-based
 applications. It connects standard USD physics declarations and
 solver-neutral runtime descriptions to replaceable solver implementations.
+Jolt is the first backend. A reproducible fixed-step world must be callable
+from a common avatar scheduler for MMD rigid bodies and future VRM secondary
+motion, without importing either format's semantics into generic physics.
 
 The repository sits below application orchestration and source-format
 semantics, and above backend SDKs:
@@ -235,7 +238,10 @@ in its adapter. Acceptance requires stable execution, clear failure and usable
 bone integration; exact Bullet trajectories are a separate fidelity study.
 
 No PMX header, MMD mode enum, or `mmd:*` attribute is interpreted by
-`physicsCore` or `physicsJolt`.
+`physicsCore`, `physicsJolt`, or the standard `physicsUsd` reader. In particular,
+`mmd:physics:*` is not part of the generic reader contract. MMD's 16-group
+conversion stays in `usd-mmd-plugins`; allocation of shared-world category bits
+across avatars is host policy.
 
 ### 10.3 VRM
 
@@ -259,6 +265,16 @@ torques, angular velocity, wheel contact or shape casts, contact normals,
 surface friction, and suspension force. A higher-level vehicle contract is
 admitted only after real consumers demonstrate it. Jolt's vehicle types do not
 become public API.
+
+### 10.6 Avatar runtime and shared worlds
+
+`usd-avatar-runtime` owns the common scheduler: all avatars submit their
+pre-physics kinematic targets, each shared world steps once per fixed tick,
+then all avatars read body state and apply bone feedback. The application/host
+injects world ownership and lifetime; no generic world owns an avatar's clock.
+Format adapters own bone associations and feedback semantics. Render snapshots
+and interpolation must not modify canonical solver state. The detailed runtime
+contract is in [RIGID_BODY_CONTRACT.md §7.3](RIGID_BODY_CONTRACT.md#73-shared-world-scheduling).
 
 ## 11. Transform policy
 
@@ -288,6 +304,12 @@ Core tests do not use format-specific assets. Any external asset included in
 an integration suite must have redistribution terms recorded; generated
 fixtures are preferred.
 
+PR CI emphasizes builds and small fixed-step, unit and smoke checks. Heavy
+trajectory and fidelity benchmarks are manual evidence, recorded in dated
+reports; do not add nightly jobs. Preserve the existing representative analytic
+and experimental gates under §18 and the
+[workspace CI policy](../architecture/WORKSPACE.md#5-build-modes).
+
 ## 13. Build and distribution policy
 
 The workspace is intended to support plain CMake, installed CMake packages,
@@ -303,8 +325,8 @@ kernel remains C++-first.
 ## 14. Phases
 
 These historical phase definitions describe scope, not current progress,
-release numbers or execution order. The current roadmap prioritizes package
-acceptance and the minimal standard-USD path before additional mechanics.
+release numbers or execution order. The current roadmap owns the avatar
+integration sequence and package acceptance gates.
 
 | Phase | Goal | Acceptance |
 | --- | --- | --- |

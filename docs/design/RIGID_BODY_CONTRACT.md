@@ -1,7 +1,7 @@
 # Rigid-body runtime contract
 
-> **Decision: proposed.** This document defines the neutral runtime contract.
-> Implementation status and evidence belong only in the
+> **Decision: proposed, revised 2026-10-20.** This document defines the neutral
+> runtime contract. Implementation status and evidence belong only in the
 > [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
 ## 1. Purpose
@@ -133,6 +133,12 @@ default is category bit zero colliding with every category. This represents
 Stage Runner's static/moving policy, MMD's 16 groups and per-body masks, and
 future bridge-assigned categories without exposing backend layer numbers.
 
+Category/mask meaning is neutral; backend filter/layer mapping is private to
+each world. A format adapter translates MMD's 16 groups into these sets.
+The host decides category-bit allocation and cross-avatar collision policy
+when avatars share a world. Neither the reader nor the backend assigns bits
+from MMD identities or silently aliases categories when capacity is exhausted.
+
 ### 5.3 Constraints
 
 Phase 1 preserves fixed constraints. Later descriptors may cover revolute,
@@ -257,6 +263,45 @@ remain consumer responsibilities. A consumer may pass
 `SceneSettings::gravity` from the read-only USD snapshot without retaining USD
 objects in a world.
 
+### 6.2 Host ownership and discontinuities
+
+The host owns the world and may inject a borrowed world into multiple consumers.
+Consumers must not destroy a borrowed world. A world owns its backend resources;
+descriptors and input snapshots are value data, not retained USD or renderer
+objects. Host-owned path/handle tables and avatar resource sets must be discarded
+before their world is destroyed. Per-avatar removal first removes dependent
+cross-avatar constraints under host policy, then destroys that avatar's
+constraints, bodies and unused shapes in dependency order.
+
+Reset, seek and animation-loop discontinuities must invalidate the affected
+runtime mappings and presentation history. Full destruction/rebuild is the
+baseline reset mechanism; an in-place reset is a separate API proposal. The
+host must coordinate all users before rebuilding a shared world, recreate
+resources in a stable order and resume only after successful construction.
+Rebuilt bodies use their construction state and explicit initialization commands;
+old simulation velocity must not survive accidentally. A pose teleport must
+explicitly choose velocity clearing or preservation and refresh presentation
+history; it must not be
+substituted with `moveKinematic()`, which describes motion over time.
+
+### 6.3 Avatar integration vocabulary (proposal)
+
+These names describe integration operations, not new installed signatures or a
+frozen ABI. Extend the existing interfaces only where the consumer needs more:
+
+| Conceptual operation | Contract surface / composition |
+| --- | --- |
+| `CreateWorld(config)` | Backend `createWorld()` overloads return an owning `std::unique_ptr<PhysicsWorld>`; host injects the world. |
+| `AddBodiesAndConstraints(snapshot)` | Consumer composes `createShape()`, `createBody()` and constraint capabilities after snapshot validation, with rollback on failure. |
+| `SetKinematicTargets(ids, transforms)` | Consumer resolves handles and calls optional `KinematicMotion::moveKinematic()` with the matching fixed duration. |
+| `StepFixed(dt)` | One scheduler calls `PhysicsWorld::step(Duration)` for each world and tick. |
+| `ReadBodyTransforms(ids)` | `bodyState()` or scheduler-distributed `takeChangedBodyStates()` values; no renderer dependency. |
+| `Reset/Rebuild` | Host coordinates teardown/recreation under §6.2; dedicated reset/teleport APIs require explicit semantics and version review. |
+
+The [package contract](../architecture/PACKAGE_CONTRACT.md#5-versioning) governs
+API/ABI evolution; conceptual batch operations do not introduce mandatory
+virtual methods or move orchestration into `physicsCore`.
+
 ## 7. Stepping and state
 
 The caller supplies an explicit positive fixed step. `physicsCore` validates
@@ -300,6 +345,42 @@ enqueue changed states: stepping collects kinematic changes with the same
 unique handle ordering, drain and destruction semantics as dynamic bodies.
 Dynamic bodies can respond to contact with a moving kinematic collider;
 solver contact tolerances remain backend-specific.
+
+### 7.2 Reproducible fixed stepping
+
+Repeatability is scoped to the same backend, SDK/build, environment, world
+configuration, creation order and ordered command sequence. Record the fixed
+duration, host catch-up limit, backend substep policy and any configurable seed
+(or absence of one). Backend configuration must document its substep count or
+upper bound separately from the host's maximum ticks per frame. The host owns
+accumulation and the explicit policy for excess elapsed time.
+
+Rebuilding and replaying identical inputs under that configuration must be
+tested for repeatable finite state within declared tolerances. This does not
+require bitwise agreement across platforms or numerical agreement with Bullet.
+Opaque handle values need not repeat after rebuild; compare state by stable
+consumer identity. Changes to update order or substep policy must be explicit.
+
+### 7.3 Shared-world scheduling
+
+For each fixed simulation tick, the host/avatar scheduler must enforce:
+
+1. Complete pre-physics evaluation for every avatar using the world and submit
+   all kinematic targets for the same duration.
+2. Call `step()` exactly once for that world, regardless of avatar count.
+3. Distribute post-step state to every avatar, then let its format adapter apply
+   bone feedback.
+
+Calls remain serialized under §10. An avatar must not step a borrowed world
+inside its own update. Because `takeChangedBodyStates()` drains a world-wide
+queue, the scheduler must drain it once and distribute copies, or consumers
+must use direct `bodyState()` reads. One avatar must not consume another's
+changes. A scheduler snapshot is associated with its world generation and tick.
+
+Copy completed simulation state into previous/current presentation snapshots.
+The renderer may interpolate those copies; interpolation must not write back
+into canonical physics state. Reset/rebuild invalidates both copies before
+the next frame. The world owns neither avatar clocks nor presentation objects.
 
 ## 8. Optional query capabilities
 
@@ -360,6 +441,21 @@ distinguishable from invalid input.
 This retains the proven Stage Runner call patterns while making backend
 failures distinguishable. Descriptor and world contract tests cover the
 Phase 1 branches; a concrete backend must retain the same outcomes.
+
+### 9.1 Integration diagnostics (proposal)
+
+Integration must report unsupported joint axes, spring approximations, invalid
+data and body/constraint creation failures as structured diagnostics. Records
+must identify a stable code, severity, operation and neutral object identity;
+the consumer attaches source prim paths or avatar identities. Approximation
+records must identify the affected axes and approximation semantics. A rejected
+operation must be distinguishable from an explicitly accepted approximation.
+
+Preserve the existing exception/return-value policy above; adapters may wrap
+those outcomes rather than replacing them or parsing message text. This proposal
+does not assign new `PhysicsErrorCode` enumerators or claim a diagnostic-record
+API. Unsupported values must not silently fall back, and failed construction
+must clean up partial resources before publication.
 
 ## 10. Threading and ownership
 

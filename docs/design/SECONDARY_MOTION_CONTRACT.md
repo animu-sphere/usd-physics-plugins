@@ -1,8 +1,8 @@
 # Secondary-motion contract
 
-> **Decision: proposed.** This contract reserves a domain boundary. A concrete
-> VRM end-to-end slice must prove the shared descriptor and deterministic CPU
-> behavior before component admission or public-header design. Component status
+> **Decision: proposed, revised 2026-10-20.** This contract reserves a domain
+> boundary. A concrete VRM end-to-end slice must prove the shared descriptor and
+> deterministic CPU behavior before component admission or public-header design. Component status
 > belongs in the [capability matrix](../reference/CAPABILITY_MATRIX.md); work
 > ordering belongs in the [current roadmap](../roadmap/current.md).
 
@@ -29,6 +29,10 @@ physicsCore                         secondaryMotion
 A secondary-motion solver may query rigid-world colliders through a narrow
 capability adapter. It does not require every chain joint to own a
 `BodyHandle`.
+
+Jolt rigid bodies must not become the sole implementation strategy for VRM
+SpringBone. Reuse portable evaluation inputs/outputs, collider descriptors and
+structured diagnostics before attempting to unify solver algorithms.
 
 ## 3. Format boundary
 
@@ -98,6 +102,14 @@ animation -> control evaluation -> secondary motion -> final pose -> rendering
 
 This repository defines the step operation and state, not the application
 frame graph or avatar runtime.
+
+`usd-avatar-runtime` supplies the common scheduler and defines where secondary
+motion runs relative to rigid-body evaluation. The admitted solver contract
+must specify its pre-evaluation pose/collider inputs and post-evaluation
+corrections. Sharing a scheduler does not give a chain solver permission to
+step a borrowed rigid-body world. Rigid-world barriers follow the
+[shared-world contract](RIGID_BODY_CONTRACT.md#73-shared-world-scheduling).
+Presentation interpolation uses copied results and must not modify solver state.
 
 ## 9. Validation
 
