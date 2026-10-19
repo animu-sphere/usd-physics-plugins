@@ -180,9 +180,44 @@ Installed-consumer tests configure against a clean prefix and never rely on a
 source checkout, build-tree include, undeclared sibling, or workspace-only
 target alias.
 
-Exact supported tools and platforms are owned by
-[DEPENDENCIES.md](DEPENDENCIES.md). Current local evidence covers Linux; CI
-claims remain partial until the generated matrix runs.
+The root CMake file owns project settings, option defaults, component selection,
+testing and the final dependency checks. Components own their targets, sources,
+public/private dependencies, headers and installation. The small
+`cmake/UsdPhysicsInstallPackage.cmake` helper shares only config/version/export
+boilerplate; each component retains its package config and identity checks.
+Source builds use the helper from this checkout, including when configured with
+`cmake -S libs/physicsCore` (or another component). Installed consumers use only
+their packages and declared SDKs.
+
+`USDPHYSICS_BUILD_TESTS` defaults to ON only for a top-level root build;
+component test defaults follow that option or their own top-level status.
+`USDPHYSICS_BUILD_USD` and `PHYSICSJOLT_ENABLE_SIX_DOF` default to OFF. USD OFF
+does not discover OpenUSD. Without Jolt, the backend provides typed
+unavailability unless `PHYSICSJOLT_REQUIRE_JOLT` or six-DOF execution is requested.
+Six-DOF requires the deterministic SDK definition. Component test overrides
+remain available for standalone builds.
+
+OpenStrata owns runtime SDK acquisition, pins, intents and the CI graph.
+`CMakePresets.json` provides local Windows/MSVC and Linux/Ninja shortcuts, not
+another dependency lock or CI matrix. Exact supported tools and platforms are
+owned by [DEPENDENCIES.md](DEPENDENCIES.md).
+
+CTest labels separate `unit`, `backend`, `usd`, `consumer`, `experimental` and
+`workspace` checks. The existing `installed-consumer` label is retained as an
+alias on the clean-prefix test. For focused local runs, use
+`ctest --test-dir <build> -C Release -L consumer --output-on-failure`, or replace
+`consumer` with another label. Labels overlap: opt-in six-DOF and spring tests
+are both `backend` and `experimental`. Existing analytic spring checks keep
+running in that gate; no fidelity gate is added.
+
+PR CI keeps the graph cell and the Windows/Linux `usd-jolt` and
+`usd-jolt-six-dof` cells. The graph cell additionally runs plain CMake without
+Jolt or USD; the default intent cells test and package the three independent
+libraries, while six-DOF cells test the experimental execution without
+packaging. Full workspace tests remain unfiltered. Isolated library tests are
+retained because they also exercise standalone builds. Changes to generated CI
+must preserve the repository additions documented in the workflow header and
+`openstrata.ci.yaml`.
 
 ## 6. Package boundaries
 

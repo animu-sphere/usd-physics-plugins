@@ -10,6 +10,8 @@ add_test(NAME physicsUsd.mass_scene COMMAND physics_usd_mass_scene_test)
 add_executable(physics_usd_joint_conversion_test joint_conversion_test.cpp)
 target_link_libraries(physics_usd_joint_conversion_test PRIVATE physicsUsd::physicsUsd)
 add_test(NAME physicsUsd.joint_conversion COMMAND physics_usd_joint_conversion_test)
+set_tests_properties(physicsUsd.box_scene physicsUsd.joint_scene
+  physicsUsd.mass_scene physicsUsd.joint_conversion PROPERTIES LABELS "usd")
 if(WIN32)
   set_tests_properties(physicsUsd.box_scene physicsUsd.joint_scene physicsUsd.mass_scene physicsUsd.joint_conversion PROPERTIES ENVIRONMENT_MODIFICATION
     "PATH=path_list_prepend:${pxr_DIR}/bin;PATH=path_list_prepend:${pxr_DIR}/lib;PATH=path_list_prepend:${Python3_RUNTIME_LIBRARY_DIRS}")

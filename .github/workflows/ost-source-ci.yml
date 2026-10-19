@@ -18,6 +18,7 @@
 # test and package all three physics libraries on Windows and Linux. The
 # `usd-jolt-six-dof` cells skip packaging: they are hosted acceptance for the
 # experimental six-DOF capability, not compatible package inputs.
+# The graph cell also checks the no-SDK fallback without adding a matrix cell.
 name: ost source ci
 
 on:
@@ -141,6 +142,25 @@ jobs:
       - name: Validate the workspace dependency graph
         shell: bash
         run: ost plugin test --workspace --graph-only --json
+      - name: Verify core and unavailable backend without SDKs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S . -B build/ci-no-jolt -G "Ninja Multi-Config" \
+            -DUSDPHYSICS_BUILD_TESTS=ON \
+            -DUSDPHYSICS_BUILD_USD=OFF \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Jolt=ON
+          cmake --build build/ci-no-jolt --config Release --parallel 2
+          ctest --test-dir build/ci-no-jolt -C Release --output-on-failure \
+            --output-junit ctest.xml
+      - name: Upload no-SDK test evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: report-no-jolt
+          path: |
+            build/ci-no-jolt/ctest.xml
+            build/ci-no-jolt/Testing/Temporary/
   pr-workspace:
     if: github.event_name == 'pull_request'
     name: ${{ matrix.name }}

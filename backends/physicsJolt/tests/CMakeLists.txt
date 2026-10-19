@@ -30,3 +30,10 @@ if(PHYSICSJOLT_BACKEND_AVAILABLE)
   target_link_libraries(physics_jolt_kinematic_test PRIVATE physicsJolt::physicsJolt)
   add_test(NAME physicsJolt.kinematic COMMAND physics_jolt_kinematic_test)
 endif()
+
+get_property(_physics_jolt_tests DIRECTORY PROPERTY TESTS)
+set_tests_properties(${_physics_jolt_tests} PROPERTIES LABELS "backend")
+if(PHYSICSJOLT_BACKEND_AVAILABLE AND PHYSICSJOLT_ENABLE_SIX_DOF)
+  set_property(TEST physicsJolt.six_dof physicsJolt.translation_spring
+    physicsJolt.rotation_spring APPEND PROPERTY LABELS "experimental")
+endif()

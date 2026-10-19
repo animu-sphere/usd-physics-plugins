@@ -100,23 +100,8 @@ install(TARGETS physicsJolt
   INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/physicsJoltConfig.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/physicsJoltConfig.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/physicsJolt")
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/physicsJoltConfigVersion.cmake"
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY SameMinorVersion)
-install(EXPORT physicsJoltTargets
-  FILE physicsJoltTargets.cmake
-  NAMESPACE physicsJolt::
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/physicsJolt")
-install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/physicsJoltConfig.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/physicsJoltConfigVersion.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/physicsJolt")
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/UsdPhysicsInstallPackage.cmake")
+usdphysics_install_package(physicsJolt)
 
 if(PHYSICSJOLT_BUILD_TESTS)
   enable_testing()

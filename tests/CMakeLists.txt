@@ -13,6 +13,9 @@ add_test(NAME workspace.versions
     "-DPROJECT_ROOT=${PROJECT_SOURCE_DIR}"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/check_versions.cmake")
 
+set_tests_properties(workspace.boundaries workspace.docs workspace.versions
+  PROPERTIES LABELS "workspace")
+
 add_test(NAME workspace.installed_consumer
   COMMAND "${CMAKE_COMMAND}"
     "-DPROJECT_BUILD_DIR=${PROJECT_BINARY_DIR}"
@@ -31,4 +34,4 @@ add_test(NAME workspace.installed_consumer
     "-DTEST_CONFIG=$<CONFIG>"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/run_installed_consumer.cmake")
 set_tests_properties(workspace.installed_consumer PROPERTIES
-  LABELS "installed-consumer")
+  LABELS "consumer;installed-consumer")
