@@ -20,6 +20,12 @@ frame updates and presentation. Source adapters own format defaults, filters,
 damping conversion and bone coupling. Optional neutral capabilities do not
 change these component boundaries.
 
+The application/host injects world ownership and lifetime. `usd-avatar-runtime`
+coordinates all avatar inputs, one step per shared world and tick, and result
+distribution; `physicsCore` owns the neutral lifecycle/state/diagnostic contract,
+not the scheduler. See the
+[runtime ownership contract](../design/RIGID_BODY_CONTRACT.md#62-host-ownership-and-discontinuities).
+
 ### 1.2 Later, only when the responsibility is real
 
 | Identity | Kind | Directory | Role | Created when |
@@ -75,6 +81,7 @@ repository boundary.
 | `physicsJolt -> OpenUSD` | the backend consumes core descriptors, not scene objects |
 | `physicsUsd -> Jolt` | the USD bridge and solver backend are independently replaceable |
 | `physicsUsd -> Stage Runner runtime types` | the reader returns neutral snapshots; orchestration stays with consumers |
+| generic physics -> `usd-avatar-runtime` or `hydra-toon` | scheduling and rendering consume physics; they are not dependencies of its reader, core or backend |
 | `secondaryMotion -> VRM schemas` | VRM interpretation belongs in a VRM-aware adapter |
 | a public header -> backend-native identifier or settings type | backend replacement must not rewrite consumers |
 | a component -> a sibling source checkout | repositories are consumed as installed packages or OpenStrata members, never private source trees |
@@ -186,6 +193,13 @@ packaging. Full workspace tests remain unfiltered. Isolated library tests are
 retained because they also exercise standalone builds. Changes to generated CI
 must preserve the repository additions documented in the workflow header and
 `openstrata.ci.yaml`.
+
+Avatar integration follows the same PR graph: builds and small fixed-step,
+unit and smoke checks protect contracts and shared-world lifetime. Heavy
+trajectory/fidelity benchmarks run manually, with results in dated reports.
+Do not add nightly jobs or use Bullet numerical agreement as a merge gate.
+Same-configuration replay acceptance follows the
+[fixed-step contract](../design/RIGID_BODY_CONTRACT.md#72-reproducible-fixed-stepping).
 
 ## 6. Package boundaries
 

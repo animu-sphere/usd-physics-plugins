@@ -21,9 +21,11 @@ standard UsdPhysics -> physicsUsd (read-only snapshots)
 
 `physicsCore` owns neutral handles, descriptors, world and query contracts.
 `physicsJolt` owns solver execution. The optional `physicsUsd` reads standard
-USD declarations without owning a runtime world. Stage Runner owns rebuilding,
-path/handle mappings, frame updates and presentation; MMD/VRM repositories own
-source-format interpretation and bone coupling.
+USD declarations without owning a runtime world. The host owns rebuilding,
+path/handle mappings and presentation; `usd-avatar-runtime` coordinates shared
+world stepping across avatars. MMD/VRM repositories own source-format
+interpretation and bone coupling. See the
+[consumer boundaries](docs/design/DESIGN_POLICY.md#10-consumer-boundaries).
 
 See the [capability matrix](docs/reference/CAPABILITY_MATRIX.md) for exact
 implementation limits and evidence, and the
