@@ -37,21 +37,11 @@ target_include_directories(physicsUsd PUBLIC
 target_link_libraries(physicsUsd PUBLIC physicsCore::physicsCore ${_physics_usd_targets})
 
 include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/UsdPhysicsInstallPackage.cmake")
 physics_core_header_id("${CMAKE_CURRENT_SOURCE_DIR}/include/usd_physics/usd" PHYSICSUSD_HEADER_ID)
 install(TARGETS physicsUsd EXPORT physicsUsdTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-configure_package_config_file(cmake/physicsUsdConfig.cmake.in
-  "${CMAKE_CURRENT_BINARY_DIR}/physicsUsdConfig.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/physicsUsd
-  PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
-write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/physicsUsdConfigVersion.cmake"
-  VERSION ${PROJECT_VERSION} COMPATIBILITY SameMinorVersion)
-install(EXPORT physicsUsdTargets FILE physicsUsdTargets.cmake NAMESPACE physicsUsd::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/physicsUsd)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/physicsUsdConfig.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/physicsUsdConfigVersion.cmake"
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/physicsUsd)
+usdphysics_install_package(physicsUsd)
 
 set(_physics_usd_tests_default ${PROJECT_IS_TOP_LEVEL})
 if(DEFINED USDPHYSICS_BUILD_TESTS)

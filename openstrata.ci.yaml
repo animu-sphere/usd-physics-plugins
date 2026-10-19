@@ -5,6 +5,7 @@ schema: 1
 # Retain isolated packaging on both OSes, including physicsUsd. The
 # `usd-jolt-six-dof` cells are hosted acceptance for the experimental six-DOF
 # capability on the deterministic SDK; they test but never package.
+# Retain the graph cell's plain-CMake no-SDK fallback check and test evidence.
 
 bootstrap:
   ost:

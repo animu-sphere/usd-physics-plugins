@@ -2,16 +2,9 @@
 
 Backend-neutral physics runtime components for OpenUSD-based applications.
 
-> **Status (2026-09-27): core/backend extraction complete; Box USD foundation in progress.** The
-> repository builds and installs `physicsCore` and `physicsJolt`; the neutral
-> core contract and a Jolt-backed world with fixed stepping, changed state,
-> segment queries, and ground queries are implemented. The Jolt-required
-> OpenStrata intent passes
-> locally and in hosted CI. An optional `physicsUsd` package now reads standard
-> Box declarations; wider bridge support and artifact rollout remain. The
-> [capability matrix](docs/reference/CAPABILITY_MATRIX.md) is the only page
-> that states what exists, and the [current roadmap](docs/roadmap/current.md)
-> states what comes next.
+See the [capability matrix](docs/reference/CAPABILITY_MATRIX.md) for implemented
+features and verification evidence, and the [current roadmap](docs/roadmap/current.md)
+for remaining work.
 
 The repository is intended to extract the reusable physics boundary proven in
 [`usd-stage-runner`](https://github.com/animu-sphere/usd-stage-runner), then
@@ -21,18 +14,16 @@ validate it with
 
 ## The central rule
 
-The optional Box adapter builds with `-DUSDPHYSICS_BUILD_USD=ON` and an OpenUSD
+The optional USD adapter builds with `-DUSDPHYSICS_BUILD_USD=ON` and an OpenUSD
 26.08 install on `CMAKE_PREFIX_PATH`. It installs `physicsUsd::physicsUsd` and
 `usd_physics/usd/box_scene.h`. The core/backend-only root build remains the
 default. See the [bounded Box contract](docs/design/USD_BRIDGE_CONTRACT.md)
 for supported declarations and explicit rejection behavior.
 
 `ost build --intent usd-jolt` and `ost test --intent usd-jolt` validate the
-reader and Jolt together, including the clean-prefix USD consumer. Source CI
-uses that intent on Windows and Linux and retains isolated library archives
-for `physicsCore`, `physicsJolt`, and `physicsUsd`. Public USD artifact pins and
-hosted evidence for this new gate remain pending; see the
-[local artifact report](docs/reports/2026-10-04-phase4-usd-artifacts.md).
+reader and Jolt together, including the clean-prefix USD consumer. See the
+[build and test responsibilities](docs/architecture/WORKSPACE.md#5-build-modes)
+for CMake, OpenStrata and CI ownership.
 
 > **OpenUSD describes the physical world; `usd-physics-plugins` makes that
 > world executable without exposing a backend SDK to its consumers.**
@@ -67,20 +58,18 @@ MMD, VRM, gameplay, camera, character, and vehicle policy remain in their
 owning repositories. Backend-native identifiers and types remain private to
 their backend.
 
-## Planned components
+## Components
 
-| Component | Kind | Role | State |
-| --- | --- | --- | --- |
-| `physicsCore` | plain C++ library | Handles, descriptors, world lifecycle, state, and optional query contracts; no OpenUSD and no backend SDK | Phase 1 contract implemented and installed |
-| `physicsJolt` | plain C++ library | First rigid-body backend implementing `physicsCore` | Phase 2 implementation present; hosted evidence pending |
-| `physicsUsd` | OpenUSD-facing C++ library | Translate standard `UsdPhysics` declarations to runtime descriptors and maintain transient prim/resource mappings | planned |
-| `secondaryMotion` | plain C++ library | Solver-neutral spring-chain and collider contracts | deferred until the rigid-body boundary is extracted |
-| `secondaryMotionVerlet` | plain C++ library | First deterministic CPU secondary-motion solver | deferred until a real VRM integration slice requires it |
-| `physicsSchema` | OpenUSD schema bundle | Semantic extensions that pass the schema admission test | not admitted |
+| Component | Kind | Role |
+| --- | --- | --- |
+| `physicsCore` | plain C++ library | Handles, descriptors, world lifecycle, state, and optional query contracts; no OpenUSD and no backend SDK |
+| `physicsJolt` | plain C++ library | Rigid-body backend implementing `physicsCore` |
+| `physicsUsd` | OpenUSD-facing C++ library | Translate standard `UsdPhysics` declarations to neutral snapshots |
 
 Component identities, directories, and allowed dependency edges are owned by
-the [workspace contract](docs/architecture/WORKSPACE.md). Planned names do not
-mean empty targets should be created ahead of their phase.
+the [workspace contract](docs/architecture/WORKSPACE.md), which also defines
+admission conditions for future components. Implementation status belongs in
+the [capability matrix](docs/reference/CAPABILITY_MATRIX.md).
 
 ## Scope boundaries
 
@@ -106,6 +95,6 @@ UI. See the [design policy](docs/design/DESIGN_POLICY.md) for the full boundary.
 | [docs/roadmap/](docs/roadmap/) | Incomplete work and phase status |
 | [docs/contributing/](docs/contributing/) | How these documents are maintained |
 
-Build and usage guides will be added only when commands can be run against an
-implementation. Release records and dated reports will likewise be created
-only when a release or real evidence exists.
+Package usage is documented in the
+[installed package contract](docs/architecture/PACKAGE_CONTRACT.md).
+Dated verification evidence lives in [docs/reports/](docs/reports/).

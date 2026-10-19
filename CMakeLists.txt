@@ -21,15 +21,19 @@ if(NOT _usd_physics_multi_config AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 option(USDPHYSICS_BUILD_TESTS "Build usd-physics-plugins tests" ${PROJECT_IS_TOP_LEVEL})
+option(USDPHYSICS_BUILD_USD "Build the optional standard OpenUSD declaration adapter" OFF)
 if(USDPHYSICS_BUILD_TESTS)
   enable_testing()
 endif()
 
 add_subdirectory(libs/physicsCore)
 add_subdirectory(backends/physicsJolt)
-option(USDPHYSICS_BUILD_USD "Build the optional standard OpenUSD declaration adapter" OFF)
 if(USDPHYSICS_BUILD_USD)
   add_subdirectory(libs/physicsUsd)
+endif()
+
+if(USDPHYSICS_BUILD_TESTS)
+  add_subdirectory(tests)
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/UsdPhysicsBoundaryChecks.cmake")
@@ -48,7 +52,3 @@ usdphysics_assert_target_dependencies(
     "$<LINK_ONLY:Jolt::Jolt>"
     "$<LINK_ONLY:Jolt>"
   ALLOWED_PRIVATE physicsCore::physicsCore Jolt::Jolt Jolt)
-
-if(USDPHYSICS_BUILD_TESTS)
-  add_subdirectory(tests)
-endif()

@@ -33,12 +33,13 @@ capability on this page.
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
 | Documentation taxonomy and source-of-truth rules | supported | [`docs/README.md`](../README.md) and [documentation guidelines](../contributing/documentation.md) |
-| Plain CMake root build | supported | Linux configure/build/test evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
+| Plain CMake root build | supported | Windows/Linux, optional SDKs, standalone packages and unchanged installed contents verified in the [CMake cleanup report](../reports/2026-10-19-cmake-cleanup.md); original Linux evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
 | OpenStrata workspace | supported | Root build/test plus isolated package verification in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Windows build | supported | MSVC 19.51 and OpenStrata evidence in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Linux build | supported | GCC 15.2.0 evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
 | Hosted Windows and Linux CI | supported | Generated graph and test cells passed in the [hosted CI report](../reports/2026-09-22-phase0-hosted-ci.md) |
 | Installed-consumer test | supported | Root clean-prefix test passes for both no-Jolt and Jolt-enabled package installs on Windows and Linux; see the [Windows](../reports/2026-09-22-phase2-windows-backend.md) and [Linux](../reports/2026-09-22-phase2-linux-backend.md) Phase 2 reports |
+| Package compatibility and test selection | supported | Public package identities and negative consumer controls retained; CTest labels select unit/backend/USD/consumer/experimental/workspace checks without filtering hosted acceptance. [Cleanup verification](../reports/2026-10-19-cmake-cleanup.md) records local measurements and the pending hosted rerun |
 | Versioned release | not present | `VERSION` exists for package coherence; no tag or release record exists |
 
 ## 3. Rigid-body core

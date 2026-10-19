@@ -20,3 +20,6 @@ add_test(NAME physicsCore.queries COMMAND physics_core_queries_test)
 add_executable(physics_core_six_dof_test physics_core_six_dof_test.cpp)
 target_link_libraries(physics_core_six_dof_test PRIVATE physicsCore::physicsCore)
 add_test(NAME physicsCore.six_dof COMMAND physics_core_six_dof_test)
+
+get_property(_physics_core_tests DIRECTORY PROPERTY TESTS)
+set_tests_properties(${_physics_core_tests} PROPERTIES LABELS "unit")
