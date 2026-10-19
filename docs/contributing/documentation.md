@@ -79,6 +79,8 @@ One behavior change gets one capability-status update. Do not append a
 ## 7. Lightweight checks
 
 Run `python scripts/check_docs.py --selftest` and `python scripts/check_docs.py`.
+Also run `cmake -DPROJECT_ROOT=. -P tests/check_docs.cmake` from the repository
+root to cover the existing `workspace.docs` CTest path, including README badges.
 CI runs the same checks without SDK setup or external API requests. The checker
 validates relative paths with case-sensitive spelling, Markdown heading anchors
 and the format of GitHub Issue/PR links in the roadmap. Human review uses the

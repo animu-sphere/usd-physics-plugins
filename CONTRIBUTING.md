@@ -39,6 +39,7 @@ For documentation changes, run:
 ```powershell
 python scripts/check_docs.py --selftest
 python scripts/check_docs.py
+cmake -DPROJECT_ROOT=. -P tests/check_docs.cmake
 ```
 
 For code changes, run the focused checks that protect the affected contract
