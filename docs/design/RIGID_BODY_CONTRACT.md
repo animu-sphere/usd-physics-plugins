@@ -1,11 +1,8 @@
 # Rigid-body runtime contract
 
-> **Status: proposed, revised 2026-10-18.** This document describes the
-> intended runtime contract. The Phase 1 neutral values, handles, descriptors,
-> typed errors, single-owner world interface, and optional segment and ground
-> query interfaces are implemented; see the
-> [capability matrix](../reference/CAPABILITY_MATRIX.md) for the exact current
-> boundary.
+> **Decision: proposed.** This document defines the neutral runtime contract.
+> Implementation status and evidence belong only in the
+> [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
 ## 1. Purpose
 
@@ -59,8 +56,7 @@ generation counters are encoded in the value is private.
 
 ### 5.1 Shapes
 
-Phase 1 preserves the proven box shape. The local Phase 4 primitive slice adds
-sphere and capsule; mesh and compound shapes still require explicit validation
+The shape contract includes box, sphere and capsule. Mesh and compound shapes require explicit validation
 and lifetime rules. `ShapeType` selects the active geometry fields: box uses
 `halfExtents`, sphere uses `radius`, and capsule uses `radius` and `halfHeight`.
 Radius must be finite and positive. Capsule half-height is finite and
@@ -118,8 +114,8 @@ native body. Source retention fractions must be converted by their adapter,
 not copied into these rate fields. Angular-velocity commands and
 continuous-collision behavior remain deferred.
 
-The local Phase 4 increment adds `MotionType::kinematicBody`. It is driven by
-explicit pose commands rather than gravity, forces or impulses from contacts.
+`MotionType::kinematicBody` is driven by explicit pose commands rather than
+gravity, forces or impulses from contacts.
 Its mass must be finite and non-negative but is not used for simulation.
 Force and linear-velocity commands remain restricted to dynamic bodies.
 Backends supporting kinematic motion expose the optional `KinematicMotion`

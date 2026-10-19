@@ -1,17 +1,19 @@
 # OpenUSD physics bridge contract
 
-> **Status: proposed, updated 2026-10-18.** A bounded primitive snapshot reader is
-> implemented; the wider bridge remains planned. See the
-> [capability matrix](../reference/CAPABILITY_MATRIX.md).
+> **Decision: proposed, revised 2026-10-19.** This document owns USD reading,
+> conversion and rejection rules, not implementation status. See the
+> [capability matrix](../reference/CAPABILITY_MATRIX.md) for current capabilities
+> and the [roadmap](../roadmap/current.md) for ordered unfinished work.
 
-The implementation exposes `usd_physics::usd::readPrimitiveScene()` and
-`PrimitiveBody` in `usd_physics/usd/box_scene.h`. The existing `readBoxScene()`
-remains Cube-only, and `PrimitiveBody` aliases `BoxBody`. Both return validated
-neutral shape,
-motion, transform, and mass values sorted by absolute prim path. It owns no
+## Bounded snapshot contract
+
+The bounded API contract names `usd_physics::usd::readPrimitiveScene()` and
+`PrimitiveBody` in `usd_physics/usd/box_scene.h`. `readBoxScene()` is Cube-only,
+and `PrimitiveBody` aliases `BoxBody`. Both return validated neutral shape,
+motion, transform and mass values sorted by absolute prim path. The reader owns no
 world, handles, persistent mapping, or USD edits. Callers must keep the result
-associated with its source Stage and discard it at reload; stage-generation
-identities and synchronization records remain future work.
+associated with its source Stage and discard it at reload; the consumer owns
+stage-generation identity and synchronization.
 
 The subset requires Y-up meters/kg. Dynamic bodies use positive explicit mass
 or infer mass from their scaled collision volume and body-local density.
@@ -47,9 +49,9 @@ transforms are rejected. Rigid-frame scale and normalized-axis orthogonality
 checks use a tolerance of `1e-9`.
 Animated ancestors beyond a reset do not participate. Collision-only geometry
 and disabled rigid bodies are static; disabled collision-only geometry is
-skipped. A rigid body with disabled collision is rejected until collider-free
-bodies are supported. Enabled bodies with `physics:kinematicEnabled = true`
-map to `MotionType::kinematicBody` without requiring mass; their snapshot mass
+skipped. A rigid body with disabled collision is rejected by this bounded
+contract. Enabled bodies with `physics:kinematicEnabled = true` map to
+`MotionType::kinematicBody` without requiring mass; their snapshot mass
 is the neutral default and is ignored. Disabled rigid bodies remain static
 even with the kinematic flag. The flag must be time-independent. The reader
 does not sample animation or issue runtime movement commands.
@@ -57,8 +59,8 @@ Animated declarations, scenes,
 instances, nested or compound bodies, collider mass overrides,
 inherited mass/density, physics materials and their bindings, and all other
 authored `physics:*` properties are rejected. Collider MassAPI overrides,
-inertia and center-of-mass overrides remain unsupported. Static and kinematic
-snapshots do not consume mass/density. This is a bounded volume-based inference
+inertia and center-of-mass overrides reject in this contract. Static and
+kinematic snapshots do not consume mass/density. This is a bounded volume-based inference
 slice, not the full hierarchical USD mass-properties algorithm.
 
 `readPhysicsScene()` adds a `PhysicsScene` snapshot with path-sorted `bodies`
@@ -98,7 +100,7 @@ The core's twist/pyramid-swing rotation convention is explicit in the
 [rigid-body contract](RIGID_BODY_CONTRACT.md#54-optional-six-dof-constraints).
 Executing those limits does not establish PMX Euler-limit equivalence.
 Source-format filtering, coefficient mapping, springs and bone synchronization
-remain outside this slice. Consumer code owns creation, rollback, handles and
+belong to consumer adapters. Consumer code owns creation, rollback, handles and
 lifetimes; no retained stage mapping is added.
 
 For this surface, `USD-O2` uses typed `ImportErrorCode` plus the offending path
@@ -108,9 +110,9 @@ diagnostic prose. Validation completes before a snapshot is returned.
 
 ## 1. Purpose
 
-`physicsUsd` translates standard OpenUSD physics declarations into
-`physicsCore` descriptors and maintains transient mappings between scene
-identities and runtime resources.
+`physicsUsd` translates standard OpenUSD physics declarations into neutral
+snapshots containing `physicsCore` values and descriptors. It does not retain runtime worlds or
+resource mappings; consumers own orchestration and cleanup.
 
 It is an adapter, not a solver and not an application scheduler.
 
@@ -129,47 +131,44 @@ The bridge does not interpret PMX structures, MMD body modes,
 
 ## 3. Initial planned slice
 
-Phase 4 starts with:
+The minimal end-to-end acceptance scenario is a static floor, dynamic Box,
+scene gravity and the minimum necessary joint. The bounded snapshot contract
+above defines reader admission/rejection independently of this target scenario.
 
-- one selected `UsdPhysicsScene` and gravity;
-- box, sphere, and capsule collision geometry;
-- static and dynamic rigid bodies;
-- authored mass;
-- fixed joints;
-- deterministic resource creation and destruction;
-- body-state synchronization through an application-provided destination.
-
-Additional geometry and joint types enter through fixtures that define exact
-conversion and failure behavior.
+Scene gravity reading must define scene selection, finite acceleration, unit
+and axis handling, and typed rejection before extending the bounded API.
+Additional geometry and joints require a real consumer and a minimal fixture,
+rather than breadth for its own sake.
 
 ## 4. Translation pipeline
 
 ```text
-USD prims
-  -> validated bridge model
-  -> physicsCore descriptors
-  -> runtime handles
-  -> solver state
+USD prims -> physicsUsd validation -> neutral snapshot
+                                          |
+                                          v
+                         consumer creates world/resources
+                                          |
+                                          v
+                            step -> state -> presentation
 ```
 
-Parsing and validation complete before the bridge mutates a live world when
-practical. A failed prim must not leave an untracked backend resource.
+Snapshot validation completes before return. The consumer constructs resources
+in a temporary world and exposes it only after successful construction. On
+failure it destroys partial resources and reports a diagnostic code and prim
+path; no untracked or partially usable world escapes.
 
 ## 5. Identity and mapping
 
-The bridge maintains bidirectional transient mappings:
+The consumer owns temporary mappings from absolute prim paths to shape, body
+and constraint handles, associated with the source stage instance/generation.
+A path from a reloaded stage must not resolve to the prior stage's resources.
+Backend IDs never appear in USD or neutral snapshots.
 
-```text
-scene identity <-> BodyHandle / ShapeHandle / ConstraintHandle
-```
-
-The scene identity may use `SdfPath` with an explicit stage-generation token,
-or another type that prevents a path from one stage instance being mistaken
-for the same path after reload. Backend IDs never appear in USD.
-
-Mappings support lookup, deletion, subtree change, stage reload, complete
-reset, and deterministic rebuild. Deleting a prim removes dependent resources
-in a valid lifecycle order.
+On reload, explicitly destroy the old resources and fully rebuild. Cleanup
+must respect dependent constraints and bodies; stale handles must reject.
+Persistent mapping machinery and subtree updates are not prerequisites for
+this initial execution path. A separate thin orchestration component may be
+considered only when actual consumers demonstrate reusable behavior.
 
 ## 6. Transform conversion
 
@@ -178,7 +177,8 @@ covers composed translation, orientation, scale, parent transforms,
 `resetXformStack`, collider-local transforms, and world/local conversion.
 
 The first implementation may reject unsupported scale or composition cases,
-but every restriction is listed in the capability matrix and tested. It does
+but every rejection rule is specified here and tested. The capability matrix
+links to this contract rather than duplicating its full rules. It does
 not silently flatten a transform incorrectly.
 
 Stage units and up axis are converted once at the boundary. Values inside
@@ -194,24 +194,22 @@ This is tracked as `USD-O1`.
 
 ## 8. Change processing
 
-The first implementation may use full rebuild on relevant stage changes.
-Incremental change processing is an optimization only after rebuild behavior
-is correct and deterministic.
-
-Incremental processing must define dependency invalidation for geometry,
-materials, body APIs, joint endpoints, inherited transforms, and scene
-settings. It may not depend on notification order for correctness.
+The initial consumer path uses explicit destruction and full rebuild on stage
+reload. Continuous stage-delta monitoring and incremental synchronization are
+not required. They enter only after a consumer demonstrates a need and defines
+invalidation for geometry, materials, bodies, joints, transforms and settings.
+Notification ordering must never determine correctness.
 
 ## 9. Synchronization and writeback
 
-`physicsUsd` may produce neutral synchronization records containing scene
-identity and changed body state. The owning application decides when and where
-to author or apply them.
+Stage evaluation time and solver timestep are separate inputs. The consumer
+owns fixed stepping, animation order and presentation of runtime body state.
+Validate unit, scale and coordinate conversion once at the boundary.
 
-The bridge must avoid a feedback loop in which solver writeback is immediately
-re-imported as an authored edit. Session-layer policy, edit targets, and
-scheduling belong to the application integration unless a reusable contract
-is proven.
+Reading must not mutate authored USD. Display transforms may consume solver
+state without automatic USD writeback. Any later authoring integration belongs
+to the consumer, including edit targets, session-layer policy and prevention of
+feedback loops. A synchronization-record API requires demonstrated shared need.
 
 ## 10. Diagnostics
 
@@ -219,8 +217,9 @@ Unsupported schema combinations, invalid dimensions, missing joint targets,
 non-finite data, unsupported transforms, and lossy conversions produce stable
 diagnostic identifiers. Tests assert identifiers rather than prose.
 
-The diagnostic prefix and transport are `USD-O2` and must be fixed before
-Phase 4 public API is accepted.
+The bounded snapshot surface uses `ImportErrorCode` and a prim path on
+`ImportError`, as specified above. Future surfaces must retain typed code/path
+diagnostics; callers must not parse prose. This resolves `USD-O2` for snapshots.
 
 ## 11. Custom schema boundary
 
@@ -236,7 +235,8 @@ descriptors.
 
 - **USD-O1:** identity and resource sharing for native instances, instance
   proxies, and point instancers.
-- **USD-O2:** stable diagnostic namespace and result transport.
+- **USD-O2 (resolved for snapshots):** typed import code and prim path; retain
+  that convention when extending the reader.
 - **USD-O3:** application-facing synchronization record and feedback-loop
   boundary.
 - **USD-O4:** selection rules when a stage contains multiple physics scenes.

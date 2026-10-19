@@ -1,0 +1,24 @@
+# Hand-written; independent of the generated OpenStrata source CI.
+name: docs-check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Verify checker rules
+        run: python scripts/check_docs.py --selftest
+      - name: Check Markdown links and roadmap tracking
+        run: python scripts/check_docs.py

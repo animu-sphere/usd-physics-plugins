@@ -1,37 +1,11 @@
 # Roadmap
 
-The roadmap contains incomplete work only. Phase definitions and acceptance
-criteria are owned by
-[DESIGN_POLICY.md §14](../design/DESIGN_POLICY.md#14-phases); this page owns
-status and ordering.
+[current.md](current.md) is the only source for ordered, unfinished work. It
+keeps three to five active outcomes, each with acceptance criteria and an Issue
+or PR link when one exists. Completed items leave the roadmap; their evidence
+belongs in reports, CI runs or releases.
 
-## Status at a glance
-
-| Phase | Status | Current outcome |
-| --- | --- | --- |
-| 3 — Stage Runner migration | in progress | Consumer migration verified; versioned release workflow remains. |
-| 4 — `physicsUsd` foundation | in progress | Box snapshot parser exists; artifact rollout and wider declarations remain. |
-| 5 — MMD validation | in progress | Generated standard-USD fixtures create bodies/constraints and step with the experimental deterministic SDK; hosted SDK acceptance and full source fidelity remain open. |
-| 6 — secondary-motion core | not started | Deferred until rigid-body extraction is stable and a VRM slice validates the descriptor. |
-| 7 — VRM validation | not started | Waits for Phase 6 and a format-owned adapter. |
-| 8 — vehicle primitives | not started | Waits for lower-level contracts to stabilize. |
-
-No release assignment is made yet. A release column is added when the first
-version plan exists; release numbers do not belong in the phase definitions.
-
-## Current plan
-
-[current.md](current.md) contains release follow-up and the next Phase 4 slice.
-Completed items leave that page and are reflected in the
-[capability matrix](../reference/CAPABILITY_MATRIX.md).
-
-## Status rules
-
-- **in progress:** implementation work for the phase exists in the current
-  development line;
-- **not started:** no implementation work has landed;
-- **blocked:** work cannot proceed until a named external dependency or
-  decision changes.
-
-A future phase is not marked blocked merely because earlier phases must occur
-first.
+Implementation status belongs only in the
+[capability matrix](../reference/CAPABILITY_MATRIX.md). The historical phase
+definitions in [DESIGN_POLICY.md §14](../design/DESIGN_POLICY.md#14-phases)
+describe scope, not progress or the current execution order.

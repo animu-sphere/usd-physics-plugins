@@ -1,63 +1,31 @@
 # Workspace contract
 
-This document is the proposed binding contract for the planned
-`usd-physics-plugins` workspace: component identities, directories, dependency
-directions, build modes, and structural invariants. Once accepted, a change
-that contradicts it updates this document first, in a focused change.
-
-> **Status (2026-09-22): accepted for the Phase 1 core extraction and Phase 2
-> backend boundary.**
-> Creation status is recorded in
-> the [capability matrix](../reference/CAPABILITY_MATRIX.md).
+This binding contract owns component identities, directories, dependency
+edges, build modes and structural invariants. Structural changes update it
+before or with implementation. Component creation and capability status belong
+only in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
 ## 1. Identities
 
 ### 1.1 Initial rigid-body path
 
-| Identity | Kind | Directory | Planned manifest | Role | Created in | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Solver-neutral value types, handles, descriptors, world lifecycle, state, validation, and optional query contracts. No OpenUSD or backend SDK. | Phase 0 scaffold; Phase 1 runtime | Phase 1 values, handles, descriptors, world contract, and segment/ground queries implemented |
-| `physicsJolt` | plain static CMake library | `backends/physicsJolt/` | `openstrata.library.yaml` | Jolt implementation of `physicsCore`; owns Jolt initialization, filters, jobs, resources, stepping, and queries. | Phase 0 scaffold; Phase 2 backend | backend implemented; Windows and Linux plain-CMake and installed-consumer evidence present |
-| `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Standard Cube/Sphere/Capsule and generic/fixed joint declarations to neutral snapshots, including body/collider frames and six-axis limits; resource mapping and synchronization records remain planned. | Phase 4 | optional installable body/joint snapshot readers; body-only APIs retained |
+| Identity | Kind | Directory | Manifest | Role |
+| --- | --- | --- | --- | --- |
+| `physicsCore` | plain static CMake library | `libs/physicsCore/` | `openstrata.library.yaml` | Neutral units, values, handles, descriptors, world, state, queries and errors; no OpenUSD or SDK types. |
+| `physicsJolt` | plain static CMake library | `backends/physicsJolt/` | `openstrata.library.yaml` | Private Jolt conversion, lifecycle, stepping, collision and constraints. |
+| `physicsUsd` | plain static CMake library | `libs/physicsUsd/` | `openstrata.library.yaml` | Read-only standard USD validation and neutral snapshots; no Jolt or retained world/mappings. |
 
-The Phase 0 targets established package and dependency boundaries.
-The local Phase 4 kinematic increment adds an optional `KinematicMotion`
-capability to `physicsCore`, implemented by `physicsJolt`. The primitive
-snapshot reader maps enabled standard kinematic declarations to that motion
-type; it owns no pose synchronization or scheduling. Component identities
-and dependency directions are unchanged.
-The primitive reader also resolves dynamic mass from explicit body mass or
-scaled single-collider volume and body density, with USD's density fallback;
-hierarchical mass properties and physics materials remain outside its subset.
-The local six-DOF increment adds optional `SixDofConstraints` in `physicsCore`,
-implemented by `physicsJolt`, and a stateless snapshot-to-descriptor conversion
-in `physicsUsd`. No dependency direction or component identity changes; resource
-mapping and runtime scheduling remain consumer-owned.
-The local translation-spring increment extends that neutral descriptor and
-the opt-in backend implementation with three Hookean translation axes.
-`physicsUsd` still interprets no source spring metadata or drive declarations;
-no component or dependency edge changes.
-The local rotation-spring increment extends the same descriptor with three
-small-angle rotational stiffness/damping pairs, identity equilibrium and axes
-in the second joint frame. The backend owns motor execution; source-format
-scaling and activation stay outside shared code. No component identity changes.
-The local body-damping increment adds neutral per-body linear/angular decay
-rates, validated by `physicsCore` and consumed by `physicsJolt`. Source-format
-coefficient conversion stays in the consumer; `physicsUsd` reads no such
-metadata. Component identities and dependency directions are unchanged.
-The contact-mixing increment adds neutral immutable world pair settings in
-`physicsCore`, selected through a `physicsJolt::createWorld()` overload. Source
-policy selection stays in the consumer; the backend owns contact callbacks.
-`physicsCore` has supported value, handle, descriptor, and world-contract
-slices. `physicsJolt` implements the initial backend slice and retains a typed
-unavailable fallback for builds that do not provide Jolt.
+Consumers own world construction, path/handle mappings, reload/full rebuild,
+frame updates and presentation. Source adapters own format defaults, filters,
+damping conversion and bone coupling. Optional neutral capabilities do not
+change these component boundaries.
 
 ### 1.2 Later, only when the responsibility is real
 
 | Identity | Kind | Directory | Role | Created when |
 | --- | --- | --- | --- | --- |
-| `secondaryMotion` | plain static CMake library | `libs/secondaryMotion/` | Format-neutral spring-chain, collider, solver-state, and step contracts. | Phase 6 begins with a tested generic descriptor slice. |
-| `secondaryMotionVerlet` | plain static CMake library | `backends/secondaryMotionVerlet/` | First deterministic CPU implementation of `secondaryMotion`. | Phase 6 has known-answer solver tests. |
+| `secondaryMotion` | plain static CMake library | `libs/secondaryMotion/` | Format-neutral spring-chain, collider, solver-state, and step contracts. | A real VRM end-to-end slice proves a shared neutral descriptor. |
+| `secondaryMotionVerlet` | plain static CMake library | `backends/secondaryMotionVerlet/` | First deterministic CPU implementation of `secondaryMotion`. | The consumer slice proves the minimal deterministic CPU behavior. |
 | `physicsSchema` | OpenUSD schema plugin bundle | `plugins/physicsSchema/` | Narrow semantic extensions to standard USD physics. | A proposal passes [the schema admission rule](../design/DESIGN_POLICY.md#9-schema-admission-rule). |
 
 Empty architectural placeholders are not created before their admission
@@ -106,7 +74,7 @@ repository boundary.
 | any component -> `usd-mmd-plugins` or `usd-vrm-plugins` | source-format semantics stay in their owning repositories |
 | `physicsJolt -> OpenUSD` | the backend consumes core descriptors, not scene objects |
 | `physicsUsd -> Jolt` | the USD bridge and solver backend are independently replaceable |
-| `physicsUsd -> Stage Runner runtime types` | scene mapping is reusable and must not target one host's world |
+| `physicsUsd -> Stage Runner runtime types` | the reader returns neutral snapshots; orchestration stays with consumers |
 | `secondaryMotion -> VRM schemas` | VRM interpretation belongs in a VRM-aware adapter |
 | a public header -> backend-native identifier or settings type | backend replacement must not rewrite consumers |
 | a component -> a sibling source checkout | repositories are consumed as installed packages or OpenStrata members, never private source trees |
@@ -237,7 +205,7 @@ this repository's ownership.
 
 In particular, the current `physicsCore -> runtimeCore` dependency is removed:
 math values move behind a neutral contract, and `PhysicsRuntime`'s
-`PrimId <-> BodyHandle` mapping becomes a bridge/application responsibility
+`PrimId <-> BodyHandle` mapping becomes a consumer responsibility
 instead of dragging Stage Runner runtime identity into the core.
 
 ## 8. Open questions

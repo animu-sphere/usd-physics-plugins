@@ -1,10 +1,21 @@
+if(NOT DEFINED PROJECT_ROOT)
+  message(FATAL_ERROR "PROJECT_ROOT must identify the repository to check")
+endif()
+get_filename_component(PROJECT_ROOT "${PROJECT_ROOT}" ABSOLUTE)
+if(NOT EXISTS "${PROJECT_ROOT}/README.md")
+  message(FATAL_ERROR "PROJECT_ROOT must contain README.md: ${PROJECT_ROOT}")
+endif()
+
 file(GLOB _root_documents "${PROJECT_ROOT}/*.md")
 file(GLOB_RECURSE _docs_documents "${PROJECT_ROOT}/docs/*.md")
 set(_documents ${_root_documents} ${_docs_documents})
 set(_failures "")
 foreach(_document IN LISTS _documents)
   file(READ "${_document}" _content)
-  string(REGEX MATCHALL "\\[[^]]*\\]\\([^)]+\\)" _links "${_content}")
+  # Match the innermost label in badge links such as [![CI](image)](workflow).
+  # Capturing an extra '[' produces an unbalanced CMake list element and can
+  # merge otherwise independent links when foreach() splits the match list.
+  string(REGEX MATCHALL "\\[[^][]*\\]\\([^)]+\\)" _links "${_content}")
   get_filename_component(_directory "${_document}" DIRECTORY)
   foreach(_link IN LISTS _links)
     string(REGEX REPLACE "^[^(]*\\(([^)]+)\\)$" "\\1" _target "${_link}")

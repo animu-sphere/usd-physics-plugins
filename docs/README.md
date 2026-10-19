@@ -1,67 +1,33 @@
 # usd-physics-plugins documentation
 
-Documentation is organized by responsibility. The taxonomy follows
-`usd-mmd-plugins`: design says what is intended, architecture fixes structure,
-reference reports what exists, and the roadmap contains incomplete work.
+Each kind of information has one owner. Link to that owner instead of copying
+status, tables, measurements or unfinished work into another document.
 
-**Current tree (2026-10-18): Phase 2 complete; Phase 3 release follow-up and Phase 4 in progress.**
-The root build, packages, boundary checks, and installed-consumer test exist.
-Neutral rigid transform values, typed handles, validated descriptors, the
-single-owner world contract, optional segment and ground queries, and the Jolt
-backend are implemented and pass local and hosted Windows/Linux evidence.
-Stage Runner has migrated to installed core/backend packages. A bounded
-OpenUSD Box reader exists; its wider bridge, artifact rollout and a release
-are not complete. The
-[capability matrix](reference/CAPABILITY_MATRIX.md) is the only page that may
-claim implementation status.
+| Information | Canonical document |
+| --- | --- |
+| Purpose, first use and entry points | [Repository README](../README.md) |
+| Design principles and responsibility boundaries | [DESIGN_POLICY.md](design/DESIGN_POLICY.md) |
+| Neutral rigid-body semantics | [RIGID_BODY_CONTRACT.md](design/RIGID_BODY_CONTRACT.md) |
+| USD reading, conversion and rejection rules | [USD_BRIDGE_CONTRACT.md](design/USD_BRIDGE_CONTRACT.md) |
+| Secondary-motion admission and boundary | [SECONDARY_MOTION_CONTRACT.md](design/SECONDARY_MOTION_CONTRACT.md) |
+| Component identities, dependency edges and build modes | [WORKSPACE.md](architecture/WORKSPACE.md) |
+| External dependency pins and SDK configuration | [DEPENDENCIES.md](architecture/DEPENDENCIES.md) |
+| Installation, public API and compatibility | [PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md) |
+| Release format and promotion rules | [RELEASE_SCHEMA.md](architecture/RELEASE_SCHEMA.md) |
+| Current capabilities and limits | [CAPABILITY_MATRIX.md](reference/CAPABILITY_MATRIX.md) |
+| Extraction input | [EXTRACTION_BASELINE.md](reference/EXTRACTION_BASELINE.md) |
+| Ordered unfinished work and acceptance criteria | [current.md](roadmap/current.md) |
+| Dated verification facts, environments and logs | [reports/](reports/README.md) and linked CI runs |
+| Document maintenance | [documentation.md](contributing/documentation.md) |
 
-Latest bridge evidence:
-[Contact pair mixing](reports/2026-10-18-phase4-contact-mixing.md).
+Code determines actual behavior. The capability matrix records that behavior
+with evidence; design and architecture define contracts without claiming
+implementation progress. Focused contracts own the details of their domain.
 
-| Category | Answers | Start here |
-| --- | --- | --- |
-| [architecture/](architecture/) | How the workspace is structured: identities, dependency directions, external dependencies, installed packages, and release schema. | [WORKSPACE.md](architecture/WORKSPACE.md) · [DEPENDENCIES.md](architecture/DEPENDENCIES.md) · [PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md) · [RELEASE_SCHEMA.md](architecture/RELEASE_SCHEMA.md) |
-| [design/](design/) | What the runtime contracts mean and why the boundaries exist. | [DESIGN_POLICY.md](design/DESIGN_POLICY.md) · [RIGID_BODY_CONTRACT.md](design/RIGID_BODY_CONTRACT.md) · [USD_BRIDGE_CONTRACT.md](design/USD_BRIDGE_CONTRACT.md) · [SECONDARY_MOTION_CONTRACT.md](design/SECONDARY_MOTION_CONTRACT.md) |
-| [reference/](reference/) | Facts about the current tree, extraction input, and implemented capabilities. | [CAPABILITY_MATRIX.md](reference/CAPABILITY_MATRIX.md) · [EXTRACTION_BASELINE.md](reference/EXTRACTION_BASELINE.md) |
-| [roadmap/](roadmap/) | What is planned next, what is incomplete, and which phase owns it. | [README.md](roadmap/README.md) · [current.md](roadmap/current.md) |
-| [reports/](reports/) | Dated evidence from real verification runs. | [README.md](reports/README.md) |
-| [contributing/](contributing/) | How to maintain these documents. | [documentation.md](contributing/documentation.md) |
+GitHub Issues and PRs own execution discussion. The roadmap keeps outcomes,
+acceptance and tracking links, rather than duplicating task logs. Releases own
+published artifact history. Dated reports remain append-only historical evidence.
 
-`guides/` and `releases/` remain absent until verified user workflows or an
-actual release exist. `reports/` begins with the Phase 0 scaffold verification.
-
-## Canonical documents
-
-- [design/DESIGN_POLICY.md](design/DESIGN_POLICY.md) is the canonical long-form
-  design policy. It owns the repository purpose, central rule, boundaries,
-  schema policy, testing policy, and phase definitions.
-- Focused contracts own the detail of one area and win over the general design
-  policy in that area:
-  - [design/RIGID_BODY_CONTRACT.md](design/RIGID_BODY_CONTRACT.md) owns the
-    backend-neutral handles, descriptors, lifecycle, stepping, state, and
-    optional query capabilities;
-  - [design/USD_BRIDGE_CONTRACT.md](design/USD_BRIDGE_CONTRACT.md) owns
-    `UsdPhysics` interpretation, transform conversion, resource identity, and
-    writeback boundaries;
-  - [design/SECONDARY_MOTION_CONTRACT.md](design/SECONDARY_MOTION_CONTRACT.md)
-    owns the separation between rigid-body simulation and generic spring-chain
-    dynamics.
-- [architecture/WORKSPACE.md](architecture/WORKSPACE.md) is the proposed
-  binding workspace contract. Once accepted, a structural change updates that
-  document first.
-
-## Source-of-truth rules
-
-- Code is authoritative for implemented behavior; `architecture/` and
-  `reference/` record it and change with it.
-- `design/` defines intended contracts and labels unimplemented behavior.
-- `roadmap/` contains incomplete work only. Completed work is removed from the
-  active roadmap and reflected in `reference/`.
-- Exact dependency versions belong only in
-  [architecture/DEPENDENCIES.md](architecture/DEPENDENCIES.md).
-- Package names and consumer guarantees belong only in
-  [architecture/PACKAGE_CONTRACT.md](architecture/PACKAGE_CONTRACT.md).
-- Release units, registry identities, and promotion gates belong in
-  [architecture/RELEASE_SCHEMA.md](architecture/RELEASE_SCHEMA.md).
-- The full maintenance rules are in
-  [contributing/documentation.md](contributing/documentation.md).
+There are no exceptions permitting a second current-status table or copied
+progress paragraph. The [contribution guide](../CONTRIBUTING.md) and
+[documentation guidelines](contributing/documentation.md) explain the checks.

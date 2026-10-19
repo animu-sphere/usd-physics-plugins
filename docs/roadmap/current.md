@@ -1,61 +1,67 @@
-# Current roadmap — release follow-up and Phase 4
+# Current roadmap
 
-Status: in progress, 2026-10-18. The installed core/backend consumer migration
-has passed hosted Windows/Linux verification. An optional standard primitive reader
-is implemented; the [capability matrix](../reference/CAPABILITY_MATRIX.md)
-records the supported subset and tests.
+Implementation status and evidence belong in the
+[capability matrix](../reference/CAPABILITY_MATRIX.md). This page owns ordered,
+unfinished work only; keep Active to three to five outcomes.
 
-The `usd-jolt` intent and source-CI cells now build the Box reader together
-with Jolt and package all three libraries on both OSes. The
-[local artifact report](../reports/2026-10-04-phase4-usd-artifacts.md) records
-Windows validation; hosted results and public `physicsUsd` pins remain pending.
+## Active
 
-## 1. Release follow-up
+### P0-A — Build and package acceptance
 
-Implement and dry-run the versioned release workflow against the
-[release schema](../architecture/RELEASE_SCHEMA.md) before creating a tag.
-Existing Windows/Linux core/backend artifacts remain migration inputs rather
-than a full release.
+- Outcome: Independently installable core/backend/optional USD packages with
+  equivalent plain-CMake and OpenStrata dependency graphs.
+- Acceptance: Verify hosted Windows/Linux CI after the CMake cleanup, including
+  No-Jolt fallback and clean-prefix consumers without SDKs, with Jolt, and with
+  USD. Preserve public targets, headers and compatibility rejection; attach
+  hosted evidence separately from local results.
+- Tracking: [Package acceptance](../architecture/PACKAGE_CONTRACT.md#7-acceptance);
+  Issue/PR to be linked when opened.
 
-## 2. Next Box delivery slice
+### P0-B — Read-only scene gravity
 
-- Validate and publish Windows/Linux `physicsUsd` artifacts and pin them in
-  Stage Runner's OpenStrata requirements before enabling standard import by default.
-- Run hosted standard/compatibility parity including standalone and usdview.
-- Extend through working fixtures for scene gravity, additional geometry beyond
-  the local Cube/Sphere/Capsule slice,
-  hierarchical mass properties/material density beyond single-primitive body
-  density, scaled
-  separate body frames and compound colliders.
-- Experimental six-DOF execution passes hosted Windows/Linux acceptance on
-  the selected deterministic SDK through the `usd-jolt-six-dof` cells, which
-  test but never package. The option stays OFF by default and no six-DOF
-  package is published. Body friction/restitution now pass local backend
-  response controls ([contact evidence](../reports/2026-10-18-phase4-contact-material.md));
-  neutral damping rates also have local 60/240 Hz linear/angular response
-  controls ([damping evidence](../reports/2026-10-18-phase4-body-damping.md)).
-  Pair-rule selection now has local 60/240 Hz evidence
-  ([mixing evidence](../reports/2026-10-18-phase4-contact-mixing.md)).
-  Neutral translation springs now pass local analytic response, reduced-mass
-  and hard-limit controls; numerical damping remains timestep-dependent
-  ([spring evidence](../reports/2026-10-18-phase4-translation-springs.md)).
-  Small-angle rotation springs also pass local inertia, damping, endpoint,
-  rotated-frame and hard-stop controls; finite-angle/source fidelity remains open
-  ([rotation evidence](../reports/2026-10-18-phase4-rotation-springs.md)).
-  Standard USD material bindings, instantaneous source damping, timestep and source-solver trajectory fidelity,
-  finite-angle angular spring fidelity, source spring-response equivalence, source-only
-  semantics and full MMD fidelity remain open
-  ([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md),
-  [execution evidence](../reports/2026-10-18-phase4-six-dof-execution.md),
-  [hosted acceptance](../reports/2026-10-18-phase4-six-dof-hosted.md)).
-- Resolve stage-generation identity and synchronization contracts before
-  introducing retained resource mappings in the package.
+- Outcome: A validated `UsdPhysicsScene` gravity snapshot for the minimal
+  standard-USD execution path, without retaining a runtime world.
+- Acceptance: Define scene selection, units and typed code/path rejection;
+  verify a generated fixture and keep `physicsUsd` independent of Jolt.
+- Tracking: [Bridge contract](../design/USD_BRIDGE_CONTRACT.md);
+  Issue/PR to be linked when opened. Deliver separately from consumer rebuild.
 
-## 3. Completion criteria
+### P0-B — Consumer rebuild and state presentation
 
-Standard declarations become the primary authored representation in Stage
-Runner while core/backend packages remain reusable and contain no gameplay
-policy. The same package graph must work in plain CMake and OpenStrata, on
-Windows and Linux. Keep Runner compatibility fixtures until all host and
-runtime-layer parity gates pass. The wider intended bridge is defined in
-[USD_BRIDGE_CONTRACT.md](../design/USD_BRIDGE_CONTRACT.md).
+- Outcome: Stage Runner runs a static floor, dynamic Box, gravity and the
+  minimum necessary joint from standard USD, using explicit full rebuild.
+- Acceptance: Consumer owns path/handle mappings, fixed stepping and display
+  transforms. Reload destroys and rebuilds resources; failure cleans up without
+  exposing a partial world; stale handles reject. Windows/Linux fixtures show
+  falling, contact and rest within documented tolerances. Keep standard import
+  opt-in and compatibility fixtures until host/runtime parity passes.
+- Tracking: [Consumer ownership](../design/DESIGN_POLICY.md#101-stage-runner);
+  Issue/PR to be linked when opened. Deliver rebuild and presentation separately.
+
+### P1-B — Release contract acceptance
+
+- Outcome: Validated public USD artifacts and a versioned release usable without
+  a repository checkout.
+- Acceptance: Dry-run the complete Windows/Linux release set before tagging;
+  validate clean-prefix and downstream consumers, artifact pins, API/ABI/version
+  handling and a copyable package example against the release schema.
+- Tracking: [Release gates](../architecture/RELEASE_SCHEMA.md#3-promotion-gates);
+  Issue/PR to be linked when opened.
+
+## Next
+
+- P1-A: Validate a small MMD consumer slice with generated fixtures and a few
+  redistributable real models. Format conversion, filtering, damping and bone
+  coupling remain in the source adapter. Require finite state, sound resource
+  lifetime and clear failure; report numerical differences without requiring
+  exact Bullet trajectories. See [MMD ownership](../design/DESIGN_POLICY.md#102-mmd).
+
+## Deferred
+
+- P2: Admit secondary motion only after one concrete VRM end-to-end slice proves
+  the shared descriptor and CPU solver boundary; see the
+  [secondary-motion contract](../design/SECONDARY_MOTION_CONTRACT.md).
+- P3: Incremental stage synchronization, bidirectional authoring, comprehensive
+  compound colliders, additional solvers, character/vehicle abstractions,
+  exact Bullet fidelity and advanced queries wait for a demonstrated consumer
+  need. See [admission discipline](../design/DESIGN_POLICY.md#17-open-design-discipline).

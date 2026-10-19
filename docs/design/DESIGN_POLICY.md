@@ -1,12 +1,11 @@
 # usd-physics-plugins design policy
 
-> **Status: proposed, revised 2026-09-23.** This policy defines intended
-> behavior while Phase 3 migrates Stage Runner to the extracted packages. The
-> [capability matrix](../reference/CAPABILITY_MATRIX.md) is the only source for
-> implementation claims.
+> **Decision: accepted, revised 2026-10-19.** This policy defines intended
+> behavior and responsibility boundaries. Implementation claims belong only in
+> the [capability matrix](../reference/CAPABILITY_MATRIX.md); ordered unfinished
+> work belongs only in the [current roadmap](../roadmap/current.md).
 >
-> This document consolidates the two 2026-09-21 implementation-direction
-> drafts. Focused contracts own their areas and win if wording differs:
+> Focused contracts own their areas and win if wording differs:
 >
 > | Area | Owning document |
 > | --- | --- |
@@ -94,8 +93,9 @@ migrate.
 
 A capability becomes public only when an implemented vertical slice needs it.
 Prefer validation by more than one consumer before freezing a broad contract.
-Current validation directions are Stage Runner, MMD rigid bodies and joints,
-VRM secondary motion, and later vehicle primitives.
+Validate the minimal standard-USD execution path and package consumption
+before expanding rigid bodies, constraints or springs. Secondary motion and
+advanced queries enter only when a concrete consumer proves the need.
 
 ### 3.5 Capability-oriented extensibility
 
@@ -119,11 +119,11 @@ This repository owns:
 - optional collision and support-query contracts;
 - Jolt initialization and implementation behind the neutral boundary;
 - interpretation of standard `UsdPhysics` into runtime descriptors;
-- transient USD-prim to runtime-resource mappings;
 - generic secondary-motion contracts once a consumer validates them.
 
 It may later own additional solver implementations, debugging data contracts,
-or tools whose responsibilities are generic to physics.
+or tools whose responsibilities are generic to physics, after consumer-led
+admission rather than speculative API design.
 
 ## 5. Responsibilities kept outside
 
@@ -162,9 +162,10 @@ physicsJolt ----> physicsCore <---- physicsUsd
 
 ## 7. OpenUSD domain
 
-`physicsUsd` reads conventional USD physics representation and produces
-`physicsCore` descriptors. It owns transform conversion and transient mapping,
-but not source-format semantics.
+`physicsUsd` reads conventional USD physics representation and produces neutral
+snapshots containing `physicsCore` values and descriptors. It owns read-only interpretation and
+transform conversion. The consumer owns runtime construction, path/handle
+mappings, rebuild and presentation; source-format semantics stay in adapters.
 
 The full intended contract is in
 [USD_BRIDGE_CONTRACT.md](USD_BRIDGE_CONTRACT.md).
@@ -179,9 +180,11 @@ Rigid bodies and secondary skeletal motion are related but distinct domains.
 Hair, skirts, tails, accessories, and VRM spring bones should not be forced
 into a rigid-body world abstraction merely because they use colliders.
 
-A future `secondaryMotion` library defines generic spring-chain descriptors and
-solver state. A format-specific adapter translates VRM semantics into that
-contract outside the core library. The full boundary is in
+A secondary-motion component is admitted only after a minimal VRM end-to-end
+slice demonstrates which neutral descriptors and deterministic CPU behavior
+should be shared. Do not freeze an abstract API before that slice. A
+format-specific adapter translates VRM semantics into the neutral contract
+outside the core library. The full boundary is in
 [SECONDARY_MOTION_CONTRACT.md](SECONDARY_MOTION_CONTRACT.md).
 
 ## 9. Schema admission rule
@@ -206,6 +209,11 @@ settings, job-system details, and backend pointer identity fail this test.
 Stage Runner owns fixed-timestep scheduling, stage lifecycle, input, character
 and camera policy, animation/physics ordering, and application writeback. This
 repository owns physical resources, stepping, queries, and solver state.
+Stage Runner owns the temporary prim-path/handle table and explicit full
+rebuild on reload. It applies runtime state to display transforms without
+requiring automatic edits of authored USD. Construction failures must destroy
+partial resources before exposing a world. Standard import begins opt-in;
+compatibility fixtures remain until host and runtime parity pass.
 
 The rule is: Stage Runner decides **when** physics runs; this repository
 defines **how** generic simulation runs.
@@ -222,13 +230,18 @@ The generic path is:
 PMX -> MMD canonical model -> UsdPhysics -> physicsUsd -> physicsCore -> Jolt
 ```
 
+MMD-specific defaults, filtering, damping conversion and bone coupling remain
+in its adapter. Acceptance requires stable execution, clear failure and usable
+bone integration; exact Bullet trajectories are a separate fidelity study.
+
 No PMX header, MMD mode enum, or `mmd:*` attribute is interpreted by
 `physicsCore` or `physicsJolt`.
 
 ### 10.3 VRM
 
 `usd-vrm-plugins` owns `VrmSpringBoneAPI`, `VrmColliderAPI`, collider groups,
-and VRM parameter meaning. A VRM-aware adapter produces generic
+and VRM parameter meaning. Bone chains, pose updates and format coupling stay
+in the VRM adapter / avatar runtime. A VRM-aware adapter produces generic
 secondary-motion descriptors. The generic solver does not include VRM schema
 headers or terminology.
 
@@ -280,16 +293,18 @@ fixtures are preferred.
 The workspace is intended to support plain CMake, installed CMake packages,
 and OpenStrata composition. It must not require a Stage Runner checkout.
 
-Exact compiler, C++ standard, OpenUSD, Jolt, OpenStrata, and platform support
-are not claimed until Phase 0 validates them. Their sole source of truth is
-[architecture/DEPENDENCIES.md](../architecture/DEPENDENCIES.md).
+Dependency versions and SDK configuration belong in
+[architecture/DEPENDENCIES.md](../architecture/DEPENDENCIES.md); tested support
+and evidence belong only in the capability matrix.
 
 Python bindings are deferred until a real consumer requires them. The physics
 kernel remains C++-first.
 
 ## 14. Phases
 
-The phase sequence defines scope, not release numbers.
+These historical phase definitions describe scope, not current progress,
+release numbers or execution order. The current roadmap prioritizes package
+acceptance and the minimal standard-USD path before additional mechanics.
 
 | Phase | Goal | Acceptance |
 | --- | --- | --- |
@@ -297,14 +312,14 @@ The phase sequence defines scope, not release numbers.
 | 1 — extract `physicsCore` | Move proven handles, descriptors, world lifecycle, state, validation, and query interfaces out of Stage Runner; replace `runtimeCore` value types with repository-owned neutral types. | Core builds and tests with no Stage Runner, OpenUSD, or backend SDK dependency. |
 | 2 — extract `physicsJolt` | Move the Jolt implementation without changing observable Phase 1 behavior. | Falling-body, cleanup, changed-state, segment-query, and ground-query tests pass through `physicsCore`. |
 | 3 — Stage Runner migration | Consume installed `physicsCore` and `physicsJolt`; keep orchestration in Stage Runner. | Existing falling-body, grounding, jump-support, and camera-collision scenarios pass without Stage Runner owning Jolt. |
-| 4 — `physicsUsd` foundation | Translate standard scene gravity, primitive collision, static/dynamic bodies, mass, and fixed joints; establish mappings and reset/rebuild. | Synthetic USDA tests cover import, simulation, deletion/rebuild, and state synchronization. |
+| 4 — `physicsUsd` foundation | Translate standard scene gravity, primitive collision, static/dynamic bodies, mass, and fixed joints; validate consumer-owned mappings and reset/rebuild. | Synthetic USDA tests cover import, simulation, deletion/rebuild, and state synchronization. |
 | 5 — MMD validation | Add the joint, limit, spring, damping, friction, restitution, and collision-filter capabilities required by a PMX vertical slice. | A generated PMX-derived USD fixture runs through the standard bridge with no MMD dependency in this repository. |
 | 6 — secondary-motion core | Define and implement the smallest generic spring-chain and collider contract needed by VRM. | Deterministic solver tests and a format-neutral descriptor fixture pass. |
 | 7 — VRM validation | Adapt VRM spring-bone semantics outside the core and run them through the generic secondary-motion API. | A generated VRM-derived scenario runs without VRM types in the generic libraries. |
 | 8 — vehicle primitives | Add only the reusable query and force primitives demonstrated by a Stage Runner vehicle scenario. | The scenario uses no backend-native public type and does not require a universal vehicle abstraction. |
 
-The current phase and incomplete items are tracked in
-[roadmap/README.md](../roadmap/README.md).
+Ordered unfinished work is tracked only in
+[roadmap/current.md](../roadmap/current.md).
 
 ## 15. Early non-goals
 
@@ -335,3 +350,28 @@ the scenario, the missing capability, and the smallest contract change that
 serves it. If a second backend could not implement a public operation without
 pretending to be Jolt, the operation belongs behind a capability or inside the
 Jolt adapter.
+
+## 18. Acceptance and expansion policy
+
+Contract tests (invalid values, units, handles, errors and dependency boundaries)
+and behavior smoke tests (falling/rest, contact, basic joints and clean-prefix
+consumers) are merge gates. Numerical fidelity studies are normally optional;
+retain existing representative analytic tests and experimental opt-in six-DOF
+coverage without adding every parameter combination to every PR.
+
+Add a test only to protect a public contract, prevent a real regression, prove
+consumer acceptance or cover an untested boundary. Preserve existing tests
+unless a justified consolidation keeps their guarantees. Keep unit, backend,
+USD, consumer and workspace responsibilities distinct. Record unstable SDK
+conditions and measurements in new dated evidence.
+
+A shared API proposal must identify a real consumer, solver-neutral meaning,
+units, failure semantics, minimal execution test and build/distribution impact.
+A second real use case should drive broader abstraction. Promote an expansion
+into immediate work only if the minimal end-to-end acceptance needs it.
+
+Incremental USD synchronization, bidirectional authoring, comprehensive compound
+colliders, additional solvers, character/vehicle systems, exact Bullet fidelity
+and finite-angle spring equivalence are deferred expansion areas. Reconsider
+them when a consumer demonstrates a concrete requirement. Do not add a custom
+schema for a concept standard UsdPhysics can already represent.
