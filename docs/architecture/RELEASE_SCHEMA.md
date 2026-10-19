@@ -1,9 +1,8 @@
 # Release schema
 
-> **Status: proposed, 2026-09-23.** This defines the intended versioned
-> release contract; it does not claim that a tag, release workflow, or GitHub
-> release exists. The public Windows and Linux artifacts published during Phase 3 are
-> consumer-validation inputs, not a complete `v0.1.0` release.
+> **Decision: proposed.** This defines the versioned release contract.
+> Delivery status belongs in the [capability matrix](../reference/CAPABILITY_MATRIX.md);
+> unfinished work belongs in the [roadmap](../roadmap/current.md).
 
 ## 1. Release unit and scope
 
@@ -87,11 +86,8 @@ draft is reviewed and published.
 
 ## 4. Current boundary
 
-The existing public Windows and Linux `physicsCore` and `physicsJolt` OCI
-artifacts have been pulled and verified from fresh caches for the Phase 3
-migration. They remain valid exact-digest inputs for that consumer, but do not
-constitute a formal versioned release. The cross-repository Stage Runner
-[hosted consumer run](https://github.com/animu-sphere/usd-stage-runner/actions/runs/35853380748)
-passed on Windows and Linux with artifact caches disabled. The first release
-workflow should be implemented and dry-run before any `v0.1.0` tag is pushed;
-a finalized release note is still required.
+Consumer-validation artifacts do not establish a formal versioned release.
+Verify published artifacts and package acceptance before adding a library to
+the release set. A versioned dry run and finalized release notes must precede
+the first release tag. Release assets and notes own artifact/tag history;
+capability rows link to the corresponding evidence.

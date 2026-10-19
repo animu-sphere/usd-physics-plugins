@@ -1,11 +1,8 @@
 # Installed package contract
 
-> **Status: accepted, revised 2026-09-23.** `physicsCore` and `physicsJolt`
-> install and pass a clean-prefix consumer test. `physicsCore` now includes
-> neutral values, typed handles, validated descriptors, typed errors, and the
-> single-owner world plus optional segment and ground query interfaces and
-> validation surfaces. A Jolt-enabled `physicsJolt` install also resolves its
-> private SDK dependency and constructs a world through `createWorld()`.
+> **Decision: accepted.** This document owns installation, public package
+> surfaces and compatibility requirements. Implementation and delivery status
+> belong only in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
 ## 1. Purpose
 
@@ -15,98 +12,46 @@ not need this repository's source tree.
 
 ## 2. Planned packages
 
-| Package | Imported target | Provides | Planned phase |
-| --- | --- | --- | --- |
-| `physicsCore` | `physicsCore::physicsCore` | Version surface plus neutral vector, quaternion, transform, typed handles, validated box/body/fixed-constraint descriptors, semantic collision filters, typed errors, world lifecycle/state, and optional segment and ground query interfaces | Phase 1 surface present |
-| `physicsJolt` | `physicsJolt::physicsJolt` | `physicsJolt_BACKEND_AVAILABLE` package metadata, `backendAvailable()`, and `createWorld()`; a Jolt-enabled build provides shapes, bodies, fixed constraints, commands, stepping, changed state, segment queries, and ground queries, while a no-Jolt build reports typed unavailability | Phase 2 complete |
-| `physicsUsd` | `physicsUsd::physicsUsd` | Validated primitive body and generic/fixed joint snapshots; mappings and synchronization records remain planned | Phase 4 subset implemented |
-| `secondaryMotion` | `secondaryMotion::secondaryMotion` | generic secondary-motion contracts | 6, if admitted |
-| `secondaryMotionVerlet` | `secondaryMotionVerlet::secondaryMotionVerlet` | first CPU solver | 6, if admitted |
-| `physicsSchema` | bundle contract to be defined at admission | generated schema library and resources | only if admitted |
+Component admission is governed by [WORKSPACE.md](WORKSPACE.md#1-identities),
+not by this table's presence.
+
+| Package | Imported target | Contract |
+| --- | --- | --- |
+| `physicsCore` | `physicsCore::physicsCore` | Neutral values, handles, descriptors, validation, world/state and optional query/capability headers. |
+| `physicsJolt` | `physicsJolt::physicsJolt` | Backend availability metadata and factories; private compatible SDK dependency or typed unavailable fallback. |
+| `physicsUsd` | `physicsUsd::physicsUsd` | Read-only primitive and joint snapshots plus stateless neutral conversion; no retained world or mapping. |
+| `secondaryMotion` | `secondaryMotion::secondaryMotion` | Generic secondary-motion contract, only if admitted. |
+| `secondaryMotionVerlet` | `secondaryMotionVerlet::secondaryMotionVerlet` | Deterministic CPU solver, only if admitted. |
+| `physicsSchema` | bundle contract defined at admission | Generated schema library/resources, only if admitted. |
 
 The public include root and namespace are fixed by
 [WORKSPACE.md §4](WORKSPACE.md#4-namespace-and-include-policy).
 
 ## 3. Install-interface rules
 
-The optional `physicsUsd` target builds with `USDPHYSICS_BUILD_USD=ON` in the
-root or as a standalone `libs/physicsUsd` project. It exports public headers
-under `usd_physics/usd/`, links only `physicsCore` and OpenUSD `usd`, `usdGeom`,
-and `usdPhysics` targets (also accepting `pxr::` names), and resolves those
-dependencies from its installed config. The clean-prefix consumer includes a
-standard Cube and parent-body/child-Cube imports when this option is enabled.
-The bounded transform and geometry contract is defined by the
-[USD bridge contract](../design/USD_BRIDGE_CONTRACT.md). Its OpenStrata member is
-declared but has not entered the published release/artifact set.
+The optional `physicsUsd` target is selected by `USDPHYSICS_BUILD_USD=ON`
+in the root or built as standalone `libs/physicsUsd`. It exports headers under
+`usd_physics/usd/`, depends on `physicsCore` and OpenUSD `usd`, `usdGeom` and
+`usdPhysics` targets (accepting `pxr::` names), and resolves dependencies from
+its installed config. The USD package must work without a Jolt SDK. Reading
+and rejection semantics belong in the
+[bridge contract](../design/USD_BRIDGE_CONTRACT.md).
 
-The local collider-pose increment appends `localTransform` to
-`ShapeDescriptor`, defaulting to identity so existing source initializers
-retain their meaning. Rebuild core, backend, bridge and consumers together:
-this descriptor layout addition is not binary-compatible with older static
-packages. It is a local package increment, not a new published artifact pin.
+Public core headers live under `usd_physics/core/`; the optional kinematic and
+six-DOF capabilities do not expand the mandatory world interface. USD snapshot
+APIs live in `box_scene.h`; stateless joint conversion lives in
+`joint_conversion.h`. `physicsJolt_BACKEND_AVAILABLE` and
+`physicsJolt_SIX_DOF_AVAILABLE` metadata must agree with runtime capability
+discovery. Six-DOF execution requires explicit opt-in and the selected SDK
+configuration; see [DEPENDENCIES.md](DEPENDENCIES.md#3-jolt-physics).
 
-The local primitive increment also appends `radius` and `halfHeight` and adds
-`ShapeType::sphere` and `ShapeType::capsule`. Existing box source initializers
-retain their meaning; rebuild all packages and consumers together for this
-layout as well. `physicsUsd` adds `readPrimitiveScene()` in `box_scene.h`,
-retaining the Cube-only `readBoxScene()` surface. No artifact pin is updated.
-
-The local kinematic increment adds `MotionType::kinematicBody` and the optional
-`KinematicMotion` interface in `usd_physics/core/kinematic_motion.h`.
-`physicsJolt` exposes it through capability discovery; `PhysicsWorld`'s virtual
-surface and existing enum values retain their meaning. Rebuild packages and
-consumers together to use the new header and implementation. The installed
-consumer exercises capability discovery and a target movement. No published
-version or artifact pin changes.
-
-The local joint increment adds `PhysicsScene`, `Joint`, `JointType`,
-`JointLimit` and `readPhysicsScene()` in `box_scene.h`. It retains both body-only
-APIs and their joint rejection. Generic and fixed joint declarations include
-endpoint paths, body-local frames and six-axis limits in meters/radians. These
-snapshot types do not extend the core constraint or backend solver interface.
-Rebuild the bridge and consumers together; no published artifact pin changes.
-
-The local six-DOF increment adds `usd_physics/core/six_dof.h` with validated
-axis limits, descriptors and the optional `SixDofConstraints` capability,
-implemented by `physicsJolt` when explicitly built with
-`PHYSICSJOLT_ENABLE_SIX_DOF=ON` (default OFF). Its installed config reports
-`physicsJolt_SIX_DOF_AVAILABLE`; capability discovery agrees with that metadata.
-`physicsUsd` installs `joint_conversion.h` with
-the stateless `toSixDofConstraint()` conversion. The mandatory world interface,
-legacy fixed descriptors and dependency graph are unchanged. Rebuild packages
-and consumers together; public versions and artifact pins remain unchanged.
-
-The local translation-spring increment appends three neutral
-`TranslationSpring` values to `SixDofConstraintDescriptor` (N/m, N*s/m, meters).
-Its layout changes; rebuild core, backend, bridge and consumers together into
-a separate prefix. Source initializers retain disabled springs. The existing
-six-DOF option gates execution; versions, public pins and dependencies stay
-unchanged. The installed consumer exercises a nonzero equilibrium spring.
-
-The local contact-material increment appends `ContactMaterial contactMaterial`
-to `BodyDescriptor` in `descriptors.h`, plus `validateContactMaterial()`.
-Old source initializers retain their default contact behavior. This changes
-the descriptor's binary layout: rebuild core, backend, bridge and every
-consumer together. Pair mixing and numeric domains are defined by
-[the rigid-body contract](../design/RIGID_BODY_CONTRACT.md#52-bodies).
-There is no new published version or artifact pin. The USD reader gains no
-format-specific metadata interpretation or standard material binding support.
-
-The local damping increment appends `BodyDamping damping` to `BodyDescriptor`
-and adds `validateBodyDamping()`. It preserves old source initializers and
-Jolt defaults, but changes binary layout again: rebuild all three packages
-and consumers together in a separate prefix. Rates use inverse seconds, not
-source-format retention fractions. Versions and published pins are unchanged;
-the generic USD reader gains no format metadata interpretation.
-
-The contact-mixing increment adds `ContactCombineRule`, `ContactMixing` and
-`validateContactMixing()` to the existing core descriptor header, plus
-`physicsJolt::createWorld(const ContactMixing&)`. The no-argument factory and
-body descriptor layout are unchanged. The no-Jolt package validates the policy
-then reports typed backend unavailability. The installed consumer exercises
-the overload in both builds. Use rebuilt packages in a separate prefix;
-public versions and artifact pins remain unchanged. Format-specific policy
-selection stays in the caller, outside `physicsUsd`.
+Descriptor layout changes require rebuilding core, backend, bridge and every
+consumer together into a separate prefix. Defaults can preserve source
+initializers without preserving static binary compatibility. Do not mix older
+published artifacts with rebuilt descriptor headers. Adding API or changing
+layout does not establish a newly published artifact; only a verified release
+pin table does. Source-format coefficient conversion and policy selection stay
+in consumers, including contact-mixing factory settings.
 
 Every library package must:
 
@@ -138,7 +83,7 @@ find_package(physicsJolt CONFIG REQUIRED)
 target_link_libraries(my_runtime PRIVATE physicsJolt::physicsJolt)
 ```
 
-The installed-consumer test verifies both package imports. A Jolt-enabled
+Installed-consumer acceptance must verify both package imports. A Jolt-enabled
 consumer must also make the selected Jolt installation discoverable to CMake;
 the installed `physicsJolt` config resolves that declared dependency.
 

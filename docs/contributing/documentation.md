@@ -1,90 +1,86 @@
 # Documentation guidelines
 
-Documentation is part of the implementation contract. A change is incomplete
-when it changes a public boundary, implemented architecture, dependency,
-package surface, or delivery status without updating the document that owns
-that fact.
+A public behavior, contract, package or dependency change updates the document
+that owns it in the same change. The [documentation index](../README.md) maps
+each kind of information to its sole owner.
 
 ## 1. Category ownership
 
-| Category | Put this here | Not this |
-| --- | --- | --- |
-| `architecture/` | Component identities, dependency edges, layout, build modes, external dependencies, and package surfaces. | Design rationale or unimplemented features described as present. |
-| `design/` | Intended contracts, rationale, invariants, non-goals, and open questions. | Claims that something is implemented. |
-| `reference/` | Facts about the current tree and evidence-backed capabilities. | Plans or aspirational support. |
-| `roadmap/` | Incomplete ordered work, blockers, and completion criteria. | Completed work or long-form rationale. |
-| `guides/` | How to complete a task, using commands that have been run. | Speculative commands. |
-| `releases/` | One immutable record per released version. | Work in progress. |
-| `reports/` | Dated, append-only evidence from real runs. | Current-state claims without evidence. |
-| `contributing/` | How to maintain the repository and its documents. | End-user workflows. |
+| Category | Responsibility |
+| --- | --- |
+| `architecture/` | Component identities, dependency edges, build modes, dependency pins, installation, compatibility and release rules. |
+| `design/` | Normative contracts, rationale, invariants and non-goals; no implementation status or dated proof. |
+| `reference/` | Evidence-backed facts; the capability matrix alone owns current support status. |
+| `roadmap/` | Ordered unfinished outcomes, acceptance criteria and tracking links. |
+| `reports/` | Dated, append-only facts from actual verification, including environment and limitations. |
+| `contributing/` | Repository and documentation maintenance. |
 
-`guides/`, `releases/`, and `reports/` are created only when they have real
-content.
+Create guides only for verified user workflows and release records only for
+actual releases. Keep README focused on purpose, minimal setup and links; do
+not add phase completion tables, dated implementation lists or test results.
+Keep design documents free of TODO lists and changing support claims.
 
 ## 2. Status vocabulary
 
-- A design document is `proposed`, `accepted`, `superseded`, or `rejected`.
-- A roadmap item is `in progress`, `not started`, or `blocked`.
-- The capability matrix uses `supported`, `partial`, `experimental`,
-  `unsupported`, `planned`, and `not present`.
-- `supported` executable behavior requires an automated test or a dated report
-  linked from the capability row. A documentation-only row may cite the
-  owning, directly inspectable page and a link check.
-- A release record and dated report are immutable. Later findings go in a new
-  record with a forward note from the old one when needed.
+Design decisions may be `proposed`, `accepted`, `superseded` or `rejected`;
+these are decisions, not implementation states. Capability states and their
+definitions belong only in
+[CAPABILITY_MATRIX.md §1](../reference/CAPABILITY_MATRIX.md#1-status-vocabulary).
+Executable support requires an automated test or dated verification evidence.
+A documentation-only row may cite its directly inspectable owning page.
+
+Keep each capability's state, minimal boundary and evidence in its row. Do not
+repeat the table in an introductory status summary. Local success is not hosted
+success, and experimental results do not establish a supported release.
 
 ## 3. Stable numbering
 
-Design and architecture documents number their sections. A section number does
-not change meaning after another page cites it; revisions append sections or
-add subsections instead of renumbering.
-
-Open questions use a document-specific prefix and a never-reused number:
-
-- `RB-O<n>` for the rigid-body contract;
-- `USD-O<n>` for the USD bridge contract;
-- `SM-O<n>` for the secondary-motion contract;
-- `ARCH-O<n>` for workspace decisions.
+Preserve numbered design/architecture section meanings and existing anchors.
+Append sections or add subsections rather than renumbering cited sections.
+Open questions use never-reused prefixes: `RB-O`, `USD-O`, `SM-O` and `ARCH-O`.
 
 ## 4. One source of truth per fact
 
-- What a phase means: [DESIGN_POLICY.md §14](../design/DESIGN_POLICY.md#14-phases).
-- Which phase is active: [roadmap/README.md](../roadmap/README.md).
-- Structure and dependency edges:
-  [WORKSPACE.md](../architecture/WORKSPACE.md).
-- Exact third-party versions:
-  [DEPENDENCIES.md](../architecture/DEPENDENCIES.md).
-- Installed package promises:
-  [PACKAGE_CONTRACT.md](../architecture/PACKAGE_CONTRACT.md).
-- Release identity and promotion gates:
-  [RELEASE_SCHEMA.md](../architecture/RELEASE_SCHEMA.md).
-- What is implemented:
-  [CAPABILITY_MATRIX.md](../reference/CAPABILITY_MATRIX.md).
+Link to owners; do not copy their tables, status sentences or progress rates.
+There are no exceptions to this rule. The roadmap index is navigation only;
+[current.md](../roadmap/current.md) owns all unfinished work, with three to five
+active outcomes. Each outcome contains only Outcome, Acceptance and Tracking.
+Use a real Issue/PR URL when available; otherwise state that it has not been
+opened. Do not invent tracking numbers.
 
-Summaries link to the owning page rather than silently creating a second
-contract.
+Remove completed outcomes from the roadmap. Put verification evidence in a
+new dated report or CI run and link it from the appropriate capability row.
+Never rewrite an old report to imply a newer result. Measurements such as run
+times belong only in dated reports, not README, design or roadmap pages.
 
 ## 5. Language and form
 
-- Repository documents are in English.
-- Use relative links for files in this repository.
-- Put commands, paths, targets, schemas, attributes, and identifiers in code
-  spans.
-- Keep `docs/README.md` and `roadmap/README.md` synchronized with their
-  directories.
-- Do not commit machine-local paths. Use placeholders such as
-  `%USERPROFILE%`, `$HOME`, or `<OpenUSD-prefix>`.
-- Keep intended and implemented behavior visibly separate.
-- Use "must" only for a binding invariant, "should" for the preferred design,
-  and "may" for an allowed option.
+- Repository documents are in English and use relative links within this repo.
+- Put paths, commands, schemas, attributes and identifiers in code spans.
+- Keep document indexes synchronized when adding or removing pages.
+- Do not commit machine-local paths; use `<OpenUSD-prefix>` or similar placeholders.
+- Use "must" for binding invariants, "should" for preferred design, and "may"
+  for allowed options. Keep intentions separate from implementation facts.
 
-## 6. Change checklist
+## 6. Change destination checklist
 
-1. Planned behavior is not presented as implemented.
-2. Every new page appears in its category index.
-3. Relative links and heading anchors resolve.
-4. Structural changes update `architecture/` before or with implementation.
-5. Capability changes update `reference/` and cite their evidence.
-6. Completed work leaves the active roadmap.
-7. A departure from a design contract is recorded in that contract, not only
-   in code or a pull request.
+| Change | Update |
+| --- | --- |
+| Public behavior or support boundary | Only the affected capability rows, with evidence. |
+| Semantics or public contract | Owning design or architecture contract. |
+| Unfinished work advances or completes | Relevant current-roadmap outcome; remove it when complete. |
+| Experiment, timing or CI measurement | New dated report or specific CI run. |
+| First-use instructions | Root README. |
+| Dependencies, targets or compatibility | Architecture contract and matching build/manifests. |
+
+One behavior change gets one capability-status update. Do not append a
+"current situation" paragraph to every document in a PR.
+
+## 7. Lightweight checks
+
+Run `python scripts/check_docs.py --selftest` and `python scripts/check_docs.py`.
+CI runs the same checks without SDK setup or external API requests. The checker
+validates relative paths with case-sensitive spelling, Markdown heading anchors
+and the format of GitHub Issue/PR links in the roadmap. Human review uses the
+PR template to check responsibility and evidence; do not build a semantic-drift
+inference system.

@@ -4,19 +4,6 @@ This page is the only source of truth for what the current repository tree
 implements. Design documents describe intended behavior; they do not upgrade a
 capability on this page.
 
-> **Tree status (2026-10-18): Phase 2 complete; Phase 3 release follow-up and Phase 4 Box foundation in progress.**
-> Buildable and installable `physicsCore` and `physicsJolt` package boundaries
-> exist.
-> `physicsCore` provides neutral rigid-transform values, typed handles, and
-> validated box/sphere/capsule/body/fixed-constraint descriptors with semantic collision
-> filters, a single-owner world contract, and optional segment and ground
-> query interfaces. `physicsJolt` implements those contracts when a compatible
-> Jolt package is present and retains a typed unavailable fallback otherwise.
-> The Jolt-required OpenStrata intent passes locally and in hosted Windows and
-> Linux CI. Stage Runner has migrated to installed core/backend packages. An
-> optional installable `physicsUsd` primitive reader now exists; an OpenUSD plugin
-> does not. Bridge artifact publication and hosted parity remain open.
-
 ## 1. Status vocabulary
 
 | Status | Meaning |
@@ -33,6 +20,7 @@ capability on this page.
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
 | Documentation taxonomy and source-of-truth rules | supported | [`docs/README.md`](../README.md) and [documentation guidelines](../contributing/documentation.md) |
+| Documentation link checks | supported | [`check_docs.py`](../../scripts/check_docs.py) validates case-sensitive relative paths, heading anchors and roadmap Issue/PR URL formats; self-tests cover invalid links and ignored code. The [docs workflow](../../.github/workflows/docs-check.yml) runs without SDKs or external API calls; no hosted result is claimed here |
 | Plain CMake root build | supported | Windows/Linux, optional SDKs, standalone packages and unchanged installed contents verified in the [CMake cleanup report](../reports/2026-10-19-cmake-cleanup.md); original Linux evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
 | OpenStrata workspace | supported | Root build/test plus isolated package verification in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Windows build | supported | MSVC 19.51 and OpenStrata evidence in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
@@ -40,7 +28,7 @@ capability on this page.
 | Hosted Windows and Linux CI | supported | Generated graph and test cells passed in the [hosted CI report](../reports/2026-09-22-phase0-hosted-ci.md) |
 | Installed-consumer test | supported | Root clean-prefix test passes for both no-Jolt and Jolt-enabled package installs on Windows and Linux; see the [Windows](../reports/2026-09-22-phase2-windows-backend.md) and [Linux](../reports/2026-09-22-phase2-linux-backend.md) Phase 2 reports |
 | Package compatibility and test selection | supported | Public package identities and negative consumer controls retained; CTest labels select unit/backend/USD/consumer/experimental/workspace checks without filtering hosted acceptance. [Cleanup verification](../reports/2026-10-19-cmake-cleanup.md) records local measurements and the pending hosted rerun |
-| Versioned release | not present | `VERSION` exists for package coherence; no tag or release record exists |
+| Versioned release | not present | `VERSION` exists for package coherence; no versioned workflow, tag or release record exists |
 
 ## 3. Rigid-body core
 
@@ -95,24 +83,14 @@ capability on this page.
 | Fixed joints | partial | `readPhysicsScene()` snapshots exact body/world endpoints and local frames; no bridge resource creation. `physicsUsd.joint_scene` covers world anchors, defaults, validation and sorting |
 | Generic joints and limits | partial | Standard `PhysicsJoint` plus six-axis `LimitAPI` snapshots; meters/radians, free/locked/equal/infinite bounds, normalized local rotations and flags. `physicsUsd.joint_scene` and clean-prefix USD consumer cover snapshots. Stateless `toSixDofConstraint()` adds a bounded executable conversion; `physicsUsd.joint_conversion` covers finite ranges, zero locks, fixed/disabled joints, handles and typed rejection. Wider equal/infinite declarations remain snapshot-only |
 | Other standard joints and drives | planned | Distance limits, specialized joint types, drives and breaking thresholds reject |
-| Prim/resource mappings | planned | No implementation |
-| Stage reset/rebuild | planned | No implementation |
+| Prim/resource mappings | unsupported | Consumer-owned temporary path/handle tables; not retained by physicsUsd |
+| Stage reset/rebuild | planned | Consumer-owned full-rebuild acceptance is tracked in the [current roadmap](../roadmap/current.md); no bridge-owned lifecycle |
 | Incremental USD change processing | unsupported | Rebuild-first policy; no implementation |
-| USD state synchronization records | planned | `USD-O3` unresolved |
+| USD state synchronization records | planned | `USD-O3` unresolved; display/state application belongs to the consumer and shared records require demonstrated need |
 
-The [bridge contract](../design/USD_BRIDGE_CONTRACT.md) documents the bounded
-subset. It requires Y-up meters/kg and explicit or inferred positive dynamic mass;
-separate body Xforms must compose to a rigid world frame. Animated values,
-instances, other standard
-physics APIs/properties and scenes fail with typed code/path diagnostics.
-Body-only readers still reject joints. Tests live in
-[box_scene_test.cpp](../../libs/physicsUsd/tests/box_scene_test.cpp) and
-[joint_scene_test.cpp](../../libs/physicsUsd/tests/joint_scene_test.cpp), plus
-[mass_scene_test.cpp](../../libs/physicsUsd/tests/mass_scene_test.cpp).
-Latest local Windows validation is recorded in the
-[six-DOF execution report](../reports/2026-10-18-phase4-six-dof-execution.md).
-The parser never edits USD or creates resources; returned paths are snapshot
-identities belonging to the caller's Stage, not persistent runtime mappings.
+The [bridge contract](../design/USD_BRIDGE_CONTRACT.md#bounded-snapshot-contract)
+owns detailed admission, conversion and rejection rules. Capability rows above
+record only implemented boundaries and their evidence.
 
 ## 6. Secondary motion
 
@@ -122,7 +100,7 @@ identities belonging to the caller's Stage, not persistent runtime mappings.
 | Generic spring-chain descriptors | planned | Contract requires validation against a real VRM slice |
 | Deterministic CPU solver | planned | Algorithm not yet accepted |
 | Generic collider interaction | planned | `SM-O1` unresolved |
-| VRM adapter | unsupported in this repository | VRM interpretation remains outside the generic core |
+| VRM adapter | unsupported | VRM interpretation remains outside the generic core |
 
 ## 7. Schema extensions
 
@@ -135,8 +113,8 @@ identities belonging to the caller's Stage, not persistent runtime mappings.
 
 | Scenario | Status | Evidence / note |
 | --- | --- | --- |
-| Stage Runner falling body | supported | Installed core/backend migration verified in the [Phase 3 artifact report](../reports/2026-09-23-phase3-linux-artifacts.md); standard Box consumer remains opt-in |
+| Stage Runner falling body | supported | Installed core/backend migration verified in the [Phase 3 artifact report](../reports/2026-09-23-phase3-linux-artifacts.md) and [hosted consumer run](https://github.com/animu-sphere/usd-stage-runner/actions/runs/35853380748); standard Box consumer remains opt-in |
 | Stage Runner character grounding and camera collision | supported | Same installed-package consumer evidence; standard/compatibility parity is covered in Stage Runner's optional `stage_runtime.standard_physics_parity` test |
 | MMD rigid bodies and joints through standard USD | experimental | Installed consumer creates three bodies/two constraints for all 22 generated physics-bearing fixtures and steps 120 times with finite state using the deterministic SDK. The source adapter supplies collision filters, contact coefficients and converted damping rates outside the generic reader. Unit source damping (instant stopping), finite-step/source-solver equivalence, format-only joints, pair-mixing fidelity, springs and bone coupling remain open. [Damping evidence](../reports/2026-10-18-phase4-body-damping.md); full Phase 5 acceptance remains open |
 | VRM-derived secondary motion | planned | Phase 7 |
-| Vehicle primitives | planned | Phase 8 |
+| Vehicle primitives | planned | Historical Phase 8 scope; deferred until a concrete consumer requires it |

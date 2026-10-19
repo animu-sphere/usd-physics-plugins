@@ -1,23 +1,20 @@
 # External dependencies
 
-This page is the single source of truth for dependency versions and support
-claims.
-
-> **Status (2026-09-22): the dependency-free core is validated with plain
-> CMake, OpenStrata, and the hosted Windows/Linux matrix.** The hosted evidence
-> is recorded in the [Phase 0 CI report](../reports/2026-09-22-phase0-hosted-ci.md).
+This page is the single source of truth for dependency versions and SDK
+configuration. Tested capabilities and verification evidence belong only in
+the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 
 ## 1. Baseline
 
-| Dependency | Selected version | Used by | Current status |
-| --- | --- | --- | --- |
-| CMake | 3.25 minimum | workspace and every component | verified with CMake 4.2.3 on Linux and 4.4.3 on Windows |
-| C++ | C++17 | all C++ targets | verified with GCC 15.2.0 and MSVC 19.51 |
-| OpenStrata | 0.23.2 | workspace composition and CI generation | Windows root build/test, isolated library tests, consumer verification, and packaging pass |
-| OpenStrata platform | `cy2026`, `usd` profile | workspace composition | digest-pinned Windows runtime materialized and validated; scaffold code does not link OpenUSD |
-| OpenUSD | 26.08 exact for the first ecosystem integration | `physicsUsd` and USD tests; future `physicsSchema` | Box adapter and clean-prefix consumer verified locally on Windows; hosted bridge evidence remains open |
-| Jolt Physics | 5.5.0, tag `v5.5.0`, commit `23dadd0e603f1b321142d4c74df07fce85064989` | private `physicsJolt` implementation | Jolt-backed plain-CMake tests pass locally on Windows and Linux and the `jolt` OpenStrata intent passes on Windows; hosted Phase 2 evidence remains open |
-| CTest | version shipped with CMake | tests | 11 Jolt-enabled root tests pass on Windows and Linux and through OpenStrata on Windows |
+| Dependency | Selected version | Used by |
+| --- | --- | --- |
+| CMake | 3.25 minimum | Workspace and every component |
+| C++ | C++17 | All C++ targets |
+| OpenStrata | 0.23.2 | Workspace composition and CI generation |
+| OpenStrata platform | `cy2026`, `usd` profile | Workspace composition |
+| OpenUSD | 26.08 exact for first ecosystem integration | `physicsUsd` and USD tests; admitted `physicsSchema` |
+| Jolt Physics | 5.5.0, tag `v5.5.0`, commit `23dadd0e603f1b321142d4c74df07fce85064989` | Private `physicsJolt` implementation |
+| CTest | Version shipped with CMake | Tests |
 
 ## 2. OpenUSD
 
@@ -27,9 +24,8 @@ OpenUSD. `physicsCore`, `physicsJolt`, and `secondaryMotion` do not.
 All composed sibling packages must use the same ABI-compatible OpenUSD build.
 Mixing independently built OpenUSD distributions in one process is unsupported.
 
-The bridge prefers modern CMake package targets exposed by the chosen OpenUSD
-distribution. Exact target names are recorded after Phase 0 because packaging
-varies between distributions.
+The bridge uses OpenUSD CMake package targets; accepted target spellings and
+transitive package dependencies belong in [PACKAGE_CONTRACT.md](PACKAGE_CONTRACT.md).
 
 ## 3. Jolt Physics
 
@@ -67,21 +63,15 @@ constraints. Exhausted creation capacity is reported as
 An optional no-Jolt stub may help a workspace configure, but it does not count
 as backend support and cannot make backend tests pass vacuously.
 
-The experimental six-DOF slice has a separate SDK acceptance gate. The scalar
-Windows artifact above fails its new Z-axis load test
-([first evidence](../reports/2026-10-18-phase4-six-dof-execution.md)). The
-cause is MSVC `/fp:fast`, which Jolt applies to its Release build whenever
-`CROSS_PLATFORM_DETERMINISTIC` is OFF; x86 SIMD options do not matter, and
-GCC builds pass either way
-([cause](../reports/2026-10-18-phase4-six-dof-sdk-cause.md)). The selected
-six-DOF SDK configuration is therefore `CROSS_PLATFORM_DETERMINISTIC=ON`, and
-the source CI builds pinned Jolt that way on both OSes. Its exported
-definitions add `JPH_CROSS_PLATFORM_DETERMINISTIC` and drop `JPH_USE_FMADD`,
-so it is a different ABI set from the artifact above and does not replace that
-artifact or public pins. Keep `PHYSICSJOLT_ENABLE_SIX_DOF` OFF unless the
-selected SDK passes the enabled six-axis tests. The `usd-jolt-six-dof` CI
-cells run those tests on hosted Windows and Linux against that SDK
-([hosted acceptance](../reports/2026-10-18-phase4-six-dof-hosted.md)).
+Experimental six-DOF execution requires `CROSS_PLATFORM_DETERMINISTIC=ON`.
+MSVC non-deterministic Release Jolt uses `/fp:fast`, which is unsuitable for
+this execution gate regardless of x86 SIMD options. The deterministic SDK's
+exported definitions add `JPH_CROSS_PLATFORM_DETERMINISTIC` and drop
+`JPH_USE_FMADD`; it is a different ABI set from the non-deterministic artifact.
+It must not silently replace that artifact or its consumer pins. Keep
+`PHYSICSJOLT_ENABLE_SIX_DOF` OFF unless the selected SDK passes the enabled
+six-axis tests. The `usd-jolt-six-dof` cells select this SDK, test it on both
+OSes and do not package experimental binaries.
 
 ## 4. OpenStrata
 
@@ -95,9 +85,10 @@ artifact pins are shared with the validated sibling workspaces.
 
 ## 5. Platform policy
 
-Windows and Linux are intended. Neither is claimed supported until CI or a
-dated report builds and tests the relevant components. Compiler families and
-minimum versions will be added to the candidate table when verified.
+Windows and Linux are target platforms. Support claims require CI or dated
+verification of the relevant components and belong in the capability matrix.
+Record compiler/environment details in the evidence, separately from minimum
+dependency requirements here.
 
 macOS, mobile, and WebAssembly are not initial targets.
 

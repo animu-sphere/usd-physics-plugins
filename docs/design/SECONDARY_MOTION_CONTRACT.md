@@ -1,8 +1,10 @@
 # Secondary-motion contract
 
-> **Status: proposed and deferred, 2026-09-21.** This contract reserves a
-> boundary for Phase 6; no component is present. It must be revised against a
-> real VRM integration slice before public headers are accepted.
+> **Decision: proposed.** This contract reserves a domain boundary. A concrete
+> VRM end-to-end slice must prove the shared descriptor and deterministic CPU
+> behavior before component admission or public-header design. Component status
+> belongs in the [capability matrix](../reference/CAPABILITY_MATRIX.md); work
+> ordering belongs in the [current roadmap](../roadmap/current.md).
 
 ## 1. Purpose
 
@@ -99,10 +101,12 @@ frame graph or avatar runtime.
 
 ## 9. Validation
 
-Phase 6 requires deterministic, format-neutral fixtures with known answers for
-rest stability, gravity, damping, collision, reset, and timestep behavior.
-Phase 7 adds a VRM-derived generated fixture without introducing a VRM
-dependency into the generic targets.
+Begin with one consumer-owned VRM end-to-end slice: format interpretation,
+collider groups, bone chains and pose updates stay in usd-vrm-plugins or
+usd-avatar-runtime. Extract only the demonstrated neutral descriptor and CPU
+solver behavior. Use minimal fixtures for contract, reset, collision and stable
+execution; add numerical cases only for an identified boundary or regression.
+No generic target depends on VRM headers.
 
 ## 10. Open questions
 
