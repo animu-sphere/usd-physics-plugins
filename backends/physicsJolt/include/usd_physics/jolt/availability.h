@@ -17,4 +17,11 @@ namespace usd_physics::jolt {
 [[nodiscard]] std::unique_ptr<core::PhysicsWorld>
 createWorld(const core::ContactMixing &mixing);
 
+// Select immutable world-space acceleration in meters/second^2 as well as the
+// pair policy. Zero disables gravity; existing factories use {0, -9.81, 0}.
+// Nonfinite values reject before backend availability is checked. An available
+// backend also rejects scalar overflow and nonzero components rounded to zero.
+[[nodiscard]] std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing, core::Vector3 gravity);
+
 } // namespace usd_physics::jolt

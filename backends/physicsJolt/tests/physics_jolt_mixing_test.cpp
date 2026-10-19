@@ -71,7 +71,8 @@ int main() {
     // Simultaneously alive: changing one world's policy must not affect
     // another.
     auto defaults = jolt::createWorld();
-    auto products = jolt::createWorld({Rule::product, Rule::product, 10});
+    auto products =
+        jolt::createWorld({Rule::product, Rule::product, 10}, {0, -9.81, 0});
     auto capped = jolt::createWorld({Rule::product, Rule::product, .25});
     auto alternatives =
         jolt::createWorld({Rule::maximum, Rule::geometricMean, {}});

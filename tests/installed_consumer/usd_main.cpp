@@ -1,4 +1,5 @@
 #include "usd_physics/usd/box_scene.h"
+#include "usd_physics/jolt/availability.h"
 #include <cmath>
 #include <pxr/base/gf/vec3d.h>
 #include <pxr/usd/usdGeom/capsule.h>
@@ -12,8 +13,56 @@
 #include <pxr/usd/usdPhysics/massAPI.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
 #include <pxr/usd/usdPhysics/scene.h>
+#include <pxr/usd/sdf/layer.h>
+
+bool executesSceneGravity() {
+  using namespace usd_physics;
+  if (!jolt::backendAvailable())
+    return true; // The same installed USD package works without a solver.
+  const auto stage = pxr::UsdStage::CreateInMemory();
+  pxr::UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->y);
+  pxr::UsdGeomSetStageMetersPerUnit(stage, 1.0);
+  const auto cube = pxr::UsdGeomCube::Define(stage, pxr::SdfPath("/Box"));
+  pxr::UsdPhysicsCollisionAPI::Apply(cube.GetPrim());
+  pxr::UsdPhysicsRigidBodyAPI::Apply(cube.GetPrim());
+  pxr::UsdPhysicsMassAPI::Apply(cube.GetPrim()).CreateMassAttr().Set(1.0f);
+  for (int mode = 0; mode != 3; ++mode) {
+    if (mode != 0) {
+      const auto settings = pxr::UsdPhysicsScene::Define(stage, pxr::SdfPath("/Scene"));
+      settings.CreateGravityDirectionAttr().Set(pxr::GfVec3f(2, 3, 6));
+      settings.CreateGravityMagnitudeAttr().Set(mode == 1 ? 7.0f : 0.0f);
+    }
+    std::string before, after;
+    stage->GetRootLayer()->ExportToString(&before);
+    const auto snapshot = usd::readPhysicsScene(stage);
+    // Consumer selects world defaults when no scene settings were authored.
+    auto world = snapshot.settings
+                     ? jolt::createWorld({}, snapshot.settings->gravity)
+                     : jolt::createWorld();
+    const auto &declaration = snapshot.bodies.at(0);
+    const auto shape = world->createShape(declaration.shape);
+    const auto handle = world->createBody(
+        {shape, declaration.motionType, declaration.transform, declaration.mass,
+         {}, {}, {0, 0}});
+    for (int i = 0; i != 30; ++i)
+      world->step(core::PhysicsWorld::Duration{1.0 / 60});
+    const auto velocity = world->bodyState(handle).linearVelocity;
+    const core::Vector3 expected = mode == 0 ? core::Vector3{0, -4.905, 0}
+                                  : mode == 1 ? core::Vector3{1, 1.5, 3}
+                                              : core::Vector3{};
+    stage->GetRootLayer()->ExportToString(&after);
+    if (std::abs(velocity.x - expected.x) > 1e-4 ||
+        std::abs(velocity.y - expected.y) > 1e-4 ||
+        std::abs(velocity.z - expected.z) > 1e-4 || before != after ||
+        !world->destroyBody(handle) || !world->destroyShape(shape))
+      return false;
+  }
+  return true;
+}
 
 int main() {
+  if (!executesSceneGravity())
+    return 10;
   const auto stage = pxr::UsdStage::CreateInMemory();
   pxr::UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->y);
   pxr::UsdGeomSetStageMetersPerUnit(stage, 1.0);

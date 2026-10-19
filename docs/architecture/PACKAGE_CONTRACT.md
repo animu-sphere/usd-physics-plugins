@@ -53,6 +53,13 @@ layout does not establish a newly published artifact; only a verified release
 pin table does. Source-format coefficient conversion and policy selection stay
 in consumers, including contact-mixing factory settings.
 
+The Jolt factory also accepts an explicit neutral gravity acceleration through
+`createWorld(mixing, gravity)`; existing no-argument and mixing-only overloads
+retain their source and symbol identities. Semantics belong in the
+[rigid-body contract](../design/RIGID_BODY_CONTRACT.md#61-world-gravity-at-construction).
+Consumers of the new overload require the rebuilt backend library; an older
+published backend does not provide that symbol. No core layout or SDK pin changes.
+
 Every library package must:
 
 - install public headers under one repository-owned include root;
