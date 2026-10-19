@@ -28,3 +28,4 @@ remain in the [capability matrix](../reference/CAPABILITY_MATRIX.md).
 - [2026-10-19 CMake package and test organization](2026-10-19-cmake-cleanup.md)
 - [2026-10-19 CMake cleanup hosted acceptance](2026-10-19-cmake-cleanup-hosted.md)
 - [2026-10-19 Read-only scene gravity](2026-10-19-scene-gravity.md)
+- [2026-10-19 World gravity at construction](2026-10-19-world-gravity.md)

@@ -234,6 +234,29 @@ Destroying a world destroys every transient resource and invalidates every
 handle from that world. A separate in-place reset operation is not part of the
 Phase 1 contract.
 
+### 6.1 World gravity at construction
+
+World gravity is immutable world-space acceleration in meters/second squared.
+It acts on dynamic bodies independently of mass; static and kinematic bodies
+do not accelerate under gravity. Zero disables gravity and every finite
+direction is allowed. It is already an acceleration vector: factories must
+not normalize it or reinterpret zero as an earth-gravity default.
+
+`createWorld(mixing, gravity)` (in namespace
+`usd_physics::jolt`) accepts the neutral `ContactMixing` policy and `Vector3`
+acceleration. The no-argument and mixing-only overloads retain `{0, -9.81, 0}`.
+Settings apply only to the returned world; constructing another world must
+not change them. No mandatory `PhysicsWorld` method or mutable setting is added.
+
+Nonfinite acceleration rejects with `std::invalid_argument` before backend
+availability is checked. An available backend additionally rejects numeric
+overflow and nonzero components rounded to zero before world construction.
+Valid input without a solver throws `PhysicsErrorCode::backendUnavailable`.
+Scene selection, absent-scene defaults, factory invocation and full rebuild
+remain consumer responsibilities. A consumer may pass
+`SceneSettings::gravity` from the read-only USD snapshot without retaining USD
+objects in a world.
+
 ## 7. Stepping and state
 
 The caller supplies an explicit positive fixed step. `physicsCore` validates

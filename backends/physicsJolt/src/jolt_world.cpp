@@ -311,7 +311,7 @@ class JoltWorld final : public core::PhysicsWorld,
                         public core::GroundQuery,
                         public core::SegmentQuery {
 public:
-  explicit JoltWorld(const core::ContactMixing &mixing)
+  JoltWorld(const core::ContactMixing &mixing, JPH::Vec3 gravity)
       : worldId_(nextWorldId.fetch_add(1, std::memory_order_relaxed)),
         pairFilter_(layers_), broadPhaseInterface_(layers_),
         objectVsBroadPhaseFilter_(layers_),
@@ -325,6 +325,7 @@ public:
     physicsSystem_.Init(maxBodies, 0, maxBodyPairs, maxContactConstraints,
                         broadPhaseInterface_, objectVsBroadPhaseFilter_,
                         pairFilter_);
+    physicsSystem_.SetGravity(gravity);
     if (mixing.friction != core::ContactCombineRule::geometricMean ||
         mixing.restitution != core::ContactCombineRule::maximum ||
         mixing.maxFriction)
@@ -944,7 +945,18 @@ std::unique_ptr<core::PhysicsWorld> createWorld() {
 
 std::unique_ptr<core::PhysicsWorld>
 createWorld(const core::ContactMixing &mixing) {
+  return createWorld(mixing, {0.0, -9.81, 0.0});
+}
+
+std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing, core::Vector3 gravity) {
   core::validateContactMixing(mixing);
+  core::validatePhysicsVector(gravity, "world gravity");
+  const auto acceleration = toJoltVector(gravity, "world gravity");
+  if ((gravity.x != 0 && acceleration.GetX() == 0) ||
+      (gravity.y != 0 && acceleration.GetY() == 0) ||
+      (gravity.z != 0 && acceleration.GetZ() == 0))
+    throw std::invalid_argument("world gravity underflows the Jolt scalar range");
   if (mixing.maxFriction) {
     const auto ceiling =
         toJoltFloat(*mixing.maxFriction, "contact friction ceiling");
@@ -952,7 +964,7 @@ createWorld(const core::ContactMixing &mixing) {
       throw std::invalid_argument(
           "contact friction ceiling underflows the Jolt scalar range");
   }
-  return std::make_unique<JoltWorld>(mixing);
+  return std::make_unique<JoltWorld>(mixing, acceleration);
 }
 
 } // namespace usd_physics::jolt

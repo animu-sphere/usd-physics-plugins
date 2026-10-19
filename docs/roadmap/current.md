@@ -15,8 +15,10 @@ unfinished work only; keep Active to three to five outcomes.
   exposing a partial world; stale handles reject. Windows/Linux fixtures show
   falling, contact and rest within documented tolerances. Keep standard import
   opt-in and compatibility fixtures until host/runtime parity passes.
-- Tracking: [Consumer ownership](../design/DESIGN_POLICY.md#101-stage-runner);
-  Issue/PR to be linked when opened. Deliver rebuild and presentation separately.
+- Tracking: [Consumer ownership](../design/DESIGN_POLICY.md#101-stage-runner),
+  [world gravity](https://github.com/animu-sphere/usd-physics-plugins/pull/30) and
+  [consumer rebuild](https://github.com/animu-sphere/usd-stage-runner/pull/35).
+  Deliver rebuild and presentation separately.
 
 ### P1-B — Release contract acceptance
 

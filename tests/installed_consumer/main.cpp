@@ -53,6 +53,18 @@ int main() {
     return 3;
   }
   if (usd_physics::jolt::backendAvailable()) {
+    {
+      auto configured = usd_physics::jolt::createWorld(mixing, {1, 0, 0});
+      const auto shape = configured->createShape({});
+      const auto falling = configured->createBody(
+          {shape, usd_physics::core::MotionType::dynamicBody, {}, 1,
+           {}, {}, {0, 0}});
+      configured->step(usd_physics::core::PhysicsWorld::Duration{.1});
+      const auto velocity = configured->bodyState(falling).linearVelocity;
+      if (velocity.x < .0999 || velocity.x > .1001 || velocity.y != 0 ||
+          velocity.z != 0)
+        return 12;
+    }
     auto world = usd_physics::jolt::createWorld(mixing);
     auto *motion =
         dynamic_cast<usd_physics::core::KinematicMotion *>(world.get());
@@ -129,7 +141,7 @@ int main() {
                : 8;
   }
   try {
-    static_cast<void>(usd_physics::jolt::createWorld(mixing));
+    static_cast<void>(usd_physics::jolt::createWorld(mixing, {1, 0, 0}));
   } catch (const usd_physics::core::PhysicsError &unavailable) {
     return unavailable.code() ==
                    usd_physics::core::PhysicsErrorCode::backendUnavailable
