@@ -20,6 +20,7 @@
 #include <pxr/usd/usdPhysics/massAPI.h>
 #include <pxr/usd/usdPhysics/metrics.h>
 #include <pxr/usd/usdPhysics/rigidBodyAPI.h>
+#include <pxr/usd/usdPhysics/scene.h>
 #include <utility>
 
 namespace usd_physics::usd {
@@ -40,6 +41,73 @@ T read(const pxr::UsdAttribute &attribute, const pxr::UsdPrim &prim) {
            "expected a readable, time-independent value");
   }
   return value;
+}
+
+void validateUnits(const pxr::UsdStageRefPtr &stage, const pxr::UsdPrim &prim) {
+  if (pxr::UsdGeomGetStageUpAxis(stage) != pxr::UsdGeomTokens->y ||
+      !pxr::UsdGeomLinearUnitsAre(pxr::UsdGeomGetStageMetersPerUnit(stage),
+                                  1.0) ||
+      !pxr::UsdPhysicsMassUnitsAre(
+          pxr::UsdPhysicsGetStageKilogramsPerUnit(stage), 1.0))
+    reject(Code::unsupportedUnits, prim, "expected Y-up meters and kilograms");
+}
+
+std::optional<SceneSettings>
+readSettings(const pxr::UsdStageRefPtr &stage) {
+  if (!stage)
+    throw ImportError(Code::invalidStage, {}, "expected an open Stage");
+  std::vector<pxr::UsdPrim> scenes;
+  for (const auto &prim : stage->Traverse(pxr::UsdTraverseInstanceProxies()))
+    if (prim.IsA<pxr::UsdPhysicsScene>())
+      scenes.push_back(prim);
+  std::sort(scenes.begin(), scenes.end(), [](const auto &a, const auto &b) {
+    return a.GetPath() < b.GetPath();
+  });
+  if (scenes.size() > 1)
+    reject(Code::unsupportedDeclaration, scenes[1],
+           "multiple physics scenes require explicit consumer selection");
+  if (scenes.empty())
+    return std::nullopt;
+  const auto &prim = scenes.front();
+  if (prim.IsInstance() || prim.IsInstanceProxy() ||
+      prim.GetTypeName() != pxr::TfToken("PhysicsScene"))
+    reject(Code::unsupportedDeclaration, prim, "unsupported physics scene");
+  for (const auto &schema : prim.GetAppliedSchemas())
+    if (schema.GetString().rfind("Physics", 0) == 0)
+      reject(Code::unsupportedDeclaration, prim, "unsupported scene physics API");
+  for (const auto &property : prim.GetAuthoredProperties()) {
+    const auto &name = property.GetName().GetString();
+    if ((name.rfind("physics:", 0) == 0 &&
+         name != "physics:gravityDirection" &&
+         name != "physics:gravityMagnitude") ||
+        name.rfind("limit:", 0) == 0 || name.rfind("drive:", 0) == 0)
+      reject(Code::unsupportedDeclaration, prim, "unsupported scene property");
+    if (name.rfind("material:binding", 0) == 0 &&
+        (name.find(":physics:") != std::string::npos ||
+         name == "material:binding:physics"))
+      reject(Code::unsupportedDeclaration, prim,
+             "physics material bindings are unsupported");
+  }
+  validateUnits(stage, prim);
+  const pxr::UsdPhysicsScene api(prim);
+  const auto direction = read<pxr::GfVec3f>(api.GetGravityDirectionAttr(), prim);
+  double magnitude = read<float>(api.GetGravityMagnitudeAttr(), prim);
+  if (!std::isfinite(direction[0]) || !std::isfinite(direction[1]) ||
+      !std::isfinite(direction[2]) || std::isnan(magnitude) ||
+      magnitude == std::numeric_limits<double>::infinity())
+    reject(Code::invalidValue, prim, "gravity must produce finite acceleration");
+  if (magnitude < 0)
+    magnitude = 9.81;
+  const double length = std::hypot(double(direction[0]), double(direction[1]),
+                                   double(direction[2]));
+  SceneSettings result;
+  result.path = prim.GetPath().GetString();
+  result.gravity = length == 0
+      ? core::Vector3{0.0, -magnitude, 0.0}
+      : core::Vector3{direction[0] / length * magnitude,
+                      direction[1] / length * magnitude,
+                      direction[2] / length * magnitude};
+  return result;
 }
 
 const std::array<const char *, 6> jointAxes{"transX", "transY", "transZ",
@@ -360,6 +428,10 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
     const bool rigid = prim.HasAPI<pxr::UsdPhysicsRigidBodyAPI>();
     const bool collision = prim.HasAPI<pxr::UsdPhysicsCollisionAPI>();
     const bool mass = prim.HasAPI<pxr::UsdPhysicsMassAPI>();
+    // Scene settings were fully validated by readSettings(). Body-only readers
+    // keep their existing rejection of PhysicsScene declarations.
+    if (joints && prim.IsA<pxr::UsdPhysicsScene>())
+      continue;
     const bool joint = joints && prim.IsA<pxr::UsdPhysicsJoint>();
     if (joint)
       validateJointProperties(prim);
@@ -368,14 +440,7 @@ static std::vector<BoxBody> readScene(const pxr::UsdStageRefPtr &stage,
     if (!rigid && !collision && !mass && !joint)
       continue;
     if (!unitsChecked) {
-      if (pxr::UsdGeomGetStageUpAxis(stage) != pxr::UsdGeomTokens->y ||
-          !pxr::UsdGeomLinearUnitsAre(pxr::UsdGeomGetStageMetersPerUnit(stage),
-                                      1.0) ||
-          !pxr::UsdPhysicsMassUnitsAre(
-              pxr::UsdPhysicsGetStageKilogramsPerUnit(stage), 1.0)) {
-        reject(Code::unsupportedUnits, prim,
-               "expected Y-up meters and kilograms");
-      }
+      validateUnits(stage, prim);
       unitsChecked = true;
     }
     if (prim.IsInstance() || prim.IsInstanceProxy()) {
@@ -493,6 +558,7 @@ readPrimitiveScene(const pxr::UsdStageRefPtr &stage) {
 
 PhysicsScene readPhysicsScene(const pxr::UsdStageRefPtr &stage) {
   PhysicsScene result;
+  result.settings = readSettings(stage);
   result.bodies = readScene(stage, false, true);
   for (const auto &prim : stage->Traverse()) {
     const pxr::UsdPhysicsJoint api(prim);

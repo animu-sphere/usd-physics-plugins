@@ -25,9 +25,9 @@ capability on this page.
 | OpenStrata workspace | supported | Root build/test plus isolated package verification in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Windows build | supported | MSVC 19.51 and OpenStrata evidence in the [Windows OpenStrata report](../reports/2026-09-21-openstrata-windows.md) |
 | Linux build | supported | GCC 15.2.0 evidence in the [Phase 0 report](../reports/2026-09-21-phase0-bootstrap.md) |
-| Hosted Windows and Linux CI | supported | Generated graph and test cells passed in the [hosted CI report](../reports/2026-09-22-phase0-hosted-ci.md) |
+| Hosted Windows and Linux CI | supported | CMake cleanup passed all five cells, including Linux No-Jolt and Windows/Linux USD clean-prefix consumers; [cleanup hosted acceptance](../reports/2026-10-19-cmake-cleanup-hosted.md) |
 | Installed-consumer test | supported | Root clean-prefix test passes for both no-Jolt and Jolt-enabled package installs on Windows and Linux; see the [Windows](../reports/2026-09-22-phase2-windows-backend.md) and [Linux](../reports/2026-09-22-phase2-linux-backend.md) Phase 2 reports |
-| Package compatibility and test selection | supported | Public package identities and negative consumer controls retained; CTest labels select unit/backend/USD/consumer/experimental/workspace checks without filtering hosted acceptance. [Cleanup verification](../reports/2026-10-19-cmake-cleanup.md) records local measurements and the pending hosted rerun |
+| Package compatibility and test selection | supported | Public package identities and negative consumer controls retained; CTest labels select unit/backend/USD/consumer/experimental/workspace checks without filtering hosted acceptance. [Local cleanup verification](../reports/2026-10-19-cmake-cleanup.md) and [hosted acceptance](../reports/2026-10-19-cmake-cleanup-hosted.md) |
 | Versioned release | not present | `VERSION` exists for package coherence; no versioned workflow, tag or release record exists |
 
 ## 3. Rigid-body core
@@ -73,8 +73,8 @@ capability on this page.
 | Capability | Status | Evidence / note |
 | --- | --- | --- |
 | `physicsUsd` package | partial | Optional installed `physicsUsd::physicsUsd`; `physicsUsd.box_scene` and clean-prefix USD consumer test |
-| Box artifact validation | partial | `usd-jolt` CI cells configure Windows/Linux builds and isolated packaging of core/backend/USD; [local Windows evidence](../reports/2026-10-04-phase4-usd-artifacts.md). Hosted execution and public USD artifacts pending |
-| `UsdPhysicsScene` gravity | planned | No implementation |
+| Box artifact validation | partial | `usd-jolt` CI cells passed Windows/Linux builds, clean-prefix consumers and isolated packaging of core/backend/USD; [hosted evidence](../reports/2026-10-19-cmake-cleanup-hosted.md) and [local Windows evidence](../reports/2026-10-04-phase4-usd-artifacts.md). Public USD artifacts remain pending |
+| `UsdPhysicsScene` gravity | partial | `readPhysicsScene()` returns optional scene path and finite world-space acceleration; Y-up meters/kg, zero/one scene and USD gravity defaults. Multiple scenes, instances, unsupported declarations, invalid values and animation reject with typed code/path. `physicsUsd.scene_settings` and clean-prefix USD consumer cover the bounded snapshot; [local verification](../reports/2026-10-19-scene-gravity.md) |
 | Box collision | partial | Cube size and composed scales, on the body Cube or one translated/rotated descendant Cube of a rigid body Xform; `physicsUsd.box_scene` checks all eight transformed corners, disabled static colliders, and invalid dimensions |
 | Composed transforms | partial | Time-independent translate/rotate/orient/scale/matrix ops, ancestors, identity/body reset stacks and collider-local poses; shear, perspective, inverse ops and child reset stacks rejected. `physicsUsd.box_scene` checks intermediate Xforms and reflected scales |
 | Sphere/capsule collision | partial | `readPrimitiveScene()` accepts direct or single-child Sphere/Capsule with uniform composed scale and local poses; X/Y/Z capsule axes and zero height are covered by `physicsUsd.box_scene`. Nonuniform scale, invalid/animated dimensions and axes reject. Jolt query, local rotation, scalar-range rejection and settling checks run in `physicsJolt.backend`; [local Windows evidence](../reports/2026-10-18-phase4-primitives.md) |
