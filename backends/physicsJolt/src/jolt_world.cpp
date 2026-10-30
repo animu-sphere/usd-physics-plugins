@@ -464,7 +464,7 @@ public:
     const core::BodyState initial{handle, descriptor.initialTransform, {}};
     auto inserted = bodies_.emplace(
         handle, BodyRecord{body->GetID(), body, descriptor.shape,
-                           descriptor.motionType, initial});
+                           descriptor.motionType, initial, descriptor.damping});
     inserted.first->second.lastState =
         readBodyState(handle, inserted.first->second);
     return handle;
@@ -803,6 +803,18 @@ public:
       throw std::invalid_argument(
           "physics step must remain positive in the Jolt scalar range");
     }
+    // No Update jobs are running here. Direct setters preserve sleeping state
+    // and queued forces; BodyInterface setters would unnecessarily wake bodies.
+    // Clear before Update integrates forces/gravity and solves constraints.
+    for (auto& entry : bodies_) {
+      auto& record = entry.second;
+      if (record.motionType != core::MotionType::dynamicBody)
+        continue;
+      if (record.damping.linearMode == core::BodyDampingMode::clearPriorVelocity)
+        record.body->SetLinearVelocity(JPH::Vec3::sZero());
+      if (record.damping.angularMode == core::BodyDampingMode::clearPriorVelocity)
+        record.body->SetAngularVelocity(JPH::Vec3::sZero());
+    }
     const JPH::EPhysicsUpdateError updateError =
         physicsSystem_.Update(seconds, 1, &tempAllocator_, &jobSystem_);
     if (updateError != JPH::EPhysicsUpdateError::None) {
@@ -846,6 +858,7 @@ private:
     core::ShapeHandle shape;
     core::MotionType motionType;
     core::BodyState lastState;
+    core::BodyDamping damping;
   };
 
   struct ConstraintRecord {

@@ -111,8 +111,24 @@ each velocity by `max(0, 1-rate*dt)` after force/gravity integration. Finite-ste
 trajectories therefore depend on the backend and timestep. Jolt rejects rates
 outside its scalar range or positive rates rounded to zero before creating a
 native body. Source retention fractions must be converted by their adapter,
-not copied into these rate fields. Angular-velocity commands and
-continuous-collision behavior remain deferred.
+not copied into these rate fields.
+
+`BodyDamping::linearMode` and `angularMode` independently select
+`BodyDampingMode::finiteRate` (the default) or `clearPriorVelocity`. Clearing
+requires a zero rate in that channel and removes its prior velocity at the
+start of every valid `PhysicsWorld::step`, before force/gravity integration
+and constraint/contact solving. It does not remove queued forces, suppress
+new impulses, lock position/orientation or select the other channel. Invalid
+modes or nonzero rates paired with clearing reject for every motion type.
+Both modes affect dynamic bodies only; static and commanded kinematic bodies
+retain their motion contract. Jolt clears without waking sleeping bodies.
+Invalid step durations reject before any velocity is cleared. A consumer
+must rebuild bodies with the same descriptor when resetting a world; no
+one-shot clearing state survives destruction. Source coefficients and their
+normalization policy remain adapter-owned. This ordering is a neutral
+response contract, not source-solver trajectory equivalence.
+
+Angular-velocity commands and continuous-collision behavior remain deferred.
 
 `MotionType::kinematicBody` is driven by explicit pose commands rather than
 gravity, forces or impulses from contacts.

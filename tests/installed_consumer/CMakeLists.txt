@@ -11,6 +11,9 @@ if(TEST_FAKE_INCOMPATIBLE_JOLT)
 endif()
 
 find_package(physicsCore CONFIG REQUIRED)
+if(NOT physicsCore_DAMPING_RESPONSE_VERSION EQUAL 1)
+  message(FATAL_ERROR "physicsCore package must report damping response revision 1")
+endif()
 if(TEST_FAKE_INCOMPATIBLE_CORE)
   set_property(TARGET physicsCore::physicsCore PROPERTY USDPHYSICS_ABI_ID "old-descriptor-layout")
 endif()
@@ -29,6 +32,10 @@ if(NOT "${physicsJolt_BACKEND_AVAILABLE}" STREQUAL
        "${EXPECT_PHYSICSJOLT_BACKEND_AVAILABLE}")
   message(FATAL_ERROR
     "physicsJolt backend metadata does not match the installed package")
+endif()
+if(NOT "${physicsJolt_PRIOR_VELOCITY_CLEARING_AVAILABLE}" STREQUAL
+       "${physicsJolt_BACKEND_AVAILABLE}")
+  message(FATAL_ERROR "physicsJolt prior-velocity clearing metadata must match backend availability")
 endif()
 
 add_executable(usd_physics_installed_consumer main.cpp)

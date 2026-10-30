@@ -65,11 +65,20 @@ struct ContactMixing {
   std::optional<double> maxFriction;
 };
 
-// Non-negative decay rates in inverse seconds: dv/dt = -linear * v,
-// dw/dt = -angular * w. Backends may approximate the exponential per step.
+enum class BodyDampingMode {
+  finiteRate,
+  clearPriorVelocity,
+};
+
+// Independent dynamic-body responses. Finite rates are in inverse seconds;
+// backends may approximate exponential decay. Clearing removes prior velocity
+// before each world step's forces/constraints, and requires a zero rate for
+// that channel. It neither freezes the body nor clears accumulated forces.
 struct BodyDamping {
   double linear{0.05};
   double angular{0.05};
+  BodyDampingMode linearMode{BodyDampingMode::finiteRate};
+  BodyDampingMode angularMode{BodyDampingMode::finiteRate};
 };
 
 struct BodyDescriptor {
