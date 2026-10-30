@@ -95,6 +95,20 @@ void validateBodyDamping(const BodyDamping &damping) {
     throw std::invalid_argument(
         "body damping rates must be finite and non-negative");
   }
+  const auto validateChannel = [](BodyDampingMode mode, double rate) {
+    switch (mode) {
+    case BodyDampingMode::finiteRate:
+      return;
+    case BodyDampingMode::clearPriorVelocity:
+      if (rate == 0)
+        return;
+      throw std::invalid_argument("prior-velocity clearing requires a zero rate");
+    default:
+      throw std::invalid_argument("unsupported body damping mode");
+    }
+  };
+  validateChannel(damping.linearMode, damping.linear);
+  validateChannel(damping.angularMode, damping.angular);
 }
 
 void validateBodyDescriptor(const BodyDescriptor &descriptor) {

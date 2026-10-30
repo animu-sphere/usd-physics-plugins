@@ -30,6 +30,10 @@ int main() {
   usd_physics::core::validateContactMixing(mixing);
   const usd_physics::core::BodyDamping damping{.7, .3};
   usd_physics::core::validateBodyDamping(damping);
+  const usd_physics::core::BodyDamping clear{
+      0, 0, usd_physics::core::BodyDampingMode::clearPriorVelocity,
+      usd_physics::core::BodyDampingMode::clearPriorVelocity};
+  usd_physics::core::validateBodyDamping(clear);
   usd_physics::core::validateShapeDescriptor(box);
   usd_physics::core::validateBodyDescriptor(
       {usd_physics::core::ShapeHandle{1},
@@ -64,6 +68,20 @@ int main() {
       if (velocity.x < .0999 || velocity.x > .1001 || velocity.y != 0 ||
           velocity.z != 0)
         return 12;
+      const auto endpoint = configured->createBody(
+          {shape, usd_physics::core::MotionType::dynamicBody, {{0, 10, 0}, {}},
+           2, {}, {}, clear});
+      if (!configured->setLinearVelocity(endpoint, {10, 0, 0}) ||
+          !configured->applyForce(endpoint, {2, 0, 0}))
+        return 13;
+      configured->step(usd_physics::core::PhysicsWorld::Duration{.1});
+      const auto first = configured->bodyState(endpoint).linearVelocity;
+      if (first.x < .1999 || first.x > .2001 || first.y != 0 || first.z != 0)
+        return 14;
+      configured->step(usd_physics::core::PhysicsWorld::Duration{.1});
+      const auto second = configured->bodyState(endpoint).linearVelocity;
+      if (second.x < .0999 || second.x > .1001 || second.y != 0 || second.z != 0)
+        return 15;
     }
     auto world = usd_physics::jolt::createWorld(mixing);
     auto *motion =

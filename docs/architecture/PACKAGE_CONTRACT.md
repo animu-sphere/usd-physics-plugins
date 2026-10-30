@@ -134,6 +134,14 @@ and USD bridge configs compare the core identity they were built against;
 missing or different metadata rejects with a rebuild diagnostic. Source
 version compatibility alone does not establish descriptor compatibility.
 
+`physicsCore_DAMPING_RESPONSE_VERSION=1` identifies the independent finite-rate
+and prior-velocity-clearing modes in `BodyDamping`. The backend config exposes
+`physicsJolt_PRIOR_VELOCITY_CLEARING_AVAILABLE`, matching
+`physicsJolt_BACKEND_AVAILABLE`. A no-Jolt package retains the descriptor API
+and validation while its factory retains typed backend unavailability. The
+descriptor layout change requires rebuilding core, backend, bridge and their
+consumers together under the identity checks above.
+
 The bridge additionally checks its installed public headers and the selected
 OpenUSD version/header set against its build inputs. Header edits trigger
 CMake regeneration. These checks support root and standalone package builds

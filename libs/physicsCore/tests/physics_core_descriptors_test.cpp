@@ -93,7 +93,9 @@ int main() {
   mixing.restitution = static_cast<ContactCombineRule>(-1);
   if (!rejectsInvalidArgument([&] { validateContactMixing(mixing); }))
     return 16;
-  if (BodyDamping{}.linear != .05 || BodyDamping{}.angular != .05)
+  if (BodyDamping{}.linear != .05 || BodyDamping{}.angular != .05 ||
+      BodyDamping{}.linearMode != BodyDampingMode::finiteRate ||
+      BodyDamping{}.angularMode != BodyDampingMode::finiteRate)
     return 12;
   for (const auto type : {MotionType::staticBody, MotionType::dynamicBody,
                           MotionType::kinematicBody}) {
@@ -103,6 +105,26 @@ int main() {
       body.damping = damping;
       validateBodyDamping(damping);
       validateBodyDescriptor(body);
+    }
+    for (const auto linearMode : {BodyDampingMode::finiteRate,
+                                  BodyDampingMode::clearPriorVelocity}) {
+      for (const auto angularMode : {BodyDampingMode::finiteRate,
+                                     BodyDampingMode::clearPriorVelocity}) {
+        body.damping = {0, 0, linearMode, angularMode};
+        validateBodyDescriptor(body);
+      }
+    }
+    for (const auto damping : {
+             BodyDamping{1, 0, BodyDampingMode::clearPriorVelocity},
+             BodyDamping{0, 1, BodyDampingMode::finiteRate,
+                         BodyDampingMode::clearPriorVelocity},
+             BodyDamping{0, 0, static_cast<BodyDampingMode>(-1)},
+             BodyDamping{0, 0, BodyDampingMode::finiteRate,
+                         static_cast<BodyDampingMode>(-1)}}) {
+      body.damping = damping;
+      if (!rejectsInvalidArgument([&] { validateBodyDamping(damping); }) ||
+          !rejectsInvalidArgument([&] { validateBodyDescriptor(body); }))
+        return 17;
     }
     for (const double invalid : {-1.0, nan, infinity}) {
       for (const auto damping :
