@@ -31,4 +31,6 @@ and its limits are in the
   compile definitions the package recorded, and any other build is refused.
 - Six-DOF constraints and neutral springs are experimental, need a separate
   deterministic Jolt SDK and are off in the published `physicsJolt`.
+- Windows packages are built with MSVC 19.44 and need that version or newer. On
+  Linux a consumer needs the exact compiler version of `ubuntu-24.04`.
 - macOS, mobile and WebAssembly are not targets.

@@ -129,7 +129,10 @@ A package changes from `not present` to `supported` only when a clean consumer:
 Rebuilt packages expose `<package>_PACKAGE_CONTRACT_VERSION=1`. The installed
 core config checks a conservative identity of its public headers (normalized
 line endings), compiler ID/version, system/processor, pointer size and MSVC
-runtime selection. It exports `USDPHYSICS_ABI_ID` on its CMake target. Backend
+runtime selection. For MSVC it compares only major version 19 and requires the
+consumer's compiler to be at least as new as the package's, the toolset's binary
+compatibility rule; other compilers must match exactly. It exports
+`USDPHYSICS_ABI_ID` on its CMake target. Backend
 and USD bridge configs compare the core identity they were built against;
 missing or different metadata rejects with a rebuild diagnostic. Source
 version compatibility alone does not establish descriptor compatibility.
@@ -158,4 +161,5 @@ standard-library, SDK-binary or custom-macro ABI audit. Keep each package's
 headers, config and static library together, use the validated SDK, and rebuild
 the complete closure after descriptor changes. Installed-consumer tests cover
 matched packages and rejection of mismatched/missing core identity, compiler
-identity and installed core headers, including the bridge without a backend.
+identity, an older MSVC and installed core headers, including the bridge without a
+backend.

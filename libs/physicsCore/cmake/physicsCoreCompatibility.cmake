@@ -5,8 +5,15 @@ function(physics_core_toolchain_id output)
   if(MSVC AND NOT _runtime)
     set(_runtime "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
   endif()
+  # MSVC 19.x toolsets are binary compatible while the consumer's is at least as
+  # new as the package's, which the installed config checks separately. An exact
+  # version here would break published pins on every hosted runner image update.
+  set(_version "${CMAKE_CXX_COMPILER_VERSION}")
+  if(MSVC AND _version MATCHES "^19\\.")
+    set(_version 19)
+  endif()
   string(SHA256 _id
-    "${CMAKE_CXX_COMPILER_ID}|${CMAKE_CXX_COMPILER_VERSION}|${CMAKE_SYSTEM_NAME}|${CMAKE_SYSTEM_PROCESSOR}|${CMAKE_SIZEOF_VOID_P}|${_runtime}")
+    "${CMAKE_CXX_COMPILER_ID}|${_version}|${CMAKE_SYSTEM_NAME}|${CMAKE_SYSTEM_PROCESSOR}|${CMAKE_SIZEOF_VOID_P}|${_runtime}")
   set(${output} "${_id}" PARENT_SCOPE)
 endfunction()
 
