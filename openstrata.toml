@@ -38,4 +38,5 @@ members = [
 release_members = [
   "physicsCore",
   "physicsJolt",
+  "physicsUsd",
 ]
