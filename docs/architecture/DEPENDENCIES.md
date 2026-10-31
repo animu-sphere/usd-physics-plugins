@@ -46,6 +46,12 @@ instruction-set definitions; compatible consumer builds disable SSE4.1, SSE4.2,
 AVX, AVX2, AVX512, LZCNT, TZCNT, F16C, and FMADD. A Jolt artifact with different
 ABI-affecting definitions must not be mixed into the same process.
 
+Released `physicsJolt` packages use this non-deterministic set, with the debug
+renderer and profiler on for Windows and off for Linux, matching the Jolt build
+in Stage Runner's source CI. Linux keeps Jolt's default x86 instruction sets.
+A consumer builds Jolt with the same options; the
+[release workflow](../../.github/workflows/release.yml) names them.
+
 The installed `physicsJolt` package rechecks Jolt 5.5.0 and the exact exported
 ABI compile-definition set before importing its static target. A downstream
 configure fails rather than binding the package to a different Jolt build.

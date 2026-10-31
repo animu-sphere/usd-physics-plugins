@@ -1,16 +1,17 @@
 # Release schema
 
-> **Decision: proposed.** This defines the versioned release contract.
+> **Decision: accepted.** This defines the versioned release contract.
 > Delivery status belongs in the [capability matrix](../reference/CAPABILITY_MATRIX.md);
 > unfinished work belongs in the [roadmap](../roadmap/current.md).
 
 ## 1. Release unit and scope
 
 One repository version in `VERSION` applies to every released library. The
-initial release set is `physicsCore` and the Jolt-enabled `physicsJolt`, for
-`cy2026` / `usd` on Windows x86_64 and Linux x86_64. A new library or target
-joins the set only after its clean-prefix and downstream-consumer checks pass.
-macOS and a no-Jolt stub are not release targets for this first set.
+initial release set is `physicsCore`, the Jolt-enabled `physicsJolt` and
+`physicsUsd`, for `cy2026` / `usd` on Windows x86_64 and Linux x86_64. A new
+library or target joins the set only after its clean-prefix and
+downstream-consumer checks pass. macOS and a no-Jolt stub are not release
+targets for this first set.
 
 The distributable unit is an individual OpenStrata library artifact, not a
 workspace source checkout or an umbrella package. Its installed CMake target
@@ -61,7 +62,7 @@ partial table.
 
 ## 3. Promotion gates
 
-The eventual release workflow has two modes:
+The [release workflow](../../.github/workflows/release.yml) has two modes:
 
 1. A manual dry run builds, tests, packages, and stages the complete release
    set, but neither pushes to GHCR nor creates a GitHub release. Its pin table
@@ -73,7 +74,8 @@ The eventual release workflow has two modes:
 
 The build matrix must mirror the corresponding source-CI runtime digests,
 OpenStrata version, OS/architecture, Python ABI, and external Jolt revision.
-Each target must pass root tests, isolated library tests, package creation,
+Its Jolt build must select the [published ABI set](DEPENDENCIES.md#3-jolt-physics),
+not the source CI's deterministic SDK. Each target must pass root tests, isolated library tests, package creation,
 clean-prefix installed-consumer tests, and a downstream Stage Runner consumer
 check before promotion. Windows validation must include a compiler-compatible
 link test against the published binaries; source-only tests cannot establish
