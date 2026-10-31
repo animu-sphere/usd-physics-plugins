@@ -91,5 +91,5 @@ draft is reviewed and published.
 Consumer-validation artifacts do not establish a formal versioned release.
 Verify published artifacts and package acceptance before adding a library to
 the release set. A versioned dry run and finalized release notes must precede
-the first release tag. Release assets and notes own artifact/tag history;
-capability rows link to the corresponding evidence.
+each release tag. Release assets and [release records](../releases/v0.1.0.md) own
+artifact/tag history; capability rows link to the corresponding evidence.

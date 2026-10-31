@@ -17,6 +17,7 @@ status, tables, measurements or unfinished work into another document.
 | Current capabilities and limits | [CAPABILITY_MATRIX.md](reference/CAPABILITY_MATRIX.md) |
 | Extraction input | [EXTRACTION_BASELINE.md](reference/EXTRACTION_BASELINE.md) |
 | Ordered unfinished work and acceptance criteria | [current.md](roadmap/current.md) |
+| Released versions | [releases/](releases/v0.1.0.md) |
 | Dated verification facts, environments and logs | [reports/](reports/README.md) and linked CI runs |
 | Document maintenance | [documentation.md](contributing/documentation.md) |
 

@@ -4,7 +4,7 @@ Notable changes to the released physics libraries. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). While the version is
 0.x, a minor version may change the public API or ABI.
 
-## [0.1.0] - unreleased
+## [0.1.0] - 2026-10-31
 
 The first versioned release: `physicsCore`, `physicsJolt` and `physicsUsd` for
 `cy2026` / `usd` on Windows x86_64 and Linux x86_64. What each capability covers

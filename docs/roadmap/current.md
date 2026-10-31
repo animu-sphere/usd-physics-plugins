@@ -7,8 +7,7 @@ unfinished work only; keep Active to three to five outcomes.
 The avatar integration sequence is P1 USD snapshots/diagnostics -> P2 Jolt
 body/constraint MVP -> P3 shared-world lifecycle -> P4 external MMD adapter
 smoke -> P5 VRM secondary motion (deferred below). Extend the existing
-implementation rather than duplicating it. P1-B release acceptance remains a
-separate publication gate.
+implementation rather than duplicating it.
 
 ## Active
 
@@ -71,16 +70,6 @@ separate publication gate.
   `hydra-toon` dependency enters generic physics. Report spring approximations
   and numerical differences; exact Bullet trajectories are not a gate.
 - Tracking: [MMD ownership](../design/DESIGN_POLICY.md#102-mmd);
-  Issue/PR to be linked when opened.
-
-### P1-B — Release contract acceptance
-
-- Outcome: Validated public USD artifacts and a versioned release usable without
-  a repository checkout.
-- Acceptance: Dry-run the complete Windows/Linux release set before tagging;
-  validate clean-prefix and downstream consumers, artifact pins, API/ABI/version
-  handling and a copyable package example against the release schema.
-- Tracking: [Release gates](../architecture/RELEASE_SCHEMA.md#3-promotion-gates);
   Issue/PR to be linked when opened.
 
 ## Deferred
