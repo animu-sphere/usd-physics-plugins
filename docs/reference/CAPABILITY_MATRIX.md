@@ -28,7 +28,7 @@ capability on this page.
 | Hosted Windows and Linux CI | supported | CMake cleanup passed all five cells, including Linux No-Jolt and Windows/Linux USD clean-prefix consumers; [cleanup hosted acceptance](../reports/2026-10-19-cmake-cleanup-hosted.md) |
 | Installed-consumer test | supported | Root clean-prefix test passes for both no-Jolt and Jolt-enabled package installs on Windows and Linux; see the [Windows](../reports/2026-09-22-phase2-windows-backend.md) and [Linux](../reports/2026-09-22-phase2-linux-backend.md) Phase 2 reports |
 | Package compatibility and test selection | supported | Public package identities and negative consumer controls retained; CTest labels select unit/backend/USD/consumer/experimental/workspace checks without filtering hosted acceptance. [Local cleanup verification](../reports/2026-10-19-cmake-cleanup.md) and [hosted acceptance](../reports/2026-10-19-cmake-cleanup-hosted.md) |
-| Versioned release | not present | `VERSION` exists for package coherence; no versioned workflow, tag or release record exists |
+| Versioned release | supported | [v0.1.0 record](../releases/v0.1.0.md); [release workflow](../../.github/workflows/release.yml) and [release schema](../architecture/RELEASE_SCHEMA.md) |
 
 ## 3. Rigid-body core
 
