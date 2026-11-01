@@ -148,6 +148,20 @@ int main() {
         .SetTargets({forwarding.GetPath()});
     check(usd::readPhysicsScene(forwardedStage).joints[0].body0 == "/World/A",
           "forwarded endpoint relationship");
+    auto selfStage = fixture();
+    const pxr::UsdPhysicsJoint self(selfStage->GetPrimAtPath(pxr::SdfPath("/Joint")));
+    self.CreateBody1Rel().SetTargets({pxr::SdfPath("/World/A")});
+    try {
+      (void)usd::readPhysicsScene(selfStage);
+      throw std::runtime_error("an enabled self-joint must reject");
+    } catch (const usd::ImportError &error) {
+      check(error.code() == Code::invalidValue, "enabled self-joint code");
+    }
+    self.CreateJointEnabledAttr().Set(false);
+    const auto selfScene = usd::readPhysicsScene(selfStage);
+    check(!selfScene.joints[0].enabled &&
+              selfScene.joints[0].body0 == selfScene.joints[0].body1,
+          "a disabled self-joint stays in the snapshot");
     rejects(
         [](auto s) {
           s->GetPrimAtPath(pxr::SdfPath("/Joint"))

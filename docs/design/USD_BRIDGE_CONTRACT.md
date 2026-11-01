@@ -99,7 +99,9 @@ body snapshots, or an empty world anchor. Two world anchors, identical bodies,
 multiple or missing targets, descendant geometry targets and scaled/reflected
 body frames reject. Forwarded relationships are resolved. Joint frames remain
 relative to body origins (world for an empty endpoint); finite nonzero
-quaternions are normalized. Joint-prim ancestor transforms do not alter these
+quaternions are normalized. An enabled joint needs two distinct endpoints, at
+most one of them world. A disabled joint may repeat one, because it constrains
+nothing, and stays in the snapshot. Joint-prim ancestor transforms do not alter these
 body-relative attributes.
 
 The snapshot preserves `jointEnabled` and `collisionEnabled`. Generic joints

@@ -1,7 +1,7 @@
 schema: openstrata.library/v1alpha1
 library:
   id: physicsJoltSixDof
-  version: 0.1.1
+  version: 0.1.2
 cmake:
   package: physicsJolt
   target: physicsJolt::physicsJolt

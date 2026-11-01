@@ -2,6 +2,8 @@
 
 #include "usd_physics/core/errors.h"
 
+#include <stdexcept>
+
 namespace usd_physics::jolt {
 
 bool backendAvailable() noexcept {
@@ -23,6 +25,15 @@ createWorld(const core::ContactMixing &mixing, core::Vector3 gravity) {
   core::validateContactMixing(mixing);
   core::validatePhysicsVector(gravity, "world gravity");
   return createWorld();
+}
+
+std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing, core::Vector3 gravity,
+            const WorldCapacity &capacity) {
+  if (!capacity.bodies || !capacity.bodyPairs || !capacity.contactConstraints ||
+      !capacity.temporaryBytes)
+    throw std::invalid_argument("world capacity values must be positive");
+  return createWorld(mixing, gravity);
 }
 
 } // namespace usd_physics::jolt

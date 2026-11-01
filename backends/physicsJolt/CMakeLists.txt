@@ -5,7 +5,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../VERSION")
     _physics_jolt_version LIMIT_COUNT 1)
   string(STRIP "${_physics_jolt_version}" _physics_jolt_version)
 else()
-  set(_physics_jolt_version "0.1.1")
+  set(_physics_jolt_version "0.1.2")
 endif()
 
 project(physicsJolt

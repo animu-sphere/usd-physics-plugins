@@ -12,7 +12,7 @@
 
 int main() {
   const auto version = usd_physics::core::version();
-  if (version.major != 0 || version.minor != 1 || version.patch != 1) {
+  if (version.major != 0 || version.minor != 1 || version.patch != 2) {
     return 1;
   }
   const usd_physics::core::BodyHandle body{1};
