@@ -15,9 +15,9 @@
 #
 # Repository additions retained after regeneration: build pinned Jolt beside
 # the workspace and expose its install prefix to the generated `usd-jolt` intent;
-# test and package all three physics libraries on Windows and Linux. The
-# `usd-jolt-six-dof` cells skip packaging: they are hosted acceptance for the
-# experimental six-DOF capability, not compatible package inputs.
+# test and package the physics libraries on Windows and Linux. The
+# `usd-jolt-six-dof` cells are hosted acceptance for the experimental six-DOF
+# capability, and package only physicsJoltSixDof, its own library on that SDK.
 # The graph cell also checks the no-SDK fallback without adding a matrix cell.
 name: ost source ci
 
@@ -506,6 +506,21 @@ jobs:
         env:
           CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
         run: ost test --target ${{ matrix.platform }} --profile ${{ matrix.profile }} ${{ matrix.intent_flags }}
+      - name: Test and package the six-DOF library on the deterministic SDK
+        if: ${{ matrix.intent_flags == '--intent usd-jolt-six-dof' }}
+        shell: bash
+        env:
+          CMAKE_PREFIX_PATH: ${{ env.JOLT_PREFIX }}
+        run: |
+          set -euo pipefail
+          library=backends/physicsJoltSixDof
+          ost library build libs/physicsCore --target ${{ matrix.platform }} --profile ${{ matrix.profile }}
+          ost library build "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }}
+          ost library test "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }}
+          ost library package "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }} --json > .ost-ci/physicsJoltSixDof-package.json
+          config="$(find "$library/.strata/targets" -path '*/library-prefix/lib/cmake/physicsJolt/physicsJoltConfig.cmake')"
+          grep -q 'set(physicsJolt_SIX_DOF_AVAILABLE ON)' "$config"
+          grep -q 'JPH_CROSS_PLATFORM_DETERMINISTIC' "$config"
       - name: Verify and package physics libraries on both platforms
         if: ${{ matrix.intent_flags != '--intent usd-jolt-six-dof' }}
         shell: bash

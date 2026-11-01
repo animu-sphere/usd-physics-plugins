@@ -5,7 +5,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../VERSION")
     _physics_core_version LIMIT_COUNT 1)
   string(STRIP "${_physics_core_version}" _physics_core_version)
 else()
-  set(_physics_core_version "0.1.0")
+  set(_physics_core_version "0.1.1")
 endif()
 
 project(physicsCore

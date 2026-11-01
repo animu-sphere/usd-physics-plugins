@@ -1,6 +1,6 @@
 [project]
 name = "usd-physics-plugins"
-version = "0.1.0"
+version = "0.1.1"
 
 [requires]
 platform = "cy2026"
@@ -33,10 +33,12 @@ cache = {
 members = [
   "libs/physicsCore",
   "backends/physicsJolt",
+  "backends/physicsJoltSixDof",
   "libs/physicsUsd",
 ]
 release_members = [
   "physicsCore",
   "physicsJolt",
+  "physicsJoltSixDof",
   "physicsUsd",
 ]

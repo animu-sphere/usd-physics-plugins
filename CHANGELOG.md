@@ -4,6 +4,18 @@ Notable changes to the released physics libraries. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). While the version is
 0.x, a minor version may change the public API or ABI.
 
+## [0.1.1] - Unreleased
+
+### Added
+
+- `physicsJoltSixDof`: the Jolt backend with the experimental six-DOF capability,
+  built on the deterministic Jolt SDK. It installs the `physicsJolt` CMake package,
+  so a consumer pins one of the two. `physicsJolt` and its Jolt options are unchanged.
+
+### Fixed
+
+- Installed physics packages accept newer MSVC toolsets.
+
 ## [0.1.0] - 2026-10-31
 
 The first versioned release: `physicsCore`, `physicsJolt` and `physicsUsd` for

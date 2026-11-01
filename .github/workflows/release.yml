@@ -4,8 +4,8 @@
 # lanes never updates this file and a green pull request says nothing about it.
 #
 # Pushing a tag `vX.Y.Z` -- equal to VERSION, with a dated CHANGELOG section --
-# builds and verifies physicsCore, physicsJolt and physicsUsd on Windows and
-# Linux, pushes each to ghcr.io/animu-sphere/usd-physics-plugins tagged
+# builds and verifies physicsCore, physicsJolt, physicsJoltSixDof and physicsUsd on
+# Windows and Linux, pushes each to ghcr.io/animu-sphere/usd-physics-plugins tagged
 # `<library>-<version>-<target>`, generates the consumer pin table from the push
 # results and assembles a DRAFT GitHub release. Publishing the draft is a human
 # decision, taken after the Stage Runner consumer check passes on those pins.
@@ -13,8 +13,9 @@
 # THE JOLT SDK HERE IS NOT THE PULL REQUEST LANE'S. physicsJolt records the exact
 # Jolt compile definitions it was built with and refuses any other SDK at the
 # consumer's configure (DEPENDENCIES.md §3). The source CI selects the
-# deterministic SDK for its six-DOF gate; the published artifact uses the
-# non-deterministic set usd-stage-runner consumes, and six-DOF is off.
+# deterministic SDK for its six-DOF gate; the physicsJolt artifact uses the
+# non-deterministic set usd-stage-runner consumes, and six-DOF is off. The
+# physicsJoltSixDof artifact uses the source CI's deterministic set, and six-DOF is on.
 #
 # `workflow_dispatch` is a dry run: the same lanes, uploaded as workflow artifacts,
 # with no registry write and no release object.
@@ -160,6 +161,40 @@ jobs:
             prefix="$(cygpath -w "$prefix")"
           fi
           echo "CMAKE_PREFIX_PATH=$prefix" >> "$GITHUB_ENV"
+      - name: Build and install the deterministic Jolt ABI set
+        shell: bash
+        run: |
+          set -euo pipefail
+          prefix="$GITHUB_WORKSPACE/.ci/jolt-deterministic-install"
+          configure=(
+            -S .ci/jolt/Build
+            -B .ci/jolt-deterministic-build
+            "-DCMAKE_INSTALL_PREFIX=$prefix"
+            -DCMAKE_BUILD_TYPE=Release
+            -DINTERPROCEDURAL_OPTIMIZATION=OFF
+            -DDOUBLE_PRECISION=OFF
+            -DCROSS_PLATFORM_DETERMINISTIC=ON
+            -DENABLE_ALL_WARNINGS=OFF
+            -DGENERATE_DEBUG_SYMBOLS=OFF
+            -DDEBUG_RENDERER_IN_DEBUG_AND_RELEASE=OFF
+            -DPROFILER_IN_DEBUG_AND_RELEASE=OFF
+            -DUSE_STATIC_MSVC_RUNTIME_LIBRARY=OFF
+            -DTARGET_UNIT_TESTS=OFF
+            -DTARGET_HELLO_WORLD=OFF
+            -DTARGET_PERFORMANCE_TEST=OFF
+            -DTARGET_SAMPLES=OFF
+            -DTARGET_VIEWER=OFF
+          )
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            configure+=(-A x64)
+          fi
+          cmake "${configure[@]}"
+          cmake --build .ci/jolt-deterministic-build --config Release --target Jolt
+          cmake --install .ci/jolt-deterministic-build --config Release
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            prefix="$(cygpath -w "$prefix")"
+          fi
+          echo "JOLT_DETERMINISTIC_PREFIX=$prefix" >> "$GITHUB_ENV"
       - name: Bootstrap ost 0.23.2 (pinned release asset, checksum-verified)
         shell: bash
         run: |
@@ -228,9 +263,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for library in libs/physicsCore backends/physicsJolt libs/physicsUsd; do
+          for library in libs/physicsCore backends/physicsJolt libs/physicsUsd backends/physicsJoltSixDof; do
             name="$(basename "$library")"
             echo "::group::$name"
+            # Last in the loop, because every other library uses the published SDK.
+            if [ "$name" = physicsJoltSixDof ]; then
+              export CMAKE_PREFIX_PATH="$JOLT_DETERMINISTIC_PREFIX"
+            fi
             ost library build "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }}
             ost library test "$library" --target ${{ matrix.platform }} --profile ${{ matrix.profile }}
             # Jolt and USD need external SDKs, which OpenStrata's generated
@@ -262,13 +301,22 @@ jobs:
           if grep -q 'JPH_CROSS_PLATFORM_DETERMINISTIC' "$config"; then
             echo "::error title=release packaging::physicsJolt was built with the deterministic SDK" ; exit 1
           fi
+      - name: Check physicsJoltSixDof packaged six-DOF and the deterministic ABI set
+        shell: bash
+        run: |
+          set -euo pipefail
+          config="$(find backends/physicsJoltSixDof/.strata/targets -path '*/library-prefix/lib/cmake/physicsJolt/physicsJoltConfig.cmake')"
+          grep -q 'set(physicsJolt_SIX_DOF_AVAILABLE ON)' "$config" \
+            || { echo "::error title=release packaging::physicsJoltSixDof has no six-DOF" ; exit 1 ; }
+          grep -q 'JPH_CROSS_PLATFORM_DETERMINISTIC' "$config" \
+            || { echo "::error title=release packaging::physicsJoltSixDof was not built with the deterministic SDK" ; exit 1 ; }
       - name: Stage the release artifacts
         shell: bash
         run: |
           set -euo pipefail
           version="${{ needs.preflight.outputs.version }}"
           mkdir -p release-stage/packages
-          for name in physicsCore physicsJolt physicsUsd; do
+          for name in physicsCore physicsJolt physicsJoltSixDof physicsUsd; do
             json=".ost-ci/$name.json"
             archive="$(jq -er '.data.archive' "$json")"
             digest="$(jq -er '.data.archive_digest' "$json")"
