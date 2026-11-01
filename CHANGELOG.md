@@ -4,6 +4,17 @@ Notable changes to the released physics libraries. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). While the version is
 0.x, a minor version may change the public API or ABI.
 
+## [0.1.2] - Unreleased
+
+### Added
+
+- `physicsJolt`: `createWorld` takes a `WorldCapacity`, stated by
+  `physicsJolt_WORLD_CAPACITY_VERSION`. The defaults are unchanged.
+
+### Changed
+
+- `physicsUsd`: a disabled joint may repeat one endpoint. An enabled one still rejects.
+
 ## [0.1.1] - 2026-11-01
 
 ### Added

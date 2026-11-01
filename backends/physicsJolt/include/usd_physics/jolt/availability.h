@@ -2,9 +2,21 @@
 
 #include "usd_physics/core/world.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace usd_physics::jolt {
+
+// How much one world may simulate per step. Exceeding bodies rejects creation;
+// exceeding the others fails the step with PhysicsErrorCode::solverFailure. The
+// defaults suit small scenes. Larger values cost memory for the world's lifetime.
+struct WorldCapacity {
+  std::uint32_t bodies = 1024;
+  std::uint32_t bodyPairs = 1024;
+  std::uint32_t contactConstraints = 1024;
+  std::size_t temporaryBytes = 10 * 1024 * 1024;
+};
 
 // Reports whether this package was built with its private Jolt dependency.
 [[nodiscard]] bool backendAvailable() noexcept;
@@ -23,5 +35,11 @@ createWorld(const core::ContactMixing &mixing);
 // backend also rejects scalar overflow and nonzero components rounded to zero.
 [[nodiscard]] std::unique_ptr<core::PhysicsWorld>
 createWorld(const core::ContactMixing &mixing, core::Vector3 gravity);
+
+// Select the capacity as well. A zero value rejects before backend availability
+// is checked.
+[[nodiscard]] std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing, core::Vector3 gravity,
+            const WorldCapacity &capacity);
 
 } // namespace usd_physics::jolt

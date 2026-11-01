@@ -56,10 +56,6 @@ static_assert(JPH_VERSION_MAJOR == 5 && JPH_VERSION_MINOR == 5 &&
                   JPH_VERSION_PATCH == 0,
               "physicsJolt requires Jolt Physics 5.5.0");
 
-constexpr std::uint32_t maxBodies = 1024;
-constexpr std::uint32_t maxBodyPairs = 1024;
-constexpr std::uint32_t maxContactConstraints = 1024;
-constexpr std::size_t tempAllocatorBytes = 10 * 1024 * 1024;
 
 namespace BroadPhaseLayers {
 const JPH::BroadPhaseLayer nonMoving{0};
@@ -311,18 +307,21 @@ class JoltWorld final : public core::PhysicsWorld,
                         public core::GroundQuery,
                         public core::SegmentQuery {
 public:
-  JoltWorld(const core::ContactMixing &mixing, JPH::Vec3 gravity)
+  JoltWorld(const core::ContactMixing &mixing, JPH::Vec3 gravity,
+            const WorldCapacity &capacity)
       : worldId_(nextWorldId.fetch_add(1, std::memory_order_relaxed)),
         pairFilter_(layers_), broadPhaseInterface_(layers_),
         objectVsBroadPhaseFilter_(layers_),
+        tempAllocator_(capacity.temporaryBytes),
         jobSystem_(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
                    workerThreadCount()),
-        contactMixer_(mixing) {
+        contactMixer_(mixing),
+        jointCollisionFilter_(new JPH::GroupFilterTable(capacity.bodies)) {
     if (worldId_ == 0 || worldId_ > std::numeric_limits<std::uint32_t>::max()) {
       throw core::PhysicsError{core::PhysicsErrorCode::resourceExhausted,
                                "physics world handle capacity was exhausted"};
     }
-    physicsSystem_.Init(maxBodies, 0, maxBodyPairs, maxContactConstraints,
+    physicsSystem_.Init(capacity.bodies, 0, capacity.bodyPairs, capacity.contactConstraints,
                         broadPhaseInterface_, objectVsBroadPhaseFilter_,
                         pairFilter_);
     physicsSystem_.SetGravity(gravity);
@@ -932,7 +931,7 @@ private:
   ObjectLayerPairFilter pairFilter_;
   BroadPhaseLayerInterface broadPhaseInterface_;
   ObjectVsBroadPhaseLayerFilter objectVsBroadPhaseFilter_;
-  JPH::TempAllocatorImpl tempAllocator_{tempAllocatorBytes};
+  JPH::TempAllocatorImpl tempAllocator_;
   JPH::JobSystemThreadPool jobSystem_;
   ContactMixer contactMixer_;
   JPH::PhysicsSystem physicsSystem_;
@@ -942,7 +941,7 @@ private:
   HandleMap<core::ShapeHandle, ShapeRecord> shapes_;
   HandleMap<core::BodyHandle, BodyRecord> bodies_;
   HandleMap<core::ConstraintHandle, ConstraintRecord> constraints_;
-  JPH::Ref<JPH::GroupFilterTable> jointCollisionFilter_{new JPH::GroupFilterTable(maxBodies)};
+  JPH::Ref<JPH::GroupFilterTable> jointCollisionFilter_;
   HandleMap<core::BodyHandle, core::BodyState> changed_;
 };
 
@@ -963,6 +962,15 @@ createWorld(const core::ContactMixing &mixing) {
 
 std::unique_ptr<core::PhysicsWorld>
 createWorld(const core::ContactMixing &mixing, core::Vector3 gravity) {
+  return createWorld(mixing, gravity, WorldCapacity{});
+}
+
+std::unique_ptr<core::PhysicsWorld>
+createWorld(const core::ContactMixing &mixing, core::Vector3 gravity,
+            const WorldCapacity &capacity) {
+  if (!capacity.bodies || !capacity.bodyPairs || !capacity.contactConstraints ||
+      !capacity.temporaryBytes)
+    throw std::invalid_argument("world capacity values must be positive");
   core::validateContactMixing(mixing);
   core::validatePhysicsVector(gravity, "world gravity");
   const auto acceleration = toJoltVector(gravity, "world gravity");
@@ -977,7 +985,7 @@ createWorld(const core::ContactMixing &mixing, core::Vector3 gravity) {
       throw std::invalid_argument(
           "contact friction ceiling underflows the Jolt scalar range");
   }
-  return std::make_unique<JoltWorld>(mixing, acceleration);
+  return std::make_unique<JoltWorld>(mixing, acceleration, capacity);
 }
 
 } // namespace usd_physics::jolt

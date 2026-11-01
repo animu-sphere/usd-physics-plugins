@@ -610,7 +610,8 @@ PhysicsScene readPhysicsScene(const pxr::UsdStageRefPtr &stage) {
       frame.rotation = {q.GetReal() / length, v[0] / length, v[1] / length,
                         v[2] / length};
     }
-    if (joint.body0 == joint.body1)
+    // A disabled joint creates no constraint, so its endpoints constrain nothing.
+    if (joint.enabled && joint.body0 == joint.body1)
       reject(Code::invalidValue, prim,
              "joint requires distinct endpoints and at least one body");
     for (std::size_t axis = 0; axis != jointAxes.size(); ++axis) {

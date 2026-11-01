@@ -58,10 +58,12 @@ configure fails rather than binding the package to a different Jolt build.
 
 `physicsJolt` uses `RegisterDefaultAllocator`, one reference-counted
 process-global Jolt factory/type-registration lifetime, and a 10 MiB temporary
-allocator per world. Each world owns a `JobSystemThreadPool` with Jolt's
+allocator per world. `createWorld` takes a `WorldCapacity` that replaces these
+defaults for that world, and the package states `physicsJolt_WORLD_CAPACITY_VERSION`.
+Each world owns a `JobSystemThreadPool` with Jolt's
 maximum job/barrier counts and `hardware_concurrency - 1` workers, falling
 back to zero worker threads when only one hardware thread is reported. The
-initial world capacity is 1,024 bodies, 1,024 body pairs, and 1,024 contact
+default world capacity is 1,024 bodies, 1,024 body pairs, and 1,024 contact
 constraints. Exhausted creation capacity is reported as
 `PhysicsErrorCode::resourceExhausted`; update failures are reported as
 `PhysicsErrorCode::solverFailure`.
