@@ -76,8 +76,14 @@ exported definitions add `JPH_CROSS_PLATFORM_DETERMINISTIC` and drop
 `JPH_USE_FMADD`; it is a different ABI set from the non-deterministic artifact.
 It must not silently replace that artifact or its consumer pins. Keep
 `PHYSICSJOLT_ENABLE_SIX_DOF` OFF unless the selected SDK passes the enabled
-six-axis tests. The `usd-jolt-six-dof` cells select this SDK, test it on both
-OSes and do not package experimental binaries.
+six-axis tests. The `usd-jolt-six-dof` cells select this SDK and test it on both
+OSes.
+
+`physicsJoltSixDof` packages that build as a library of its own, with no debug
+renderer or profiler on either OS. It installs the same `physicsJolt` CMake package
+and target, so a consumer pins one of the two and builds Jolt with the matching
+options, and the installed package refuses the other SDK as usual. The capability
+stays experimental: it adds a package to pin, not a stability promise.
 
 ## 4. OpenStrata
 

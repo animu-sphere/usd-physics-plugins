@@ -4,7 +4,8 @@ schema: 1
 # checkout/build steps and export its install prefix to the `usd-jolt` intent.
 # Retain isolated packaging on both OSes, including physicsUsd. The
 # `usd-jolt-six-dof` cells are hosted acceptance for the experimental six-DOF
-# capability on the deterministic SDK; they test but never package.
+# capability on the deterministic SDK; of the libraries, they package only
+# physicsJoltSixDof, in a step the generated workflow gains by hand.
 # Retain the graph cell's plain-CMake no-SDK fallback check and test evidence.
 
 bootstrap:
